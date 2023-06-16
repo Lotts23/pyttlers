@@ -81,6 +81,7 @@ def scale_image(bildid):
 def resize_image(bildid, scale):
     image_path = f"{bildid}_image.jpg"
     image = cv2.imread(image_path)
+    # Skala om bilden med bilinjär interpolation
     resized_image = cv2.resize(image, (0, 0), fx=scale, fy=scale, interpolation=cv2.INTER_LINEAR)
     return resized_image
 
