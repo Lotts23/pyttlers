@@ -59,7 +59,7 @@ def adjust_coordinates(x, y):
     return adjusted_x, adjusted_y
 
 def scale_image(bildid): 
-    scale = 2.0
+    scale = 1.0
     while scale >= 0.2:
         resized_image = resize_image(bildid, scale)
 #        temp_path = save_temp_image(resized_image)
@@ -67,13 +67,13 @@ def scale_image(bildid):
         print(f"Skalning: {int(scale * 100)}% och söker...")  # Skriv ut skalningsinformationen
 
         time.sleep(0.01)  # hur länge den ska vänta mellan varje loop
-        
+
         if search_image(resized_image):
 
 #        if search_image(temp_path):  # Sök efter bilden i temp med den nya skalningen
             return None
 
-        scale -= 0.2  # Här kan jag ställa in hur stora steg den tar
+        scale -= 0.1  # Här kan jag ställa in hur stora steg den tar
 
     return None
 # Här är en idé, programmet sätts på ex 0.05 scale och sedan kan man justera det i ui?
