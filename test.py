@@ -59,7 +59,7 @@ def adjust_coordinates(x, y):
     return adjusted_x, adjusted_y
 
 def scale_image(bildid): 
-    scale = 2.0
+    scale = 1.0
     while scale >= 0.2:
         resized_image = resize_image(bildid, scale)
 #        temp_path = save_temp_image(resized_image)
@@ -79,9 +79,8 @@ def scale_image(bildid):
 # Här är en idé, programmet sätts på ex 0.05 scale och sedan kan man justera det i ui?
 
 def resize_image(bildid, scale):
-    image_path = f"{bildid}_image.jpg"
+    image_path = f"img/{bildid}_image.jpg"
     image = cv2.imread(image_path)
-    # Skala om bilden med bilinjär interpolation
     resized_image = cv2.resize(image, (0, 0), fx=scale, fy=scale, interpolation=cv2.INTER_LINEAR)
     return resized_image
 
