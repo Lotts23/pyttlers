@@ -4,7 +4,7 @@ import platform
 import time
 import tempfile
 import os
-
+ 
 bildid = "geolog"
 bildnamn = f"{bildid}_image.jpg"
 
