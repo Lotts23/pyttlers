@@ -68,7 +68,7 @@ def tested_scale():
             print(f"\nSkala: 1:{scale_factor}")
             return resized_height, resized_width
         else:
-            print("Ingen bild hittades.")
+            print("\nIngen bild hittades.")
     except Exception as e:
         print(f"Fel vid bildsökning: {str(e)}")
   
@@ -81,4 +81,4 @@ if __name__ == '__main__':
         #print(f"Resized Height: {resized_height}")
         #print(f"Resized Width: {resized_width}")
     else:
-        print("Ingen bild hittades.")
+        print("Kontrollera att programmet är på samma skärm som spelet.")
