@@ -1,0 +1,10 @@
+from scaledefine import tested_scale
+
+result = tested_scale()
+if result is not None:
+#Här vill jag använda fastställd skala och använda samma skala för att leta efter nästa bild.
+
+
+
+else:
+    print("Ingen bild hittades för att fastställa skalan.")
