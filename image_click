@@ -1,0 +1,10 @@
+from scaledefine import tested_scale
+
+result = tested_scale()
+if result is not None:
+#
+
+
+
+else:
+    print("Ingen bild hittades för att fastställa skalan.")
