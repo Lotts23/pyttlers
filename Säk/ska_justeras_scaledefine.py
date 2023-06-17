@@ -6,7 +6,7 @@ import tempfile
 import os
 import json
 
-def tested_scale(name):
+def tested_scale():
     # Läs in namnet på den fil som används som skaldefinition
     # Namnet på bildfilen ska vara name_image.png och den ska
     # ligga i mappen img.
@@ -24,7 +24,7 @@ def tested_scale(name):
             if found_image is not None:
                 adjusted_x = found_image.left + found_image.width // 2
                 adjusted_y = found_image.top + found_image.height // 2
-                #pyautogui.moveTo(adjusted_x, adjusted_y)
+                pyautogui.moveTo(adjusted_x, adjusted_y)
                 return True
             else:
                 return False
