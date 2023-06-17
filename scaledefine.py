@@ -4,13 +4,20 @@ import platform
 import time
 import tempfile
 import os
+import json
 
-bildid = "geolog"
-bildnamn = f"{bildid}_image.jpg"
+# Läs in namnet på den fil som används som skaldefinition
+# Namnet på bildfilen ska vara name_image.png och den ska
+# ligga i mappen img.
+with open('scaleimage.json', 'r') as file:
+    data = json.load(file)
+    
+name = data[0]['name']
+bildadress = f"img/{name}_image.png"
 
-def search_image(bildnamn):
+def search_image(bildadress):
     try:
-        found_image = pyautogui.locateOnScreen(bildnamn, confidence=0.8)
+        found_image = pyautogui.locateOnScreen(bildadress, confidence=0.8)
 
         if found_image is not None:
             adjusted_x = found_image.left + found_image.width // 2
@@ -19,7 +26,7 @@ def search_image(bildnamn):
             print("Bilden har hittats på skärmen och musen har flyttats till dess centrum.")
             return True
         else:
-            print(f"Bilden på {bildid}en kunde inte hittas.")
+            print(f"Bilden på {name} kunde inte hittas. Se till att bilden ligger i img och har formen name_image.jpg")
             return False
     except Exception as e:
         print(f"Fel vid bildsökning: {str(e)}")
@@ -59,13 +66,17 @@ def adjust_coordinates(x, y):
     return adjusted_x, adjusted_y
 
 
-def scale_image(bildid): 
+def scale_image(name):
+    original_image = cv2.imread(bildadress)
+    original_height, original_width, _ = original_image.shape
+
     scale = 2.0
     while scale >= 0.2:
-        resized_image = resize_image(bildid, scale)
-#        temp_path = save_temp_image(resized_image)
+        resized_image = resize_image(name, scale)
+        resized_height, resized_width, _ = resized_image.shape
 
-        print(f"Skalning: {int(scale * 100)}% och söker...")  # Skriv ut skalningsinformationen
+        scale_factor = original_width / resized_width
+        print(f"Skalning: {int(scale * 100)}%, Faktor: {scale_factor} och söker...")  # Skriv ut skalningsinformationen
 
         time.sleep(0.01)  # hur länge den ska vänta mellan varje loop
         
@@ -74,25 +85,18 @@ def scale_image(bildid):
 #        if search_image(temp_path):  # Sök efter bilden i temp med den nya skalningen
             return None
 
-        scale -= 0.2  # Här kan jag ställa in hur stora steg den tar
+        scale -= 0.02  # Här kan jag ställa in hur stora steg den tar
 
     return None
 
-
-def resize_image(bildid, scale):
-    image_path = f"{bildid}_image.jpg"
+def resize_image(name, scale):
+    image_path = f"{bildadress}"
     image = cv2.imread(image_path)
     resized_image = cv2.resize(image, (0, 0), fx=scale, fy=scale, interpolation=cv2.INTER_LINEAR)
     return resized_image
 
-#def save_temp_image(image):
-#    temp_dir = tempfile.gettempdir()
-#    temp_path = os.path.join(temp_dir, "temp_image.jpg")
-#    cv2.imwrite(temp_path, image)
-#    return temp_path
-
 try:
-    scale_image(bildid)
+    scale_image(name)
     print("Programmet avslutas.")
 except Exception as e:
     print(f"Fel vid bildsökning: {str(e)}")
