@@ -1,7 +1,8 @@
-import pyautogui
-import cv2
-import time
 import json
+import time
+
+import cv2
+import pyautogui
 
 # Läs in konfigurationsdata från JSON-filen
 with open('scaleimage.json', 'r') as file:
