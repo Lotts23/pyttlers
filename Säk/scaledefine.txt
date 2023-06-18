@@ -64,7 +64,7 @@ def tested_scale():
         print("Detekterar skalning...", end=".")
         scale_factor = scale_image(name)
         if scale_factor is not None:
-            print(f"\nSkala: 1:{scale_factor} på bilden", bildadress)
+            print(f"\nSkala: 1:{scale_factor}")
             return scale_factor
         else:
             print("\nIngen bild hittades.")
