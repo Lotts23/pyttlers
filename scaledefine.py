@@ -6,16 +6,15 @@ import tempfile
 import os
 import json
 
-def tested_scale(name):
+with open('scaleimage.json', 'r') as file:
+    data = json.load(file)
+name = data[0]['name']
+bildadress = f"img/{name}_image.png"
+
+def tested_scale():
     # Läs in namnet på den fil som används som skaldefinition
     # Namnet på bildfilen ska vara name_image.png och den ska
     # ligga i mappen img.
-
-    with open('scaleimage.json', 'r') as file:
-        data = json.load(file)
-
-    name = data[0]['name']
-    bildadress = f"img/{name}_image.png"
 
     def search_image(bildadress):
         try:
@@ -40,12 +39,12 @@ def tested_scale(name):
         while scale >= 0.2:
             resized_image = resize_image(name, scale)
             resized_height, resized_width, _ = resized_image.shape
-            scale_factor = original_width / resized_width
+            scale_factor = original_width / resized_width # Detta är det viktiga. Men det får inte vara för varje iteration utan ska bara beräknas EFTER att bilden hittats korrekt, DEN skalfaktorn behöver jag
 
             time.sleep(0.01)  # hur länge den ska vänta mellan varje loop
 
             if search_image(resized_image):
-                return resized_height, resized_width, scale_factor
+                return scale_factor #Oj Ännu en gång returnerar jag scale_factor. Konflikter nu?
 
             # Tryck på tangenten och skriv ut en punkt
             print(".", end="", flush=True)
@@ -62,11 +61,11 @@ def tested_scale(name):
 
     try:
         print("Detekterar skalning...", end=".")
-        result = scale_image(name)
+        result = scale_image(name) # Nu skapar jag en ny result. Jag bryr mig inte om result, jag måste bara kunna returnera scale_factor korrekt
         if result[0] is not None:
-            resized_height, resized_width, scale_factor = result
+            resized_height, resized_width, scale_factor = result #Här gör jag detta IGEN, varför result? Height och width har jag ingen användning av om scale_facor är beräknat
             print(f"\nSkala: 1:{scale_factor}")
-            return scale_factor
+            return scale_factor #resized_height, resized_width
         else:
             print("\nIngen bild hittades.")
     except Exception as e:
@@ -75,10 +74,9 @@ def tested_scale(name):
     return None
 
 if __name__ == '__main__':
-    result = tested_scale()
+    result = tested_scale() # Varför skapar jag variabeln result? Redundant?
     if result is not None:
-        resized_height, resized_width = result
-        # print(f"Resized Height: {resized_height}")
-        # print(f"Resized Width: {resized_width}")
+        scale_factor = result # och inte får jag omvandla scale_factor två gånger, här blir ju värdet fel
+        # jag använder scale_factor i min andra fil
     else:
         print("Kontrollera att programmet är på samma skärm som spelet.")
