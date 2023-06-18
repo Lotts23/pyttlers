@@ -49,7 +49,7 @@ if result is not None:
 
     # Använd det fastställda skalvärdet för att leta efter nästa bild
     # Förutsättningen är att bilden finns i mappen "img" med namnet "stone_image.png"
-    image_path = f"img/geolog_image.jpg"
+    image_path = f"img/coal_image.jpg"
 
     try:
         found_image = pyautogui.locateOnScreen(image_path, confidence=0.5)
