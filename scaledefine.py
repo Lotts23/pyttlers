@@ -1,5 +1,5 @@
+import subprocess
 import pyautogui
-import json
 
 def tested_scale():
     def search_image():
@@ -33,6 +33,9 @@ def tested_scale():
         if scale_factor is not None:
             print(f"\nSkaldefinitionsbild hittad med Skala: 1:{scale_factor}")
             return scale_factor, True
+        elif scale_factor is None or not isinstance(scale_factor, (float, int)):
+            print("Ogiltig skalningsfaktor. Avslutar programmet.")
+            exit(1)
         else:
             print("\nIngen bild hittades.")
             return None, False
@@ -40,6 +43,12 @@ def tested_scale():
         print(f"Fel vid bildsökning: {str(e)}")
         scale_factor = None
         return None, False
+
+# Hämta skalfaktorn från scaledefine
+scale_factor, _ = tested_scale()
+
+# Starta image_click och skicka skalfaktorn som argument
+subprocess.Popen(["python", "image_click.py", str(scale_factor)])
 
 def get_scale_factor():
     scale_factor, _ = tested_scale()
