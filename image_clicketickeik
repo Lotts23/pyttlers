@@ -70,7 +70,7 @@ scale_factor = get_scale_factor()
 
 if scale_factor is not None:
     # Läs in den sökta bilden
-    image_path = f"img/geolog_image.JPG"
+    image_path = f"img/11_image.JPG"
     image = cv2.imread(image_path)
 
     # Skala om den sökta bilden med hjälp av den fastställda skalfaktorn
