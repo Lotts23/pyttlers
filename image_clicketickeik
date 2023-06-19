@@ -3,7 +3,7 @@ import platform
 import subprocess
 import cv2
 import numpy as np
-from scaledefine import get_scale_factor
+from scaledefine import tested_scale
 import json
 import time
 
@@ -44,7 +44,7 @@ def resize_image(image, scale_factor):
     resized_image = cv2.resize(image, None, fx=scale_factor, fy=scale_factor)
     return resized_image
 
-def image_click(image, image_path):
+def image_click(image):
     try:
         found_image = pyautogui.locateOnScreen(image, confidence=0.5)
 
@@ -65,18 +65,20 @@ def image_click(image, image_path):
 with open('scaleimage.json', 'r') as file:
     data = json.load(file)
 
-# Fastställ skalvärdet genom att anropa get_scale_factor-funktionen
-scale_factor = get_scale_factor()
-
-if scale_factor is not None:
+# Fastställ skalvärdet genom att anropa tested_scale-funktionen
+resized_height, resized_width = tested_scale()
+if resized_height is not None and resized_width is not None:
     # Läs in den sökta bilden
     image_path = f"img/11_image.JPG"
     image = cv2.imread(image_path)
+
+    # Skapa en skalfaktor baserat på de skalade höjd- och breddvärdena
+    scale_factor = resized_height / image.shape[0]
 
     # Skala om den sökta bilden med hjälp av den fastställda skalfaktorn
     resized_image = resize_image(image, scale_factor)
 
     # Använd den skalade bilden för att leta efter nästa bild
-    image_click(resized_image, image_path)
+    image_click(resized_image)
 else:
-    print("Ingen bild hittades för att fastställa skalan.")
+    print("Ingen bild hittades.")

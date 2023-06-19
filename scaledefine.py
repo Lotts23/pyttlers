@@ -1,30 +1,28 @@
-import pyautogui
-import cv2
-import platform
-import time
-import tempfile
-import os
 import json
+import time
+
+import cv2
+import pyautogui
+
+# Läs in konfigurationsdata från JSON-filen
+with open('scaleimage.json', 'r') as file:
+    data = json.load(file)
+
+# Extrahera namnet från JSON-data
+name = data[0]['name']
+bildadress = f"img/{name}_image.JPG"
 
 def tested_scale():
-    # Läs in namnet på den fil som används som skaldefinition
-    # Namnet på bildfilen ska vara name_image.png och den ska
-    # ligga i mappen img.
-
-    with open('scaleimage.json', 'r') as file:
-        data = json.load(file)
-    
-    name = data[0]['name']
-    bildadress = f"img/{name}_image.png"
-
     def search_image(bildadress):
         try:
+            # Sök efter bilden på skärmen med angiven bildadress
             found_image = pyautogui.locateOnScreen(bildadress, confidence=0.8)
 
             if found_image is not None:
-                adjusted_x = found_image.left + found_image.width // 2
-                adjusted_y = found_image.top + found_image.height // 2
-                pyautogui.moveTo(adjusted_x, adjusted_y)
+                # Justera koordinaterna för att hitta bildens mitt
+                # adjusted_x = found_image.left + found_image.width // 2
+                # adjusted_y = found_image.top + found_image.height // 2
+                # pyautogui.moveTo(adjusted_x, adjusted_y)
                 return True
             else:
                 return False
@@ -33,28 +31,31 @@ def tested_scale():
             return False
 
     def scale_image(name):
+        # Läs in den ursprungliga bilden
         original_image = cv2.imread(bildadress)
         original_height, original_width, _ = original_image.shape
 
         scale = 2.0
         while scale >= 0.2:
+            # Skala om bilden med angivet namn och skalfaktor
             resized_image = resize_image(name, scale)
             resized_height, resized_width, _ = resized_image.shape
-            scale_factor = original_width / resized_width
+            scale_factor = resized_width / original_width
 
-            time.sleep(0.01)  # hur länge den ska vänta mellan varje loop
-        
+            time.sleep(0.001)
+
             if search_image(resized_image):
-                return resized_height, resized_width, scale_factor
+                # Returnera skalfaktorn om bilden hittas
+                return scale_factor
 
-            # Tryck på tangenten och skriv ut en punkt
             print(".", end="", flush=True)
 
-            scale -= 0.02  # Här kan jag ställa in hur stora steg den tar
+            scale -= 0.05
 
-        return None
+        return scale_factor
 
     def resize_image(name, scale):
+        # Läs in bilden och ändra dess storlek med angiven skalfaktor
         image_path = f"{bildadress}"
         image = cv2.imread(image_path)
         resized_image = cv2.resize(image, (0, 0), fx=scale, fy=scale, interpolation=cv2.INTER_LINEAR)
@@ -62,23 +63,27 @@ def tested_scale():
 
     try:
         print("Detekterar skalning...", end=".")
-        result = scale_image(name)
-        if result is not None:
-            resized_height, resized_width, scale_factor = result
-            print(f"\nSkala: 1:{scale_factor}")
-            return resized_height, resized_width
+        scale_factor = scale_image(name)
+        if scale_factor is not None:
+            print(f"\nSkaldefinitionsbild {bildadress} hittad med Skala: 1:{scale_factor}")
+            return scale_factor, True
         else:
-            print("Ingen bild hittades.")
+            print("\nIngen bild hittades.")
+            return None, False
     except Exception as e:
         print(f"Fel vid bildsökning: {str(e)}")
-  
-    return None
+        scale_factor = None
+        return None, False
+
+def get_scale_factor():
+    scale_factor, _ = tested_scale()
+    return scale_factor
 
 if __name__ == '__main__':
-    result = tested_scale()
-    if result is not None:
-        resized_height, resized_width = result
-        #print(f"Resized Height: {resized_height}")
-        #print(f"Resized Width: {resized_width}")
+    # Kör skalningstestet och spara skalfaktorn
+    scale_factor = tested_scale()
+    if scale_factor is not None:
+        # Använd scale_factor i image_click för att skala om en annan bild
+        pass
     else:
-        print("Ingen bild hittades.")
+        print(scale_factor, name, bildadress, "Kontrollera att programmet är på samma skärm som spelet.")
