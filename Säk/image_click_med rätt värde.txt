@@ -1,8 +1,7 @@
 import pyautogui
 import platform
+import os
 import subprocess
-import cv2
-import numpy as np
 from scaledefine import get_scale_factor
 import json
 import time
@@ -39,23 +38,22 @@ def adjust_coordinates(x, y):
     adjusted_y = y * screen_height
     return adjusted_x, adjusted_y
 
-def resize_image(image, scale_factor):
-    # Ändra storlek på bilden med angiven skalfaktor
-    resized_image = cv2.resize(image, None, fx=scale_factor, fy=scale_factor)
-    return resized_image
+def resize_image(image_path, scale_factor):
+    # Läs in bilden och ändra dess storlek med angiven skalfaktor
+    image = pyautogui.screenshot(image_path)
+    resized_image = image.resize((int(image.width * scale_factor), int(image.height * scale_factor)))
+    resized_image.save(image_path)
 
-def image_click(image):
+def image_click(image_path):
     try:
-        found_image = pyautogui.locateOnScreen(image, confidence=0.5)
+        found_image = pyautogui.locateOnScreen(image_path, confidence=0.5)
 
         if found_image is not None:
-            center_x, center_y = adjust_coordinates(
-                found_image.left + found_image.width // 2,
-                found_image.top + found_image.height // 2,
-            )
+            center_x, center_y = adjust_coordinates(found_image.left + found_image.width // 2,
+                                                   found_image.top + found_image.height // 2)
 
             print(f"{image_path} hittad!")
-            #pyautogui.moveTo(center_x, center_y)
+            # pyautogui.moveTo(center_x, center_y)
         else:
             print(f"Hittar inte {image_path}")
     except Exception as e:
@@ -69,14 +67,11 @@ with open('scaleimage.json', 'r') as file:
 scale_factor = get_scale_factor()
 
 if scale_factor is not None:
-    # Läs in den sökta bilden
-    image_path = f"img/11_image.JPG"
-    image = cv2.imread(image_path)
-
     # Skala om den sökta bilden med hjälp av den fastställda skalfaktorn
-    resized_image = resize_image(image, scale_factor)
+    image_path = f"img/geolog_image.JPG"
+    resize_image(image_path, scale_factor)
 
     # Använd den skalade bilden för att leta efter nästa bild
-    image_click(resized_image)
+    image_click(image_path)
 else:
     print("Ingen bild hittades för att fastställa skalan.")

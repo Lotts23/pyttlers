@@ -1,11 +1,7 @@
 import pyautogui
 import platform
+import os
 import subprocess
-import cv2
-import numpy as np
-from scaledefine import get_scale_factor
-import json
-import time
 
 def adjust_coordinates(x, y):
     screen_width, screen_height = pyautogui.size()
@@ -39,44 +35,27 @@ def adjust_coordinates(x, y):
     adjusted_y = y * screen_height
     return adjusted_x, adjusted_y
 
-def resize_image(image, scale_factor):
-    # Ändra storlek på bilden med angiven skalfaktor
-    resized_image = cv2.resize(image, None, fx=scale_factor, fy=scale_factor)
-    return resized_image
+from scaledefine import tested_scale
 
-def image_click(image):
+result = tested_scale()
+if result is not None:
+    scale_factor = result
+
+    # Använd det fastställda skalvärdet för att leta efter nästa bild
+    # Förutsättningen är att bilden finns i mappen "img" med namnet "stone_image.png"
+    image_path = f"img/stone_image.png"
+
     try:
-        found_image = pyautogui.locateOnScreen(image, confidence=0.5)
+        found_image = pyautogui.locateOnScreen(image_path, confidence=0.5)
 
         if found_image is not None:
-            center_x, center_y = adjust_coordinates(
-                found_image.left + found_image.width // 2,
-                found_image.top + found_image.height // 2,
-            )
-
-            print(f"{image_path} hittad!")
-            #pyautogui.moveTo(center_x, center_y)
+            adjusted_x, adjusted_y = adjust_coordinates(found_image.left + found_image.width // 2,
+                                                       found_image.top + found_image.height // 2)
+            pyautogui.moveTo(adjusted_x, adjusted_y)
+            print("Bild hittad!")
         else:
             print(f"Hittar inte {image_path}")
     except Exception as e:
         print(f"Fel vid bildsökning: {str(e)}")
-
-# Läs in skalningsdata från JSON-filen
-with open('scaleimage.json', 'r') as file:
-    data = json.load(file)
-
-# Fastställ skalvärdet genom att anropa get_scale_factor-funktionen
-scale_factor = get_scale_factor()
-
-if scale_factor is not None:
-    # Läs in den sökta bilden
-    image_path = f"img/11_image.JPG"
-    image = cv2.imread(image_path)
-
-    # Skala om den sökta bilden med hjälp av den fastställda skalfaktorn
-    resized_image = resize_image(image, scale_factor)
-
-    # Använd den skalade bilden för att leta efter nästa bild
-    image_click(resized_image)
 else:
     print("Ingen bild hittades för att fastställa skalan.")
