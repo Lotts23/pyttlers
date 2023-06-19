@@ -1,11 +1,46 @@
 import subprocess
 import pyautogui
+import platform
+import os
+import ctypes
+import cv2
+
+def adjust_coordinates(x, y):
+    screen_width, screen_height = pyautogui.size()
+    os_name = platform.system()
+
+    if os_name == 'Darwin':
+        if pyautogui.is_retina():
+            screen_width *= 2
+            screen_height *= 2
+    elif os_name == 'Windows':
+        try:
+            user32 = ctypes.windll.user32
+            screen_width = user32.GetSystemMetrics(0)
+            screen_height = user32.GetSystemMetrics(1)
+        except:
+            pass
+    elif os_name == 'Linux':
+        try:
+            output = subprocess.check_output(['xrandr']).decode('utf-8')
+            for line in output.splitlines():
+                if ' connected' in line:
+                    line_parts = line.split()
+                    screen_size = line_parts[line_parts.index('connected') + 1]
+                    screen_width, screen_height = map(int, screen_size.split('x'))
+                    break
+        except:
+            pass
+
+    adjusted_x = x * screen_width
+    adjusted_y = y * screen_height
+    return adjusted_x, adjusted_y
 
 def tested_scale():
     def search_image():
         try:
             # Sök efter bilden på skärmen
-            found_image = pyautogui.locateOnScreen('img/01_image.JPG', confidence=0.8)
+            found_image = pyautogui.locateOnScreen('img/01_image.JPG', confidence=0.8, region=adjust_coordinates(0, 0) + adjust_coordinates(1, 1))
 
             if found_image is not None:
                 return True
@@ -44,12 +79,11 @@ def tested_scale():
         scale_factor = None
         return None, False
 
-# Hämta skalfaktorn från scaledefine
+# Hämta skalfaktorn från tested_scale
 scale_factor, _ = tested_scale()
 
 # Starta image_click och skicka skalfaktorn som argument
 subprocess.Popen(["python", "image_click.py", str(scale_factor)])
 
 def get_scale_factor():
-    scale_factor, _ = tested_scale()
     return scale_factor
