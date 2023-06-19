@@ -14,25 +14,38 @@ def resize_image(image, scale_factor):
 
 def image_click():
     try:
-        image_path = 'img/08_image.JPG'
+        image_path = 'img/01_image.JPG'
         scale_factor = get_scale_factor()
 
         # Läs in sökbilden
         search_image = cv2.imread(image_path)
 
         if scale_factor is not None:
+            # Skapa en skärmbild med pyautogui.screenshot()
+            screen_image = pyautogui.screenshot()
+            screen_image_np = np.array(screen_image)
+            screen_image_bgr = cv2.cvtColor(screen_image_np, cv2.COLOR_RGB2BGR)
+
             # Skala om den sökta bilden med hjälp av den fastställda skalfaktorn
             resized_image = resize_image(search_image, scale_factor)
 
-        found_image = pyautogui.locateOnScreen(resized_image, confidence=0.8)
+            # Sök efter den skalade bilden i skärmbilden
+            result = cv2.matchTemplate(screen_image_bgr, resized_image, cv2.TM_CCOEFF_NORMED)
+            threshold = 0.5
+            locations = np.where(result >= threshold)
+            locations = list(zip(*locations[::-1]))
 
-        if found_image is not None:
-            center_x, center_y = pyautogui.center(found_image)
+            if locations:
+                center_x = int(locations[0][0] + resized_image.shape[1] / 2)
+                center_y = int(locations[0][1] + resized_image.shape[0] / 2)
 
-            print(f"Bilden hittades!")
-            pyautogui.moveTo(found_image) #center_x, center_y)
-        else:
-            print(f"Bilden hittades inte.")
+                print(f"Bilden hittades!")
+                pyautogui.moveTo(center_x, center_y)
+            else:
+                print(f"Bilden hittades inte.")
+        
+        time.sleep(1)  # Vänta 1 sekund mellan varje sökning
+
     except Exception as e:
         print(f"Fel vid bildsökning: {str(e)}")
 
