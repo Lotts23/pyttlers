@@ -55,7 +55,7 @@ def image_click(image):
             )
 
             print(f"{image_path} hittad!")
-            pyautogui.moveTo(center_x, center_y)
+            #pyautogui.moveTo(center_x, center_y)
         else:
             print(f"Hittar inte {image_path}")
     except Exception as e:
