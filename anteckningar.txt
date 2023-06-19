@@ -1,5 +1,0 @@
-
-
-Skapa tydligare utskrifter för att följa processen.
-Jobba med koordinaterna för stone
-Lägg in time.sleep
