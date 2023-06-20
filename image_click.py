@@ -10,8 +10,6 @@ def click_image(scale_factor):
             found_image = pyautogui.locateOnScreen(image, confidence=0.6)
             if found_image is not None:
                 return True, found_image
-            
-    
             else:
                 return False, None
         except Exception as e:
@@ -22,7 +20,6 @@ def click_image(scale_factor):
         # Skala om bilden med angiven skalfaktor
         resized_image = cv2.resize(image, (0, 0), fx=scale, fy=scale, interpolation=cv2.INTER_LINEAR)
         return resized_image
-        
 
     try:
         # Läs in den ursprungliga bilden
@@ -32,7 +29,7 @@ def click_image(scale_factor):
         name = data[0]['name']
         image_path = f"img/{name}_image.JPG"
         original_image = cv2.imread(image_path)
-        
+
         print("Originalbildens storlek:", original_image.shape)
 
         print("Skalar om bilden...", end="")
@@ -50,15 +47,12 @@ def click_image(scale_factor):
         if success:
             print("\nBilden hittades.")
             print(f"Exekveringstid för image_click: {execution_time} sekunder")
-            resized_image = resize_image(original_image, scale_factor)
             print("Skalade bildens storlek:", resized_image.shape)
             return image_path, found_image
         else:
             print("\nBilden hittades inte.")
-            resized_image = resize_image(original_image, scale_factor)
             print("Skalade bildens storlek:", resized_image.shape)
             return None, None
     except Exception as e:
         print(f"Fel vid bildsökning: {str(e)}")
         return None, None
-

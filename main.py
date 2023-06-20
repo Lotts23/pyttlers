@@ -22,8 +22,11 @@ def main():
     if found_image is not None:
         center_x, center_y = pyautogui.center(found_image)
         pyautogui.moveTo(center_x, center_y)
+    else:
+        print("Bilden hittades inte.")
 
     print("Bildnamn:", image_path)
+
     end_time = timeit.default_timer()
 
     execution_time = end_time - start_time
