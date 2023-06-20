@@ -68,7 +68,7 @@ scale_factor = get_scale_factor()
 
 if scale_factor is not None:
     # Skala om den sökta bilden med hjälp av den fastställda skalfaktorn
-    image_path = f"img/geolog_image.JPG"
+    image_path = f"img/004_image.JPG"
     resize_image(image_path, scale_factor)
 
     # Använd den skalade bilden för att leta efter nästa bild
