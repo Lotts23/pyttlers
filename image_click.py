@@ -1,67 +1,57 @@
 import pyautogui
-import platform
-import os
-import sys
+import cv2
 import time
-import cv2
-import numpy as np
-import pyautogui
-import cv2
-import numpy as np
-from scaledefine import get_scale_factor
+import json
+import timeit
 
-def resize_image(image, scale_factor):
-    # Ändra bildens storlek med angiven skalfaktor
-    resized_image = cv2.resize(image, (0, 0), fx=1/scale_factor, fy=1/scale_factor, interpolation=cv2.INTER_LINEAR)
-    return resized_image
+def click_image(scale_factor):
+    def search_image(image):
+        try:
+            # Sök efter bilden på skärmen
+            found_image = pyautogui.locateOnScreen(image, confidence=0.8)
 
-def image_click(): #?scale_factor):
-    try:
-        image_path = 'img/01_image.JPG'
-
-        # Läs in sökbilden
-        search_image = cv2.imread(image_path)
-
-        if scale_factor is not None:
-            # Skapa en skärmbild med pyautogui.screenshot()
-            screen_image = pyautogui.screenshot()
-            screen_image_np = np.array(screen_image)
-            screen_image_bgr = cv2.cvtColor(screen_image_np, cv2.COLOR_RGB2BGR)
-
-            # Skala om den sökta bilden med hjälp av den mottagna skalfaktorn
-            resized_image = resize_image(search_image, scale_factor)
-
-            # Sök efter den skalade bilden i skärmbilden
-            result = cv2.matchTemplate(screen_image_bgr, resized_image, cv2.TM_CCOEFF_NORMED)
-            threshold = 0.5
-            locations = np.where(result >= threshold)
-            locations = list(zip(*locations[::-1]))
-
-            if locations:
-                center_x = int(locations[0][0] + resized_image.shape[1] / 2)
-                center_y = int(locations[0][1] + resized_image.shape[0] / 2)
-
-                print(f"Bilden hittades!")
-                pyautogui.moveTo(center_x, center_y)
+            if found_image is not None:
+                return True, found_image
             else:
-                print(f"Bilden hittades inte.")
+                return False, None
+        except Exception as e:
+            print(f"Fel vid bildsökning: {str(e)}")
+            return False, None
 
-        time.sleep(1)  # Vänta 1 sekund mellan varje sökning
+    def resize_image(image, scale):
+        # Läs in bilden och ändra dess storlek med angiven skalfaktor
+        resized_image = cv2.resize(image, (0, 0), fx=scale, fy=scale, interpolation=cv2.INTER_LINEAR)
+        return resized_image
 
+    try:
+        # Läs in den ursprungliga bilden
+        with open('scaleimage.json', 'r') as file:
+            data = json.load(file)
+
+        # Extrahera namnet från JSON-data
+        name = data[0]['name']
+        image_path = f"img/{name}_image.JPG"
+        original_image = cv2.imread(image_path)
+
+        print("Skalar om bilden...", end="")
+
+        start_time = timeit.default_timer()  # Starta timern
+
+        # Skala om bilden med angiven skalfaktor från scaledefine
+        resized_image = resize_image(original_image, scale_factor)
+
+        end_time = timeit.default_timer()  # Stoppa timern
+        execution_time = end_time - start_time
+
+        success, found_image = search_image(image_path)  # Använd image_path istället för resized_image här
+
+        if success:
+            print("\nBilden hittades.")
+            print(f"Exekveringstid för image_click: {execution_time} sekunder")
+            return image_path, found_image
+        else:
+            print("\nBilden hittades inte.")
+            return None, None
     except Exception as e:
         print(f"Fel vid bildsökning: {str(e)}")
-
-# Kontrollera om det finns tillräckligt med argument
-if len(sys.argv) < 2:
-    print("Fel: Skalfaktorn saknas som argument.")
-    sys.exit(1)
-
-# Hämta skalfaktorn från argumenten
-scale_factor = float(sys.argv[1])
-print(f"Skalfaktor: {scale_factor}")
-
-# Anropa image_click-funktionen med skalfaktorn
-image_click(scale_factor)
-
-if __name__ == "__main__":
-    image_click()
+        return None, None

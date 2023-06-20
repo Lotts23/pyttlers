@@ -1,16 +1,17 @@
 import pyautogui
 import cv2
 import time
-import json
+#import json
 import timeit
 
 # Läs in konfigurationsdata från JSON-filen
-with open('scaleimage.json', 'r') as file:
-    data = json.load(file)
+#with open('scaleimage.json', 'r') as file:
+#    data = json.load(file)
 
 # Extrahera namnet från JSON-data
-name = data[0]['name']
-bildadress = f"img/{name}_image.JPG"
+#name = data[0]['name']
+bildadress = f"img/01_image.JPG"
+name = "01_image.JPG"
 
 def tested_scale():
     def search_image(bildadress):
@@ -87,11 +88,11 @@ def get_scale_factor():
     scale_factor, _ = tested_scale()
     return scale_factor
 
-if __name__ == '__main__':
+#if __name__ == '__main__':
     # Kör skalningstestet och spara skalfaktorn
-    scale_factor = tested_scale()
-    if scale_factor is not None:
+#    scale_factor = tested_scale()
+#    if scale_factor is not None:
         # Använd scale_factor i image_click för att skala om en annan bild
-        pass
-    else:
-        print(scale_factor, name, bildadress, "Kontrollera att programmet är på samma skärm som spelet.")
+#        pass
+#    else:
+#        print(scale_factor, name, bildadress, "Kontrollera att programmet är på samma skärm som spelet.")
