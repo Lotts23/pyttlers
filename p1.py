@@ -1,24 +1,28 @@
+import time
+import numpy as np
 from PIL import Image
 import pyautogui
 
-def hitta_skalfaktor(bild_sökväg, *confidence):
-    faktor = int(1.0)
+def hitta_skalfaktor(bild_sökväg):
+    faktor = 1.0
     bild = Image.open(bild_sökväg)
 
-    while faktor >= 0.2:
-        skalad_bild_objekt = bild.resize((int(bild.width * faktor), int(bild.width * faktor)))
-        hittad = pyautogui.locateOnScreen(skalad_bild_objekt, *confidence, grayscale=True)
+    while faktor >= 0.1:
+        skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
+        bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
+        hittad = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True)
 
         if hittad:
-            print(f"Bild {bild_sökväg} hittad! Skala {faktor}")
+            print(f"yeah, skala {faktor}")
+            pyautogui.moveTo(hittad)
             return faktor
 
         print(".", end="", flush=True)
-        faktor -= 0.05
+        time.sleep(0.001)
 
-    return
+        faktor -= 0.02
 
+    return 
 
-# Kör sökningen med angiven bild och tröskelvärde
-hitta_skalfaktor("img/01_image.JPG", 0.8)
-print(f"Bild {bild_sökväg} hittad! Skala {faktor}")
+# Kör sökningen med angiven bild
+hitta_skalfaktor("img/01_image.JPG")

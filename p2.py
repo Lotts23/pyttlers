@@ -1,16 +1,22 @@
+import numpy as np
 from PIL import Image
 import pyautogui
 
-def hitta_bild(bild_sökväg, faktor, *confidence):
+def hitta_bild(bild_sökväg):
+    faktor = float(0.4599999999999995)
     bild = Image.open(bild_sökväg)
-    skalad_bild_objekt = bild.resize((int(bild.width * faktor), int(bild.width * faktor)))
-    hittad = pyautogui.locateOnScreen(skalad_bild_objekt, *confidence, grayscale=True)
 
-    if hittad:
-        print(f"Bild {bild_sökväg} hittad! Skala {faktor}")
-    else:
-        print(f"Ingen matchande bild hittades för {bild_sökväg} med skala {faktor}.")
+   
+    skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
+    bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
+    hittad = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True)
 
+    if hittad is not None:
+        print(f"yeah, skala {faktor}")
+        pyautogui.moveTo(hittad)
+        return faktor
 
-# Kör sökningen med angiven bild och tröskelvärde
-# hitta_bild("img/02_image.JPG", 0.8)
+    return
+
+# Kör sökningen med angiven bild
+hitta_bild("img/004_image.JPG")
