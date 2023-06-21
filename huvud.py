@@ -1,11 +1,16 @@
 from p1 import hitta_skalfaktor
-from p2 import hitta_bild
+from p2 import hitta_bild, hittad
+import pyautogui
 
-# Kör p1 och få värdet på faktor
 faktor = hitta_skalfaktor("img/01_image.JPG")
+print(f"Skalfaktor hittad: {faktor}")
 
-# Använd värdet på faktor och skicka till p2
-hitta_bild("img/002_image.JPG")
+print("Vill du börja leta?")
+choice = input("Skriv 'y' för att börja leta eller valfritt tecken för att avsluta: ")
 
-# Skriv ut meddelande om båda bilderna hittades
-print("Sökning klar")
+if choice == 'y':
+    hittad_bild = hitta_bild("img/004_image.JPG", faktor)
+    print("Specialisten hittad")
+    pyautogui.moveTo(hittad)
+else:
+    print("Avslutar programmet.")
