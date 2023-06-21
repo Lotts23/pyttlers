@@ -2,6 +2,7 @@ import time
 import numpy as np
 from PIL import Image
 import pyautogui
+import json
 
 def hitta_skalfaktor(bild_sökväg):
     faktor = 1.0
@@ -15,6 +16,9 @@ def hitta_skalfaktor(bild_sökväg):
         if hittad:
             print(f"yeah, skala {faktor}")
             pyautogui.moveTo(hittad)
+            data = {"faktor": faktor}
+            with open("scale_data.json", "w") as json_file:
+                json.dump(data, json_file)
             return faktor
 
         print(".", end="", flush=True)
@@ -25,4 +29,4 @@ def hitta_skalfaktor(bild_sökväg):
     return 
 
 # Kör sökningen med angiven bild
-hitta_skalfaktor("img/01_image.JPG")
+#hitta_skalfaktor("img/01_image.JPG")

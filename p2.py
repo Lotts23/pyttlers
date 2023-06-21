@@ -1,9 +1,14 @@
 import numpy as np
 from PIL import Image
 import pyautogui
+import json
+import p1
+
+with open("scale_data.json", "r") as json_file:
+    data = json.load(json_file)
 
 def hitta_bild(bild_sökväg):
-    faktor = float(0.4599999999999995)
+    faktor = data["faktor"]
     bild = Image.open(bild_sökväg)
 
    
@@ -14,9 +19,11 @@ def hitta_bild(bild_sökväg):
     if hittad is not None:
         print(f"yeah, skala {faktor}")
         pyautogui.moveTo(hittad)
-        return faktor
+        return
+    else:
+        return p1.hitta_skalfaktor(bild_sökväg)
 
     return
 
 # Kör sökningen med angiven bild
-hitta_bild("img/004_image.JPG")
+#hitta_bild("img/002_image.JPG")
