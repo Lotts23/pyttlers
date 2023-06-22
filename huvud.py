@@ -2,6 +2,8 @@ from p1 import hitta_skalfaktor
 from p2 import hitta_bild, hittad
 import pyautogui
 
+def hittad = ""
+
 faktor = hitta_skalfaktor("img/01_image.JPG")
 print(f"Skalfaktor hittad: {faktor}")
 
