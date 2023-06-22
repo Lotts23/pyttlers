@@ -1,8 +1,7 @@
-import json
-import time
-
-import cv2
 import pyautogui
+import cv2
+import time
+import json
 
 # Läs in konfigurationsdata från JSON-filen
 with open('scaleimage.json', 'r') as file:
@@ -49,6 +48,7 @@ def tested_scale():
                 return scale_factor
 
             print(".", end="", flush=True)
+            scale -= 0.05
 
             scale -= 0.05
 
