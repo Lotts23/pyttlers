@@ -1,11 +1,25 @@
 QMainWindow {
-    background-color: #5c5444;
+    background-color: #363229;
     color: white;
     font-weight: bold;
-    border: 1px solid rgb(230, 153, 10);
-    border-radius: 5px;
 }
 
+QWidget#leftBox,
+QWidget#rightBox,
+QGroupBox#bottomBox {
+    background-color: #4b453a; 
+    border: none;
+}
+QVBoxLayout {
+    margin: 0;
+    padding: 0;
+    background-color: #2e2a24;
+    border: none;
+}
+
+QVBoxLayout QGroupBox {
+    border: none;
+}
 QGroupBox {
     background-color: #5c5444;
     color: white;

@@ -14,6 +14,8 @@ class MainWindow(QtWidgets.QMainWindow):
         # Skapa en box för den övre layouten (geologer och resurser)
         self.upperBox = QtWidgets.QGroupBox()
         self.upperLayout = QtWidgets.QHBoxLayout(self.upperBox)
+        self.upperBox.setStyleSheet("border: none; padding: 5px;")
+
 
         # Skapa en box för vänsterinnehållet (geologknapparna)
         self.leftBox = QtWidgets.QGroupBox("Geologer")
@@ -26,6 +28,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # Skapa en box för bottom-innehållet (check-knappen och de två nya knapparna)
         self.bottomBox = QtWidgets.QGroupBox()
         self.bottomLayout = QtWidgets.QHBoxLayout(self.bottomBox)
+        self.bottomBox.setStyleSheet("border: 0px; padding: 5px;")
 
         # Lägg till vänster- och högerboxen i den övre layouten
         self.upperLayout.addWidget(self.leftBox)
@@ -69,7 +72,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.gridLayout.addWidget(button, (i-10) // 4, (i-10) % 4)  # Uppdatera layout för vänsterknapparna
             self.buttonsLeft.append(button)  # Uppdaterad namn på listan
 
-            image = QtGui.QPixmap(f"img/{value}_knapp.png")
+            image = QtGui.QPixmap(f"img/{value}_gknapp.png")
             self.button_images.append(image)
             button.setIcon(QtGui.QIcon(image))
             button.setIconSize(image.rect().size())
