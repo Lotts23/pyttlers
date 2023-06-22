@@ -1,10 +1,10 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-class GeoWindow(QtWidgets.QMainWindow):
-    returnToDialog = QtCore.pyqtSignal()
+
+class ExplWindow(QtWidgets.QMainWindow):
     def __init__(self):
-        super(GeoWindow, self).__init__()
-        self.setWindowTitle("Välj geologer att sända")
+        super(ExplWindow, self).__init__()
+        self.setWindowTitle("Välj explorers att sända")
         self.setGeometry(500, 100, 600, 500)  # Uppdatera storleken på fönstret
 
         # Skapa en huvudwidget som innehåller allt innehåll
@@ -12,13 +12,13 @@ class GeoWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(self.centralWidget)
         self.centralLayout = QtWidgets.QVBoxLayout(self.centralWidget)
 
-        # Skapa en box för den övre layouten (geologer och resurser)
+        # Skapa en box för den övre layouten (explorers och resurser)
         self.upperBox = QtWidgets.QGroupBox()
         self.upperLayout = QtWidgets.QHBoxLayout(self.upperBox)
         self.upperBox.setStyleSheet("border: none; padding: 5px;")
 
-        # Skapa en box för vänsterinnehållet (geologknapparna)
-        self.leftBox = QtWidgets.QGroupBox("Geologer")
+        # Skapa en box för vänsterinnehållet (explorerknapparna)
+        self.leftBox = QtWidgets.QGroupBox("Explorers")
         self.leftLayout = QtWidgets.QGridLayout(self.leftBox)  # Uppdaterad layout för vänsterboxen
 
         # Skapa en box för högerinnehållet (resurserna)
@@ -46,7 +46,7 @@ class GeoWindow(QtWidgets.QMainWindow):
         self.leftBox.setObjectName("leftBox")
         self.rightBox.setObjectName("rightBox")
 
-        # Skapa scrollområdet för geologknapparna
+        # Skapa scrollområdet för explorerknapparna
         self.scrollArea = QtWidgets.QScrollArea(self.leftBox)
         self.scrollArea.setWidgetResizable(True)
         self.leftLayout.addWidget(self.scrollArea)
@@ -61,7 +61,7 @@ class GeoWindow(QtWidgets.QMainWindow):
         self.button_images = []
         self.selected_buttons = []
 
-        # Skapa knapparna för geologerna
+        # Skapa knapparna för explorers
         for i in range(10, 26):
             value = str(i)  # Uppdaterad numrering 10-25
 
@@ -72,7 +72,7 @@ class GeoWindow(QtWidgets.QMainWindow):
             self.gridLayout.addWidget(button, (i-10) // 4, (i-10) % 4)  # Uppdatera layout för vänsterknapparna
             self.buttonsLeft.append(button)  # Uppdaterad namn på listan
 
-            image = QtGui.QPixmap(f"img/{value}_gknapp.png")
+            image = QtGui.QPixmap(f"img/{value}_eknapp.png")
             self.button_images.append(image)
             button.setIcon(QtGui.QIcon(image))
             button.setIconSize(image.rect().size())
@@ -122,13 +122,6 @@ class GeoWindow(QtWidgets.QMainWindow):
         self.bottomLayout.addStretch()
         self.bottomLayout.addWidget(send_button)
 
-        undo_button.clicked.connect(self.return_to_dialog)    
-    
-    def return_to_dialog(self):
-        self.returnToDialog.emit()
-        self.close()
-
-
     def button_click(self, button, value):
         if button.isChecked():
             if button in self.buttonsLeft:  # Kommer från vänstra boxen
@@ -174,6 +167,6 @@ if __name__ == "__main__":
     import sys
 
     app = QtWidgets.QApplication(sys.argv)
-    window = GeoWindow()
+    window = ExplWindow()
     window.show()
     sys.exit(app.exec_())
