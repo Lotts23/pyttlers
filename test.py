@@ -3,8 +3,8 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
-        self.setWindowTitle("Användargränssnitt")
-        self.setGeometry(100, 100, 600, 500)  # Uppdatera storleken på fönstret
+        self.setWindowTitle("Välj geologer att sända")
+        self.setGeometry(500, 100, 600, 400)  # Uppdatera storleken på fönstret
 
         # Skapa en huvudwidget som innehåller allt innehåll
         self.centralWidget = QtWidgets.QWidget(self)
@@ -23,8 +23,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.centralLayout.addWidget(self.leftBox, 3)  # Uppdatera så att vänsterboxen tar mer plats
         self.centralLayout.addWidget(self.rightBox, 2)  # Uppdatera så att högerboxen tar mer plats
 
-        # Bakgrundsfärg och textstil för hela fönstret
-        self.setStyleSheet("background-color: #5c5444; color: white; font-weight: bold; border: 1px solid orange;")
+        # Hänvisning till en extern CSS-fil
+        with open("stil.css", "r") as file:
+            self.setStyleSheet(file.read())
+        
 
         # Skapa scrollområdet för geologknapparna
         self.scrollArea = QtWidgets.QScrollArea(self.leftBox)
@@ -40,6 +42,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.button_images = []
         self.selected_buttons = []
 
+        # Skapa knapparna för geologerna
         for i in range(10, 26):
             value = str(i)  # Uppdaterad numrering 10-25
 
@@ -56,14 +59,14 @@ class MainWindow(QtWidgets.QMainWindow):
             button.setIconSize(image.rect().size())
 
         # Skapa knapparna för resurserna
-        for i in range(100, 110):
-            value = str(i)  # Uppdaterad numrering 100-109
+        for i in range(100, 109):
+            value = str(i)
 
             button = QtWidgets.QPushButton(self.rightBox)
             button.setFixedSize(40, 32)
             button.setCheckable(True)
             button.clicked.connect(lambda _, b=button, v=value: self.button_click(b, v))
-            self.rightLayout.addWidget(button, (i-100) // 2, (i-100) % 2)  # Uppdatera layout för högerknapparna
+            self.rightLayout.addWidget(button, (i-100) // 2, (i-100) % 2) 
             self.buttons.append(button)
 
             image = QtGui.QPixmap(f"img/{value}_rknapp.png")
@@ -76,13 +79,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def button_click(self, button, value):
         if button.isChecked():
-            button.setStyleSheet("border: 6px solid yellow")
-            if self.sender() in self.buttons:  # Kommer från vänstra boxen
+            if button.parent() == self.scrollContent:  # Kommer från vänstra boxen
                 self.selected_buttons.append(value)
             else:  # Kommer från högra boxen
                 if button in self.selected_buttons:  # Om knappen redan är markerad, avmarkera den
                     button.setChecked(False)
-                    button.setStyleSheet("")
                     self.selected_buttons.remove(value)
                 else:  # Annars avmarkera den tidigare markerade knappen och lägg till den nya i listan
                     self.selected_buttons = [value]
@@ -91,12 +92,15 @@ class MainWindow(QtWidgets.QMainWindow):
                             btn.setChecked(False)
                             btn.setStyleSheet("")
 
-        else:
+        else:  # Kommer från högra boxen
             button.setStyleSheet("")
-            if self.sender() in self.buttons:  # Kommer från vänstra boxen
+            if button.parent() == self.scrollContent:  # Kommer från vänstra boxen
                 self.selected_buttons.remove(value)
             else:  # Kommer från högra boxen
-                self.selected_buttons = []
+                if button in self.selected_buttons:  # Om knappen redan är markerad, avmarkera den
+                    button.setChecked(False)
+                    self.selected_buttons = [v for v in self.selected_buttons if v != value]
+
 
         print("Markerade knappar:", self.selected_buttons)
 

@@ -1,0 +1,43 @@
+QMainWindow {
+    background-color: #5c5444;
+    color: white;
+    font-weight: bold;
+    border: 1px solid rgb(230, 153, 10);
+}
+
+QGroupBox {
+    background-color: #5c5444;
+    color: white;
+}
+QWidget {
+    background-color: #5f5b54;
+}
+QPushButton {
+    color: white;
+    background-color: #5c5444;
+    border: 0px none;
+    border-radius: 5px;
+}
+
+QPushButton:checked {
+    border: 6px solid yellow;
+    border-radius: 5px;
+}
+
+QPushButton:hover {
+    background-color: #756d5b;
+    border-radius: 5px;
+}
+/*
+QLabel: Används för att stila etiketter.
+QLineEdit: Används för att stila textinmatningsfält.
+QComboBox: Används för att stila kombinationsrutor (dropdown-menyer).
+QCheckBox: Används för att stila kryssrutor.
+QRadioButton: Används för att stila radioknappar.
+QScrollBar: Används för att stila rullningsfält (scrollbars).
+QProgressBar: Används för att stila framstegsfält.
+QSlider: Används för att stila reglage (sliders).
+
+background-color: red; 
+
+*/
