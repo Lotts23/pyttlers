@@ -3,15 +3,32 @@ QMainWindow {
     color: white;
     font-weight: bold;
     border: 1px solid rgb(230, 153, 10);
+    border-radius: 5px;
 }
 
 QGroupBox {
     background-color: #5c5444;
     color: white;
 }
+
+QScrollArea {
+    border: 1px solid rgb(230, 153, 10);
+    border-radius: 5px;
+}
+
+QWidget#leftBox {
+    border: 1px solid #544b3e;
+    border-radius: 5px;
+}
+  
+QWidget#rightBox {
+    border: 1px solid #544b3e;
+    border-radius: 5px;
+}  
 QWidget {
     background-color: #5f5b54;
 }
+
 QPushButton {
     color: white;
     background-color: #5c5444;
