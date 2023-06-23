@@ -3,24 +3,23 @@ from PIL import Image
 import pyautogui
 import json
 
-with open("scale_data.json", "r") as json_file:
-    data = json.load(json_file)
-    faktor = data["faktor"]
+hittad = None
 
 def hitta_bild(bild_sökväg, faktor):
-    faktor = data["faktor"]
-    bild = Image.open(bild_sökväg)
+    global hittad  # Använd global för att ändra värdet på den globala variabeln
+    with open("scale_data.json", "r") as json_file:
+        data = json.load(json_file)
+        faktor = data["faktor"]
 
-   
+    bild = Image.open(bild_sökväg)
     skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
     bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
-    hittad = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True)
+    hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True)
 
-    #if hittad is not None:
-        #print(f"specialisten har skala {faktor}")
+    if hittad_position is not None:
+        hittad = pyautogui.center(hittad_position)
+        print(f"Specialisten har hittats på position {hittad}")
+    else:
+        hittad = None
+
     return hittad
-
-
-
-# Kör sökningen med angiven bild
-#hitta_bild("img/002_image.JPG")

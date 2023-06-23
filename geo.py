@@ -1,4 +1,5 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
+import json
 
 class GeoWindow(QtWidgets.QMainWindow):
     returnToDialog = QtCore.pyqtSignal()
@@ -167,7 +168,23 @@ class GeoWindow(QtWidgets.QMainWindow):
             btn.setStyleSheet("")
 
     def send_button_click(self):
+        nummer = {}
+
+        # Lägg till tresiffrigt nummer
+        if len(self.selected_buttons) == 1:
+            nummer["tresiffrigt"] = self.selected_buttons[0]
+        else:
+            nummer["tresiffrigt"] = ""
+
+        # Lägg till tvåsiffriga nummer
+        nummer["tvåsiffriga"] = self.selected_buttons[1:]
+
+        # Skriv till nummer.json
+        with open("nummer.json", "w") as json_file:
+            json.dump(nummer, json_file)
+
         print("Skicka-knappen klickad")
+
 
 
 if __name__ == "__main__":
