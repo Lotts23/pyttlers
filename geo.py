@@ -1,5 +1,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 import json
+import sys
+import subprocess
 
 class GeoWindow(QtWidgets.QMainWindow):
     returnToDialog = QtCore.pyqtSignal()
@@ -132,6 +134,12 @@ class GeoWindow(QtWidgets.QMainWindow):
     def return_to_dialog(self):
         self.returnToDialog.emit()
         self.close()
+        
+    def get_button_by_value(self, value):
+        for button in self.buttonsRight:
+            if button.property("value") == value:
+                return button
+        return None
 
     def button_click(self, button, value):
         if button.isChecked():
@@ -139,13 +147,14 @@ class GeoWindow(QtWidgets.QMainWindow):
                 button.setStyleSheet("border: 6px solid yellow; border-radius: 5px;")
                 self.selected_buttons_left.append(int(value))
             elif button in self.buttonsRight:
-                prev_button = self.selected_buttons_right[0] if self.selected_buttons_right else None
-                if prev_button and prev_button != button:
-                    prev_button.setChecked(False)
-                    prev_button.setStyleSheet("")
+                prev_button_value = self.selected_buttons_right[0] if self.selected_buttons_right else None
+                if prev_button_value and prev_button_value != int(value):
+                    prev_button_button = self.get_button_by_value(prev_button_value)
+                    if prev_button_button:
+                        prev_button_button.setStyleSheet("")
 
                 button.setStyleSheet("border: 6px solid yellow; border-radius: 5px;")
-                self.selected_buttons_right = [button]  # Store the button object instead of the integer value
+                self.selected_buttons_right = [int(value)]  # Store the numerical value
         else:
             button.setStyleSheet("")
             if button in self.buttonsLeft:
@@ -156,7 +165,17 @@ class GeoWindow(QtWidgets.QMainWindow):
         self.selected_buttons = self.selected_buttons_left + self.selected_buttons_right
         print("Markerade knappar:", self.selected_buttons)
 
+        if button in self.buttonsRight:
+            self.update_json()  # Update JSON when a resource button is clicked
 
+    def update_json(self):
+        json_data = {
+            "geologer": self.selected_buttons_left,
+            "resurs": self.selected_buttons_right
+        }
+        with open("data.json", "w") as json_file:
+            json.dump(json_data, json_file)  
+  
     def clear_button_click(self):
         self.selected_buttons_left = []  # Återställ markerade knappar i vänster box
         self.selected_buttons_right = []  # Återställ markerade knappar i höger box
@@ -185,6 +204,8 @@ class GeoWindow(QtWidgets.QMainWindow):
 
 
         print("Skicka-knappen klickad")
+        self.close()
+        subprocess.Popen([sys.executable, "running.py"])
 
 
 if __name__ == "__main__":
