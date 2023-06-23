@@ -4,24 +4,24 @@ from p2 import hitta_bild
 import pyautogui
 
 def main():
-    with open("nummer.json", "w") as f:
+    with open("scale_data.json", "w") as f:
         json.dump({}, f)  # Skriv över filen med en tom dictionary
 
-    p1()
+    p1() #p1.py skriver ett värde på faktor i scale_data.json
 
 def p1():
-    faktor = hitta_skalfaktor("img/01_image.JPG")
-    print(f"Skalfaktor hittad: {faktor}")
+    faktor = hitta_skalfaktor("img/01_image.JPG") #Denna är alltid samma
+    print(f"Skalfaktor hittad: {faktor}") 
 
     with open('nummer.json', 'r') as f:
         data = json.load(f)
 
-    tresiffrigt_nummer = data['tresiffrigt']
+    geologer = data['geologer']
     resurs = ""
 
-    if tresiffrigt_nummer:
-        resurs = f"img/{tresiffrigt_nummer}_image.JPG"
-        hittad_bild = hitta_bild(resurs, faktor)
+    if resurs_nummer:
+        resurslet = f"img/{resurs}_image.JPG"
+        hittad_bild = hitta_bild(resurslet, faktor)
 
         if hittad_bild:
             print("Specialisten hittad")
@@ -29,9 +29,9 @@ def p1():
             pyautogui.mouseDown()
             pyautogui.mouseUp()
         else:
-            print("Ingen bild hittad för det tresiffriga numret")
+            print("Ingen bild hittad för det resursen")
 
-    for num in data['tvåsiffriga']:
+    for num in data['geologer']:
         bild_adress = f"img/{num}_image.JPG"
         hittad_bild = hitta_bild(bild_adress, faktor)
 
