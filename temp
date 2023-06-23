@@ -1,0 +1,26 @@
+
+# then... och om den bilden var synlig ska vi börja vår stora sökning...
+def hitta_bild(bild_sökväg, faktor):
+    global hittad  # Använd global för att ändra värdet på den globala variabeln
+
+
+    bild = Image.open(bild_sökväg)
+    skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
+    bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
+    hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True)
+
+    if hittad_position is not None:
+        hittad = pyautogui.center(hittad_position)
+        time.sleep(0.001) #minskar fel
+        pyautogui.moveTo(hittad, 3) #vi rör musen lite långsamt
+        pyautogui.click(duration=1)
+    else:
+        hittad = None
+        print("bild inte hittad")
+
+    return hittad
+
+hitta_bild("img/10_image.JPG", faktor) # då letar vi upp och klickar på denna bilden.
+
+
+
