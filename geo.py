@@ -1,7 +1,9 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
 import json
-import sys
 import subprocess
+import sys
+
+from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class GeoWindow(QtWidgets.QMainWindow):
     returnToDialog = QtCore.pyqtSignal()
@@ -9,7 +11,7 @@ class GeoWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(GeoWindow, self).__init__()
         self.setWindowTitle("Välj geologer att sända")
-        self.setGeometry(500, 100, 600, 500)
+        self.setGeometry(500, 100, 600, 540)
 
         # Skapa en huvudwidget som innehåller allt innehåll
         self.centralWidget = QtWidgets.QWidget(self)

@@ -13,7 +13,7 @@ class ProgressDialog(QDialog):
         self.setWindowTitle("Progress")
         self.setFixedSize(300, 150)
         
-        self.setStyleSheet(open("stil.css").read())  # Länka till stil.css
+        self.setStyleSheet(open("stil.css").read())  # Länk till stil.css
 
         layout = QVBoxLayout(self)
 
@@ -43,7 +43,7 @@ def main():
     # Visa huvudfönstret
     main_window.show()
 
-    faktor = hitta_skalfaktor("img/01_image.JPG") #Denna är alltid samma
+    faktor = hitta_skalfaktor("img/01_image.JPG") # Denna är alltid samma
     print(f"Skalfaktor hittad: {faktor}") 
 
     with open('nummer.json', 'r') as f:
