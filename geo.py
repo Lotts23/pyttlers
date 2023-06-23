@@ -3,10 +3,11 @@ import json
 
 class GeoWindow(QtWidgets.QMainWindow):
     returnToDialog = QtCore.pyqtSignal()
+
     def __init__(self):
         super(GeoWindow, self).__init__()
         self.setWindowTitle("Välj geologer att sända")
-        self.setGeometry(500, 100, 600, 500)  # Uppdatera storleken på fönstret
+        self.setGeometry(500, 100, 600, 500)
 
         # Skapa en huvudwidget som innehåller allt innehåll
         self.centralWidget = QtWidgets.QWidget(self)
@@ -57,10 +58,13 @@ class GeoWindow(QtWidgets.QMainWindow):
 
         self.gridLayout = QtWidgets.QGridLayout(self.scrollContent)
 
-        self.buttonsLeft = []
-        self.buttonsRight = []
+        self.selected_buttons_left = []  # Lista för markerade knappar i vänster box
+        self.selected_buttons_right = []  # Lista för markerade knappar i höger box
+
         self.button_images = []
         self.selected_buttons = []
+        self.buttonsLeft = []  # Lista för knapparna i vänster box
+        self.buttonsRight = []  # Lista för knapparna i höger box
 
         # Skapa knapparna för geologerna
         for i in range(10, 26):
@@ -123,43 +127,39 @@ class GeoWindow(QtWidgets.QMainWindow):
         self.bottomLayout.addStretch()
         self.bottomLayout.addWidget(send_button)
 
-        undo_button.clicked.connect(self.return_to_dialog)    
-    
+        undo_button.clicked.connect(self.return_to_dialog)
+
     def return_to_dialog(self):
         self.returnToDialog.emit()
         self.close()
 
-
     def button_click(self, button, value):
         if button.isChecked():
-            if button in self.buttonsLeft:  # Kommer från vänstra boxen
-                self.selected_buttons.append(value)
-            elif button in self.buttonsRight:  # Kommer från högra boxen
-                if button in self.selected_buttons:  # Om knappen redan är markerad, avmarkera den
-                    button.setChecked(False)
-                    button.setStyleSheet("")
-                    self.selected_buttons.remove(value)
-                else:  # Annars avmarkera den tidigare markerade knappen och lägg till den nya i listan
-                    self.selected_buttons = [value]
-                    for btn in self.buttonsRight:
-                        if btn.isChecked() and btn != button:
-                            btn.setChecked(False)
-                            btn.setStyleSheet("")
+            if button in self.buttonsLeft:
+                button.setStyleSheet("border: 6px solid yellow; border-radius: 5px;")
+                self.selected_buttons_left.append(int(value))
+            elif button in self.buttonsRight:
+                prev_button = self.selected_buttons_right[0] if self.selected_buttons_right else None
+                if prev_button and prev_button != button:
+                    prev_button.setChecked(False)
+                    prev_button.setStyleSheet("")
 
-        else:  # Kommer från högra boxen
+                button.setStyleSheet("border: 6px solid yellow; border-radius: 5px;")
+                self.selected_buttons_right = [button]  # Store the button object instead of the integer value
+        else:
             button.setStyleSheet("")
-            if button in self.buttonsLeft:  # Kommer från vänstra boxen
-                self.selected_buttons.remove(value)
-            elif button in self.buttonsRight:  # Kommer från högra boxen
-                if button in self.selected_buttons:  # Om knappen redan är markerad, avmarkera den
-                    button.setChecked(False)
-                    button.setStyleSheet("")
-                    self.selected_buttons = [v for v in self.selected_buttons if v != value]
+            if button in self.buttonsLeft:
+                self.selected_buttons_left.remove(int(value))
+            elif button in self.buttonsRight:
+                self.selected_buttons_right = []  # Reset to an empty list
 
+        self.selected_buttons = self.selected_buttons_left + self.selected_buttons_right
         print("Markerade knappar:", self.selected_buttons)
 
+
     def clear_button_click(self):
-        self.selected_buttons = []
+        self.selected_buttons_left = []  # Återställ markerade knappar i vänster box
+        self.selected_buttons_right = []  # Återställ markerade knappar i höger box
         for btn in self.buttonsLeft:
             btn.setChecked(False)
             btn.setStyleSheet("")
@@ -168,23 +168,23 @@ class GeoWindow(QtWidgets.QMainWindow):
             btn.setStyleSheet("")
 
     def send_button_click(self):
-        nummer = {}
+        resurs_value = 0
+        if self.selected_buttons_right:
+            resurs_str = str(self.selected_buttons_right[0])
+            if resurs_str.isdigit():
+                resurs_value = int(resurs_str)
 
-        # Lägg till tresiffrigt nummer
-        if len(self.selected_buttons) == 1:
-            nummer["tresiffrigt"] = self.selected_buttons[0]
-        else:
-            nummer["tresiffrigt"] = ""
+        data = {
+            "geologer": list(self.selected_buttons_left),
+            "resurs": resurs_value
+        }
 
-        # Lägg till tvåsiffriga nummer
-        nummer["tvåsiffriga"] = self.selected_buttons[1:]
-
-        # Skriv till nummer.json
         with open("nummer.json", "w") as json_file:
-            json.dump(nummer, json_file)
+            json.dump(data, json_file)
+
+
 
         print("Skicka-knappen klickad")
-
 
 
 if __name__ == "__main__":

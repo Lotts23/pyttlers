@@ -42,7 +42,7 @@ QWidget#rightBox {
 QWidget {
     background-color: #5f5b54;
 }
-
+/*
 QPushButton {
     color: white;
     background-color: #5c5444;
@@ -50,11 +50,11 @@ QPushButton {
     border-radius: 5px;
 }
 
-QPushButton:checked {
+QPushButton:checked:selected {
     border: 6px solid yellow;
     border-radius: 5px;
 }
-
+*/
 QPushButton:hover {
     background-color: #756d5b;
     border-radius: 5px;
