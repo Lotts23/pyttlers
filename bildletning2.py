@@ -4,7 +4,7 @@ import pyautogui
 class YourClass:
     def send_button_click(self):
         numbers = ['104', '19', '15', '16']
-        faktor = 1.5  # Ersätt med den faktor du behöver
+        faktor = 1.5  # Ersätt 
 
         for num in numbers:
             hundradel = int(num) // 100
