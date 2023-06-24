@@ -70,7 +70,7 @@ class GeoWindow(QtWidgets.QMainWindow):
         self.buttonsLeft = []  # Lista för knapparna i vänster box
         self.buttonsRight = []  # Lista för knapparna i höger box
 
-        # Skapa knapparna för geologerna
+        # Skapa knapparna för geologerna https://github.com/kavindupasan/batch-bg-remover-photoshop.git
         for i in range(10, 26):
             value = str(i)  # Uppdaterad numrering 10-25
 
@@ -81,10 +81,17 @@ class GeoWindow(QtWidgets.QMainWindow):
             self.gridLayout.addWidget(button, (i-10) // 4, (i-10) % 4)  # Uppdatera layout för vänsterknapparna
             self.buttonsLeft.append(button)  # Uppdaterad namn på listan
 
-            image = QtGui.QPixmap(f"img/{value}_gknapp.png")
+            image = QtGui.QPixmap(f"img/{value}_gknapp.JPG")
             self.button_images.append(image)
             button.setIcon(QtGui.QIcon(image))
             button.setIconSize(image.rect().size())
+            button.setIconSize(QtCore.QSize(57, 68))  # Justera storleken på ikonen vid behov
+            button.setStyleSheet("QPushButton::icon {"
+                                "    position: absolute;"
+                                "    bottom: 0;"
+                                "    right: 0;"
+                                "    border-radius: 5px;"
+                                "}")            
 
         # Skapa scrollområdet för resursknapparna
         self.scrollAreaRight = QtWidgets.QScrollArea(self.rightBox)
@@ -111,6 +118,13 @@ class GeoWindow(QtWidgets.QMainWindow):
             self.button_images.append(image)
             button.setIcon(QtGui.QIcon(image))
             button.setIconSize(image.rect().size())
+            button.setIconSize(QtCore.QSize(40, 32))  # Justera storleken på ikonen vid behov
+            button.setStyleSheet("QPushButton::icon {"
+                                "    position: absolute;"
+                                "    bottom: 0;"
+                                "    right: 0;"
+                                "    border-radius: 5px;"
+                                "}")
 
             # Endast en knapp åt gången kan väljas i den högra boxen
             button.setAutoExclusive(True)
