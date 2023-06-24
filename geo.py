@@ -70,7 +70,7 @@ class GeoWindow(QtWidgets.QMainWindow):
         self.buttonsLeft = []  # Lista för knapparna i vänster box
         self.buttonsRight = []  # Lista för knapparna i höger box
 
-        # Skapa knapparna för geologerna https://github.com/kavindupasan/batch-bg-remover-photoshop.git
+        # Skapa knapparna för geologerna
         for i in range(10, 26):
             value = str(i)  # Uppdaterad numrering 10-25
 
@@ -81,7 +81,7 @@ class GeoWindow(QtWidgets.QMainWindow):
             self.gridLayout.addWidget(button, (i-10) // 4, (i-10) % 4)  # Uppdatera layout för vänsterknapparna
             self.buttonsLeft.append(button)  # Uppdaterad namn på listan
 
-            image = QtGui.QPixmap(f"img/{value}_gknapp.JPG")
+            image = QtGui.QPixmap(f"img/knapp/{value}_gknapp.png")
             self.button_images.append(image)
             button.setIcon(QtGui.QIcon(image))
             button.setIconSize(image.rect().size())
@@ -114,7 +114,7 @@ class GeoWindow(QtWidgets.QMainWindow):
             self.gridLayoutRight.addWidget(button, (i-100) // 2, (i-100) % 2)
             self.buttonsRight.append(button)  # Uppdaterad namn på listan
 
-            image = QtGui.QPixmap(f"img/{value}_rknapp.png")
+            image = QtGui.QPixmap(f"img/knapp/{value}_rknapp.jpg")
             self.button_images.append(image)
             button.setIcon(QtGui.QIcon(image))
             button.setIconSize(image.rect().size())
@@ -135,15 +135,37 @@ class GeoWindow(QtWidgets.QMainWindow):
         self.bottomLayout.addWidget(undo_button)
 
         clear_button = QtWidgets.QPushButton("Rensa")
-        clear_button.setFixedSize(50, 20)
+        clear_button.setFixedSize(40, 32)
         clear_button.clicked.connect(self.clear_button_click)
         self.bottomLayout.addWidget(clear_button)
+        image = QtGui.QPixmap(f"img/knapp/clear.jpg")
+        self.button_images.append(image)
+        clear_button.setIcon(QtGui.QIcon(image))
+        clear_button.setIconSize(image.rect().size())
+        button.setIconSize(QtCore.QSize(40, 32))  # Justera storleken på ikonen vid behov
+        button.setStyleSheet("QPushButton::icon {"
+                            "    position: absolute;"
+                            "    bottom: 0;"
+                            "    right: 0;"
+                            "    border-radius: 5px;"
+                            "}")
 
         send_button = QtWidgets.QPushButton("Skicka")
-        send_button.setFixedSize(50, 20)
+        send_button.setFixedSize(40, 32)
         send_button.clicked.connect(self.send_button_click)
         self.bottomLayout.addStretch()
         self.bottomLayout.addWidget(send_button)
+        image = QtGui.QPixmap(f"img/knapp/check.jpg")
+        self.button_images.append(image)
+        send_button.setIcon(QtGui.QIcon(image))
+        send_button.setIconSize(image.rect().size())
+        button.setIconSize(QtCore.QSize(40, 32))  # Justera storleken på ikonen vid behov
+        button.setStyleSheet("QPushButton::icon {"
+                            "    position: absolute;"
+                            "    bottom: 0;"
+                            "    right: 0;"
+                            "    border-radius: 5px;"
+                            "}")        
 
         undo_button.clicked.connect(self.return_to_dialog)
 
