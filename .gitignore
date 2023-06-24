@@ -1,0 +1,4 @@
+$ cat .gitignore
+__pycache__/*
+*.json
+#testar bara... 

@@ -29,4 +29,4 @@ def hitta_skalfaktor(bild_sökväg):
     return 
 
 # Kör sökningen med angiven bild
-#hitta_skalfaktor("img/01_image.JPG")
+hitta_skalfaktor("img/01_image.JPG")
