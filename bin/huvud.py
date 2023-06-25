@@ -1,5 +1,5 @@
 from p1 import hitta_skalfaktor
-from p2 import hitta_bild, hittad
+from provfil import hitta_bild, hittad
 import pyautogui
 
 def hittad = ""

@@ -1,12 +1,13 @@
 import json
+import sys
 import time
 
 import numpy as np
 import pyautogui
 from PIL import Image
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (QApplication, QDialog, QLabel,
-                             QPushButton, QVBoxLayout)
+from PyQt5.QtWidgets import (QApplication, QDialog, QLabel, QPushButton,
+                             QVBoxLayout)
 
 
 class ProgressDialog(QDialog):
@@ -44,7 +45,7 @@ def running():
                 skalbild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
                 hittad_skalfaktor = pyautogui.locateOnScreen(skalbild_array, confidence=0.7, grayscale=True)
 
-                if hittad_skalfaktor is not None:
+                if hittad_skalfaktor is not None: #skriv till json
                     pyautogui.moveTo(hittad_skalfaktor)
                     data = {"faktor": faktor}
                     with open("scale_data.json", "w") as json_file: # Skriv i json
@@ -71,7 +72,7 @@ def running():
             bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
             hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True)
 
-            if hittad_position is not None:
+            if hittad_position is not None: #klicka
                 hittad = pyautogui.center(hittad_position)
                 time.sleep(0.1)  # minskar fel
                 pyautogui.moveTo(hittad)
@@ -131,8 +132,8 @@ def running():
         resurs = data["resurs"]
 
     with open("scale_data.json", "r") as json_file: # Ser till att vi läser in färsk faktor
-    data = json.load(json_file)
-    faktor = data["faktor"]
+        data = json.load(json_file)
+        faktor = data["faktor"]
 
     def leta_sten():
         global flagga  # Använd global för att referera till den globala variabeln
@@ -162,11 +163,11 @@ def running():
 
                     return hittad
 
-                hittad_geolog = hitta_geolog(f"img/{geolog}_image.JPG", faktor)
+                hittad_geolog = hitta_geolog(f"img/{geolog}_geo.JPG", faktor)
                 if not hittad_geolog:
                     flagga = False
 
-                hitta_geolog(f"img/{geolog}_image.JPG", faktor)
+                hitta_geolog(f"img/{geolog}_geo.JPG", faktor)
 
                 def hitta_resurs(bild_sokvag, faktor):
                     hittad = None
@@ -188,7 +189,7 @@ def running():
 
                     return 
 
-                hitta_resurs(f"img/{resurs}_image.JPG", faktor)
+                hitta_resurs(f"img/{resurs}_resurs.JPG", faktor)
 
                 def hitta_check(bild_sokvag, faktor):
                     hittad = None
@@ -217,5 +218,8 @@ def running():
 
 if __name__ == "__main__":
     app = QApplication([])
+    miniprogram = ProgressDialog()
+    miniprogram.show()
     running()
     app.exec_()
+    sys.exit()

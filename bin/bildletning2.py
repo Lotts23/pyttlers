@@ -1,4 +1,4 @@
-import p2
+import provfil
 import pyautogui
 
 class YourClass:
@@ -12,7 +12,7 @@ class YourClass:
 
             while True:
                 bild_adress = f"img/{tvåsiffrigt}_image.JPG"
-                hitta_bild_resultat = p2.hitta_bild(bild_adress, faktor)
+                hitta_bild_resultat = provfil.hitta_bild(bild_adress, faktor)
 
                 if not hitta_bild_resultat:
                     break

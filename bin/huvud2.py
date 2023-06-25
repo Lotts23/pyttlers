@@ -1,6 +1,6 @@
 import json
 from p1 import hitta_skalfaktor
-from p2 import hitta_bild
+from provfil import hitta_bild
 import pyautogui
 
 def main():
