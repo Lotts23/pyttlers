@@ -2,4 +2,7 @@ $ cat .gitignore
 __pycache__/*
 *.json
 prov*
+test*
+/bin/*
+bin/*
 #testar bara... 
