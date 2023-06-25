@@ -42,7 +42,7 @@ QWidget#rightBox {
 QWidget {
     background-color: #5f5b54;
 }
-/*
+/* Dessa fungerar rätt dåligt när de ligger här, finns nu direkt i koden istället.
 QPushButton {
     color: white;
     background-color: #5c5444;

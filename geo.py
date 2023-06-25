@@ -192,19 +192,19 @@ class GeoWindow(QtWidgets.QMainWindow):
                         prev_button_button.setStyleSheet("")
 
                 button.setStyleSheet("border: 6px solid yellow; border-radius: 5px;")
-                self.selected_buttons_right = [int(value)]  # Store the numerical value
+                self.selected_buttons_right = [int(value)]  # Spara värdet
         else:
             button.setStyleSheet("")
             if button in self.buttonsLeft:
                 self.selected_buttons_left.remove(int(value))
             elif button in self.buttonsRight:
-                self.selected_buttons_right = []  # Reset to an empty list
+                self.selected_buttons_right = []  # Reset
 
         self.selected_buttons = self.selected_buttons_left + self.selected_buttons_right
         print("Markerade knappar:", self.selected_buttons)
 
         if button in self.buttonsRight:
-            self.update_json()  # Update JSON when a resource button is clicked
+            self.update_json()  # Updatera json
 
     def update_json(self):
         json_data = {
