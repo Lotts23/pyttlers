@@ -20,7 +20,7 @@ class StartDialog(QtWidgets.QDialog):
         # Skapa knappen för geolog-läget
         geo_button = QtWidgets.QPushButton()
         geo_button.setFixedSize(57, 68)
-        geo_button.setIcon(QtGui.QIcon("img/geo_knapp.png"))
+        geo_button.setIcon(QtGui.QIcon("img/knapp/geo_knapp.png"))
         geo_button.setIconSize(geo_button.rect().size())
         geo_button.clicked.connect(self.open_geo_window)
         layout.addWidget(geo_button)
@@ -28,7 +28,7 @@ class StartDialog(QtWidgets.QDialog):
         # Skapa knappen för explorer-läget
         expl_button = QtWidgets.QPushButton()
         expl_button.setFixedSize(57, 68)
-        expl_button.setIcon(QtGui.QIcon("img/expl_knapp.png"))
+        expl_button.setIcon(QtGui.QIcon("img/knapp/expl_knapp.png"))
         expl_button.setIconSize(expl_button.rect().size())
         expl_button.clicked.connect(self.open_expl_window)
         layout.addWidget(expl_button)

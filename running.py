@@ -31,7 +31,7 @@ class ProgressDialog(QDialog):
     def stop_process(self):
         self.close()  # Stäng minifönstret och avbryt processen
 
-flagga = True  # Deklarera flagga som en global variabel här
+
 def running():
     def prepare(): # Här kollar vi skalan och ser till att stjärn-fönstret är öppen och i rätt tab.
 
@@ -130,17 +130,19 @@ def running():
         geologer = data["geologer"]
         resurs = data["resurs"]
 
-    
+    with open("scale_data.json", "r") as json_file: # Ser till att vi läser in färsk faktor
+    data = json.load(json_file)
+    faktor = data["faktor"]
 
     def leta_sten():
         global flagga  # Använd global för att referera till den globala variabeln
-
+        flagga = True
         for geolog in geologer:
             flagga = True  # Återställ flagga till True vid varje iteration
 
             while flagga:
                 def hitta_geolog(bild_sokvag, faktor):
-                    nonlocal flagga  # Använd nonlocal för att ändra flagga i den yttre funktionen
+                    global flagga  # Använd nonlocal för att ändra flagga i den yttre funktionen
 
                     hittad = None
                     bild = Image.open(bild_sokvag)
