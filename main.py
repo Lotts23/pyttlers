@@ -3,7 +3,6 @@ import json
 from PyQt5 import QtWidgets, QtGui
 from geo import GeoWindow
 from expl import ExplWindow
-from p1 import hitta_skalfaktor
 
 class StartDialog(QtWidgets.QDialog):
     def __init__(self):
@@ -37,7 +36,6 @@ class StartDialog(QtWidgets.QDialog):
     def open_geo_window(self):
         # Stäng dialogrutan och öppna geo-fönstret
         self.accept()
-        p1()
         geo_window = GeoWindow()
         self.hide()
         geo_window.returnToDialog.connect(self.show)  # Lägg till signalhantering för att visa dialogrutan igen
@@ -46,20 +44,10 @@ class StartDialog(QtWidgets.QDialog):
     def open_expl_window(self):
         # Stäng dialogrutan och öppna expl-fönstret
         self.accept()
-        p1()
         expl_window = ExplWindow()
         self.hide()
         expl_window.returnToDialog.connect(self.show)  # Lägg till signalhantering för att visa dialogrutan igen
         expl_window.show()
-
-def p1():
-    faktor = hitta_skalfaktor("img/01_image.JPG")
-    print(f"Skalfaktor hittad: {faktor}")
-
-    # Skriv skalfaktor till scale_data.json
-    data = {"skalfaktor": faktor}
-    with open("scale_data.json", "w") as f:
-        json.dump(data, f)
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])

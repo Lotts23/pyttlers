@@ -6,37 +6,29 @@ import pyautogui
 from PIL import Image
 from PyQt5.QtWidgets import QApplication, QMessageBox
 from PyQt5.QtCore import Qt
-import keyboard
 
+def prepare(): # Här kollar vi skalan och ser till att stjärn-fönstret är öppen och i rätt tab.
 
-def prepare():
-    def nödstopp():
-        if keyboard.is_pressed('q'):
-            print("Nödstopp!")
-            exit()
+    def hitta_skalfaktor(skalbild_sokvag): # Som det låter, vi kollar skalan
+        faktor = 1 # Vi kan börja med faktor 2 också och först skala upp bilden, med sämre resultat och längre tid
+        skalbild = Image.open(skalbild_sokvag)
 
-    nödstopp()
+        while faktor >= 0.2: # Den behöver aldrig pröva mindre än så här. Om faktor 1 är 200% i spelet så är 0.2 20% och spelet går bara ner till 50%
+            skalad_bild = skalbild.resize((int(skalbild.width * faktor), int(skalbild.height * faktor)))
+            skalbild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
+            hittad_skalfaktor = pyautogui.locateOnScreen(skalbild_array, confidence=0.7, grayscale=True)
 
-    def hitta_skalfaktor(bild_sökväg):
-        faktor = 1.0
-        bild = Image.open(bild_sökväg)
-
-        while faktor >= 0.05:
-            skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
-            bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
-            hittad = pyautogui.locateOnScreen(bild_array, confidence=0.7, grayscale=True)
-
-            if hittad:
-                pyautogui.moveTo(hittad)
+            if hittad_skalfaktor is not None:
+                pyautogui.moveTo(hittad_skalfaktor)
                 data = {"faktor": faktor}
-                with open("scale_data.json", "w") as json_file:
+                with open("scale_data.json", "w") as json_file: # Skriv i json
                     json.dump(data, json_file)
                 return faktor
 
             print(".", end="", flush=True)
-            time.sleep(0.5)
+            time.sleep(0.1) # Vid många fel kan denna ökas.
 
-            faktor -= 0.02
+            faktor -= 0.02 # Lägre tal ger större nogrannhet i sökningen.
 
         return None
 
@@ -46,13 +38,9 @@ def prepare():
         data = json.load(json_file)
         faktor = data["faktor"]
 
-    hittad = None
-    open_stjarna = None
-
-    def oppna_stjarna(bild_sökväg, faktor):
-        global hittad
-
-        bild = Image.open(bild_sökväg)
+    def oppna_stjarna(bild_sokvag, faktor):
+        hittad = None
+        bild = Image.open(bild_sokvag)
         skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
         bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
         hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True)
@@ -64,92 +52,98 @@ def prepare():
             pyautogui.click(duration=1)
             time.sleep(1)  # minskar fel
         else:
-            hittad = None
-            print(f"{bild_sökväg} inte hittad")
-            hitta_skalfaktor("img/01_image.JPG")
+            print(f"{bild_sokvag} inte hittad")
 
-    def hitta_bild_stjarna(bild_sökväg, faktor):
-        global open_stjarna
-
-        bild = Image.open(bild_sökväg)
+    # Testar om stjärnann är öppen annars kör den funktionen öppna stjärna. Definitionen av 
+    # öppna stjärna ligger över just för att vara redo att köras om hitta_bild_stjärna inte 
+    # hittar stjärnfönstret. Alternativt skulle hela definitionen ligga i if-else.
+    def hitta_bild_stjarna(bild_sokvag, faktor):
+        bild = Image.open(bild_sokvag)
         skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
         bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
         hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True)
 
         if hittad_position is not None:
-            time.sleep(0.5)  # minskar antalet fel
-            open_stjarna = pyautogui.center(hittad_position)
+            time.sleep(0.2)  # minskar antalet fel
             print("stjärnan öppen")
         else:
-            open_stjarna = None
-            oppna_stjarna("img/03_image.JPG", faktor)
+            oppna_stjarna("img/03_image.JPG", faktor) # Här öppnas stjärnan om stjärnmenyn inte hittats.
 
-    hitta_bild_stjarna("img/02_image.JPG", faktor)
+    hitta_bild_stjarna("img/02_image.JPG", faktor) # Detta är den öppna stjärnmenyn, om den hittas går vi vidare, annars öppnas stjärnan
 
-    with open("scale_data.json", "r") as json_file:
+    with open("scale_data.json", "r") as json_file: # Ser till att vi läser in färsk faktor
         data = json.load(json_file)
         faktor = data["faktor"]
 
-    def tab_stjarna(bild_sökväg, faktor):
-        global hittad
+    def tab_stjarna(bild_sokvag, faktor):
+        hittad = None
         time.sleep(1)  # minskar fel
-        bild = Image.open(bild_sökväg)
+        bild = Image.open(bild_sokvag)
         skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
         bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
-        hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True)
 
-        if hittad_position is not None:
-            hittad = pyautogui.center(hittad_position)
-            time.sleep(1)  # minskar fel
-            pyautogui.moveTo(hittad)
-            pyautogui.click(duration=1)
-            time.sleep(0.5)  # minskar fel
+        try:
+            hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True)
+            if hittad_position is not None:
+                hittad = pyautogui.center(hittad_position)
+                time.sleep(1)  # minskar fel
+                pyautogui.moveTo(hittad)
+                pyautogui.click(duration=1)
+                time.sleep(0.5)  # minskar fel
+        except:
+            pass
 
     tab_stjarna("img/04_image.JPG", faktor)
+prepare() # Kör hela ovanstående förberedelser inför att ta tag i uppdraget
 
-
-prepare()
-
+    
 time.sleep(0.5)  # minskar fel
-hittad = None  # Rensa minnet inför letningen
 
 with open("nummer.json", "r") as json_file:
     data = json.load(json_file)
     geologer = data["geologer"]
     resurs = data["resurs"]
 
+flagga = True  # Deklarera flagga som en global variabel här
 
 def leta_sten():
-    for geolog in geologer:
-        flagga = True
-        while flagga:
-            def hitta_geolog(bild_sökväg, faktor):
-                global hittad
+    global flagga  # Använd global för att referera till den globala variabeln
 
-                bild = Image.open(bild_sökväg)
+    for geolog in geologer:
+        flagga = True  # Återställ flagga till True vid varje iteration
+
+        while flagga:
+            def hitta_geolog(bild_sokvag, faktor):
+                nonlocal flagga  # Använd nonlocal för att ändra flagga i den yttre funktionen
+
+                hittad = None
+                bild = Image.open(bild_sokvag)
                 skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
                 bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
                 hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.7, grayscale=True)
 
                 if hittad_position is not None:
-                    flagga = True
                     hittad = pyautogui.center(hittad_position)
                     time.sleep(1)  # minskar fel
                     pyautogui.moveTo(hittad)
                     pyautogui.click(duration=1)
                 else:
-                    hittad = None
-                    print(f"{bild_sökväg} inte hittad")
                     flagga = False
+                    print(f"{bild_sokvag} inte hittad")
+                    
 
                 return hittad
 
+            hittad_geolog = hitta_geolog(f"img/{geolog}_image.JPG", faktor)
+            if not hittad_geolog:
+                flagga = False
+
             hitta_geolog(f"img/{geolog}_image.JPG", faktor)
 
-            def hitta_resurs(bild_sökväg, faktor):
-                global hittad
+            def hitta_resurs(bild_sokvag, faktor):
+                hittad = None
 
-                bild = Image.open(bild_sökväg)
+                bild = Image.open(bild_sokvag)
                 skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
                 bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
                 hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.7, grayscale=True)
@@ -163,16 +157,15 @@ def leta_sten():
                 else:
                     hittad = None
                     print("resurs inte hittad")
-                    leta_sten()
 
-                return hittad
+                return 
 
             hitta_resurs(f"img/{resurs}_image.JPG", faktor)
 
-            def hitta_check(bild_sökväg, faktor):
-                global hittad
+            def hitta_check(bild_sokvag, faktor):
+                hittad = None
 
-                bild = Image.open(bild_sökväg)
+                bild = Image.open(bild_sokvag)
                 skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
                 bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
                 hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.7, grayscale=False)
@@ -184,15 +177,12 @@ def leta_sten():
                     pyautogui.click(duration=1)
                     time.sleep(0.5)  # minskar fel
                 else:
-                    hittad = None
                     print("check inte hittad")
-                    leta_sten()
-
-                return hittad
+                 
 
             hitta_check("img/check.JPG", faktor)
 
-            return
-
+            
 
 leta_sten()
+print("Alla möjliga klick är genomförda.")
