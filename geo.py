@@ -11,12 +11,20 @@ class GeoWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(GeoWindow, self).__init__()
         self.setWindowTitle("Välj geologer att sända")
-        self.setGeometry(500, 100, 600, 540)
+        self.setGeometry(500, 100, 600, 590)
 
         # Skapa en huvudwidget som innehåller allt innehåll
         self.centralWidget = QtWidgets.QWidget(self)
         self.setCentralWidget(self.centralWidget)
         self.centralLayout = QtWidgets.QVBoxLayout(self.centralWidget)
+        
+        font = QtGui.QFont()
+        font.setPointSize(10)  # Ange den önskade storleken på texten
+               
+        palette = QtGui.QPalette()
+        palette.setColor(QtGui.QPalette.WindowText, QtGui.QColor(QtCore.Qt.white))
+        QtWidgets.QApplication.setPalette(palette)
+        QtWidgets.QApplication.setFont(font)
 
         # Skapa en box för den övre layouten (geologer och resurser)
         self.upperBox = QtWidgets.QGroupBox()
@@ -24,14 +32,16 @@ class GeoWindow(QtWidgets.QMainWindow):
         self.upperBox.setStyleSheet("border: none; padding: 5px;")
 
         # Skapa en box för vänsterinnehållet (geologknapparna)
-        self.leftBox = QtWidgets.QGroupBox("Geologer")
+        self.leftBox = QtWidgets.QGroupBox("    Geologer")
         self.leftLayout = QtWidgets.QGridLayout(self.leftBox)  # Uppdaterad layout för vänsterboxen
+        self.leftBox.setStyleSheet("QGroupBox {border-top: 1px solid rgb(230, 153, 10); border-bottom: 1px solid rgb(230, 153, 10); padding: 5px;}")
 
         # Skapa en box för högerinnehållet (resurserna)
-        self.rightBox = QtWidgets.QGroupBox("Resurser")
+        self.rightBox = QtWidgets.QGroupBox("   Resurser")
         self.rightLayout = QtWidgets.QGridLayout(self.rightBox)  # Uppdaterad layout för högerboxen
+        self.rightBox.setStyleSheet("QGroupBox {border-top: 1px solid rgb(230, 153, 10); border-bottom: 1px solid rgb(230, 153, 10); padding: 5px;}")
 
-        # Skapa en box för bottom-innehållet (check-knappen och de två nya knapparna)
+        # Skapa en box för bottom-innehållet (check-knappen och de två knapparna)
         self.bottomBox = QtWidgets.QGroupBox()
         self.bottomLayout = QtWidgets.QHBoxLayout(self.bottomBox)
         self.bottomBox.setStyleSheet("border: 0px; padding: 5px;")
@@ -39,9 +49,29 @@ class GeoWindow(QtWidgets.QMainWindow):
         # Lägg till vänster- och högerboxen i den övre layouten
         self.upperLayout.addWidget(self.leftBox)
         self.upperLayout.addWidget(self.rightBox)
+                
+        # Skapa textrutan för infotexten
+        self.infoText = QtWidgets.QLabel()
+        self.infoText.setFixedHeight(50)  # Höjden på textrutan
+        self.infoText.setFixedWidth(540)
+        self.infoText.setText("När du klickar Check så kommer programmet ta kontroll över musen och genomföra alla klick för sökningen. \nDra musen till skärmens hörn för att avbryta akut.")
+        self.infoText.setStyleSheet("background-color: #4b453a; padding-left: 10px; padding-right: 10px; border: 2px ridge #363229")
+        
+        # Skapa en layout för att centrera infoText-rutan
+        centerLayout = QtWidgets.QHBoxLayout()
+        centerLayout.addStretch()
+        centerLayout.addWidget(self.infoText)
+        centerLayout.addStretch()
 
-        # Lägg till den övre boxen och bottom-boxen i huvudlayouten
+        # Skapa en yttre layout för att lägga till padding och justering
+        outerLayout = QtWidgets.QHBoxLayout()
+        outerLayout.addStretch()
+        outerLayout.addLayout(centerLayout)
+        outerLayout.addStretch()
+        
+        # Lägg till den övre boxen, text- och bottom-boxen i huvudlayouten
         self.centralLayout.addWidget(self.upperBox)
+        self.centralLayout.addLayout(outerLayout)
         self.centralLayout.addWidget(self.bottomBox)
 
         # Hänvisning till en extern CSS-fil
@@ -108,7 +138,7 @@ class GeoWindow(QtWidgets.QMainWindow):
             value = str(i)
 
             button = QtWidgets.QPushButton(self.scrollContentRight)
-            button.setFixedSize(40, 32)
+            button.setFixedSize(42, 30)
             button.setCheckable(True)
             button.clicked.connect(lambda _, b=button, v=value: self.button_click(b, v))
             self.gridLayoutRight.addWidget(button, (i-100) // 2, (i-100) % 2)
@@ -118,11 +148,19 @@ class GeoWindow(QtWidgets.QMainWindow):
             self.button_images.append(image)
             button.setIcon(QtGui.QIcon(image))
             button.setIconSize(image.rect().size())
-            button.setIconSize(QtCore.QSize(40, 32))  # Justera storleken på ikonen vid behov
-            button.setStyleSheet("QPushButton::icon {"
+            button.setIconSize(QtCore.QSize(38, 30))  # Justera storleken på ikonen vid behov
+            button.setStyleSheet("QPushButton {"
+                                "    border: 4px ridge #a49777;"
+                                "    border-radius: 5px;"
+                                "}"
+                                "QPushButton::icon {"
                                 "    position: absolute;"
-                                "    bottom: 0;"
-                                "    right: 0;"
+                                "    bottom: -2;"
+                                "    right: -2;"
+                                "    border-radius: 5px;"
+                                "}"
+                                "QPushButton:hover {"
+                                "    border: 2px ridge #756d5b;"
                                 "    border-radius: 5px;"
                                 "}")
 
@@ -130,44 +168,77 @@ class GeoWindow(QtWidgets.QMainWindow):
             button.setAutoExclusive(True)
 
         # Skapa knapparna för bottom-innehållet
-        undo_button = QtWidgets.QPushButton("Åter")
-        undo_button.setFixedSize(50, 20)
-        self.bottomLayout.addWidget(undo_button)
+        back_button = QtWidgets.QPushButton("Meny")
+        back_button.setFixedSize(42, 30)
+        self.bottomLayout.addWidget(back_button)
+        image = QtGui.QPixmap(f"img/knapp/back.jpg")
+        self.button_images.append(image)
+        back_button.setIcon(QtGui.QIcon(image))
+        back_button.setIconSize(QtCore.QSize(38, 30))  # Justera storleken på ikonen vid behov
+        back_button.setStyleSheet("QPushButton {"
+                                "    border: 4px ridge #a49777;"
+                                "    border-radius: 5px;"
+                                "}"
+                                "QPushButton::icon {"
+                                "    position: absolute;"
+                                "    bottom: -2;"
+                                "    right: -2;"
+                                "    border-radius: 5px;"
+                                "}"
+                                "QPushButton:hover {"
+                                "    border: 2px ridge #756d5b;"
+                                "    border-radius: 5px;"
+                                "}")
 
-        clear_button = QtWidgets.QPushButton("Rensa")
-        clear_button.setFixedSize(40, 32)
+# Rensa
+        clear_button = QtWidgets.QPushButton()
+        clear_button.setFixedSize(42, 30)
         clear_button.clicked.connect(self.clear_button_click)
         self.bottomLayout.addWidget(clear_button)
         image = QtGui.QPixmap(f"img/knapp/clear.jpg")
         self.button_images.append(image)
         clear_button.setIcon(QtGui.QIcon(image))
-        clear_button.setIconSize(image.rect().size())
-        button.setIconSize(QtCore.QSize(40, 32))  # Justera storleken på ikonen vid behov
-        button.setStyleSheet("QPushButton::icon {"
-                            "    position: absolute;"
-                            "    bottom: 0;"
-                            "    right: 0;"
-                            "    border-radius: 5px;"
-                            "}")
+        clear_button.setIconSize(QtCore.QSize(38, 30))  # Justera storleken på ikonen vid behov
+        clear_button.setStyleSheet("QPushButton {"
+                                "    border: 4px ridge #a49777;"
+                                "    border-radius: 5px;"
+                                "}"
+                                "QPushButton::icon {"
+                                "    position: absolute;"
+                                "    bottom: -2;"
+                                "    right: -2;"
+                                "    border-radius: 5px;"
+                                "}"
+                                "QPushButton:hover {"
+                                "    border: 2px ridge #756d5b;"
+                                "    border-radius: 5px;"
+                                "}")
 
-        send_button = QtWidgets.QPushButton("Skicka")
-        send_button.setFixedSize(40, 32)
+        send_button = QtWidgets.QPushButton()
+        send_button.setFixedSize(42, 30)
         send_button.clicked.connect(self.send_button_click)
         self.bottomLayout.addStretch()
         self.bottomLayout.addWidget(send_button)
         image = QtGui.QPixmap(f"img/knapp/check.jpg")
         self.button_images.append(image)
         send_button.setIcon(QtGui.QIcon(image))
-        send_button.setIconSize(image.rect().size())
-        button.setIconSize(QtCore.QSize(40, 32))  # Justera storleken på ikonen vid behov
-        button.setStyleSheet("QPushButton::icon {"
-                            "    position: absolute;"
-                            "    bottom: 0;"
-                            "    right: 0;"
-                            "    border-radius: 5px;"
-                            "}")        
+        send_button.setIconSize(QtCore.QSize(38, 30))  # Justera storleken på ikonen vid behov
+        send_button.setStyleSheet("QPushButton {"
+                                "    border: 4px ridge #a49777;"
+                                "    border-radius: 5px;"
+                                "}"
+                                "QPushButton::icon {"
+                                "    position: absolute;"
+                                "    bottom: -2;"
+                                "    right: -2;"
+                                "    border-radius: 5px;"
+                                "}"
+                                "QPushButton:hover {"
+                                "    border: 2px ridge #756d5b;"
+                                "    border-radius: 5px;"
+                                "}")     
 
-        undo_button.clicked.connect(self.return_to_dialog)
+        back_button.clicked.connect(self.return_to_dialog)
 
     def return_to_dialog(self):
         self.returnToDialog.emit()
@@ -222,7 +293,10 @@ class GeoWindow(QtWidgets.QMainWindow):
             btn.setStyleSheet("")
         for btn in self.buttonsRight:
             btn.setChecked(False)
-            btn.setStyleSheet("")
+            btn.setStyleSheet("QPushButton {"
+                                "    border: 4px ridge #a49777;"
+                                "    border-radius: 5px;"
+                                "}")
 
     def send_button_click(self):
         resurs_value = 0

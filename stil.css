@@ -41,6 +41,7 @@ QWidget#rightBox {
 }  
 QWidget {
     background-color: #5f5b54;
+    border: 4px double rgb(230, 153, 10);
 }
 /* Dessa fungerar rätt dåligt när de ligger här, finns nu direkt i koden istället.
 QPushButton {
@@ -59,6 +60,25 @@ QPushButton:hover {
     background-color: #756d5b;
     border-radius: 5px;
 }
+/*
+QPushButton {
+    border: 2px ridge #a49777;
+    border-radius: 5px;
+}
+*/
+QPushButton::icon {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    border-radius: 5px;
+}
+
+QPushButton:hover {
+    border: 2px ridge #756d5b;
+    border-radius: 5px;
+}
+
+
 /*
 QLabel: Används för att stila etiketter.
 QLineEdit: Används för att stila textinmatningsfält.
