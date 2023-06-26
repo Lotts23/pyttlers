@@ -245,7 +245,7 @@ class GeoWindow(QtWidgets.QMainWindow):
         self.close()
         
     def get_button_by_value(self, value):
-        for button in self.buttonsRight:
+        for button in self.buttonsLeft + self.buttonsRight:
             if button.property("value") == value:
                 return button
         return None
@@ -253,16 +253,19 @@ class GeoWindow(QtWidgets.QMainWindow):
     def button_click(self, button, value):
         if button.isChecked():
             if button in self.buttonsLeft:
-                button.setStyleSheet("border: 6px solid yellow; border-radius: 5px;")
+                button.setStyleSheet("border: 6px ridge yellow; border-radius: 5px;")
                 self.selected_buttons_left.append(int(value))
             elif button in self.buttonsRight:
                 prev_button_value = self.selected_buttons_right[0] if self.selected_buttons_right else None
                 if prev_button_value and prev_button_value != int(value):
                     prev_button_button = self.get_button_by_value(prev_button_value)
                     if prev_button_button:
-                        prev_button_button.setStyleSheet("")
+                        prev_button_button.setStyleSheet("QPushButton {"
+                                "    border: 4px ridge #a49777;"
+                                "    border-radius: 5px;"
+                                "}")
 
-                button.setStyleSheet("border: 6px solid yellow; border-radius: 5px;")
+                button.setStyleSheet("border: 6px ridge yellow; border-radius: 5px;")
                 self.selected_buttons_right = [int(value)]  # Spara värdet
         else:
             button.setStyleSheet("")

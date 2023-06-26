@@ -9,6 +9,10 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (QApplication, QDialog, QLabel, QPushButton,
                              QVBoxLayout)
 
+### Hantera först att det är nån inkonsekvens i sökmönstret, sen gör en running2.py för explorers... fast det borde eg gå att kombinera?
+### Bla verkar den klicka på stjärnan trots att stjärnmeny-bilden hittats...
+### Sen så behöver jag se över time.sleep som är obalanserad.
+### Och optimera genom att skapa en lokal sökruta.
 
 class ProgressDialog(QDialog):
     def __init__(self):
@@ -91,7 +95,7 @@ def prepare(): # Här kollar vi skalan och ser till att stjärn-fönstret är ö
         else:
             print(f"{bild_sokvag} inte hittad")
 
-    # Testar om stjärnann är öppen annars kör den funktionen öppna stjärna. Definitionen av 
+    # Testar om stjärnan är öppen annars kör den funktionen öppna stjärna. Definitionen av 
     # öppna stjärna ligger över just för att vara redo att köras om hitta_bild_stjärna inte 
     # hittar stjärnfönstret. Alternativt skulle hela definitionen ligga i if-else.
     def hitta_bild_stjarna(bild_sokvag, faktor):

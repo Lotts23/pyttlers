@@ -6,6 +6,7 @@ QMainWindow {
 
 QWidget#leftBox,
 QWidget#rightBox,
+QWidget#rightestBox,
 QGroupBox#bottomBox {
     background-color: #4b453a; 
     border: none;
@@ -36,6 +37,10 @@ QWidget#leftBox {
 }
   
 QWidget#rightBox {
+    border: 1px solid #544b3e;
+    border-radius: 5px;
+}  
+QWidget#rightestBox {
     border: 1px solid #544b3e;
     border-radius: 5px;
 }  
