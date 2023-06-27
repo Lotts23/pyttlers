@@ -1,9 +1,11 @@
 $ cat .gitignore
 __pycache__/*
-*.json
+*data.json
+nummer.json
 prov*
 test*
 /bin/*
+bin/
 bin/*
 Säk/*
 .DS_Store
