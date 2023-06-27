@@ -67,28 +67,29 @@ with open("nummer.json", "r") as json_file:
 #def prepare(): # Här kollar vi skalan och ser till att stjärn-fönstret är öppen och i rätt tab.
 
 def hitta_skalfaktor(skalbild_sokvag): # Som det låter, vi kollar skalan
-    faktor = 1 # Vi kan börja med faktor 2 också och först skala upp bilden, med sämre resultat och längre tid
-    skalbild = Image.open(skalbild_sokvag)
+    for _ in range(3): # Loopa 3ggr
+        faktor = 1 # Vi kan börja med faktor 2 också och först skala upp bilden, med sämre resultat och längre tid
+        skalbild = Image.open(skalbild_sokvag)
 
-    while faktor >= 0.2: # Den behöver aldrig pröva mindre än så här. Om faktor 1 är 200% i spelet så är 0.25 50% och spelet går inte lägre.
-        skalad_bild = skalbild.resize((int(skalbild.width * faktor), int(skalbild.height * faktor)))
-        skalbild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
-        hittad_skalfaktor = pyautogui.locateOnScreen(skalbild_array, confidence=0.7, grayscale=True)
+        while faktor >= 0.2: # Den behöver aldrig pröva mindre än så här. Om faktor 1 är 200% i spelet så är 0.25 50% och spelet går inte lägre.
+            skalad_bild = skalbild.resize((int(skalbild.width * faktor), int(skalbild.height * faktor)))
+            skalbild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
+            hittad_skalfaktor = pyautogui.locateOnScreen(skalbild_array, confidence=0.7, grayscale=True)
 
-        if hittad_skalfaktor is not None: #skriv till json
-            pyautogui.moveTo(hittad_skalfaktor)
-            faktor = round(faktor, 1)
-            data = {"faktor": faktor}
-            with open("scale_data.json", "w") as json_file: # Skriv i json
-                json.dump(data, json_file)
-            return faktor
+            if hittad_skalfaktor is not None: #skriv till json
+                pyautogui.moveTo(hittad_skalfaktor)
+                faktor = round(faktor, 1)
+                data = {"faktor": faktor}
+                with open("scale_data.json", "w") as json_file: # Skriv i json
+                    json.dump(data, json_file)
+                return faktor
 
-        print(".", end="", flush=True)
-        time.sleep(0.1) # Vid många fel kan denna ökas.
+            print(".", end="", flush=True)
+            time.sleep(0.1) # Vid många fel kan denna ökas.
 
-        faktor -= 0.02 # Lägre tal ger större nogrannhet i sökningen.
+            faktor -= 0.02 # Lägre tal ger större nogrannhet i sökningen.
 
-    return None
+        return None
 
 hitta_skalfaktor("img/01_image.bmp")
 
