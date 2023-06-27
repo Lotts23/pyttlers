@@ -180,6 +180,13 @@ with open("nummer.json", "r") as json_file:
     typ = data["typ"]
     tid = data["tid"]
 
+time_letter = ""  # Skapa en tom sträng
+
+if typ == "100":
+    time_letter = "t"
+elif typ == "101":
+    time_letter = "a"
+
 #
 #   Finns en ide här om att pröva geolog vs explorer, för att köra båda i samma fil
 #
@@ -220,7 +227,7 @@ def leta_skatt(): # Här bakar jag ihop för att (ev?) kunna välja explorer el 
             if not hittad_explorer:
                 flagga = False
 
-            hitta_explorer(f"img/expl_{explorer}.bmp"
+            hitta_explorer(f"img/expl_{explorer}.bmp")
 
             def hitta_typ(bild_sokvag, faktor): # typ och tid söker gråskala pga att olika explorer får olika färg på texten.
                 for _ in range(3): # Loopa 3ggr
@@ -265,7 +272,7 @@ def leta_skatt(): # Här bakar jag ihop för att (ev?) kunna välja explorer el 
                         print("tid inte hittad")
                         time.sleep(1)
 
-            hitta_tid(f"img/{tid}_tid.bmp", faktor)
+            hitta_tid(f"img/{tid}{time_letter}_tid.bmp", faktor)
             
             def hitta_check(bild_sokvag, faktor):
                 for _ in range(3): # Loopa 3ggr

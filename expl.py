@@ -153,7 +153,7 @@ class ExplWindow(QtWidgets.QMainWindow):
         # Skapa knapparna för typen
         for i in range(100, 102):
             value = str(i)
-
+            
             button = QtWidgets.QPushButton(self.scrollContentRight)
             button.setFixedSize(42, 30)
             button.setCheckable(True)
