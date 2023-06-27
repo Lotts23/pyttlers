@@ -11,14 +11,14 @@ from PyQt5.QtWidgets import (QApplication, QDialog, QLabel, QPushButton,
 
 with open("nummer.json", "r") as json_file:
     data = json.load(json_file)
-    geologer = data["geologer"]
-    resurs = data["resurs"]  
+    explorers = data["explorers"]
+    typ = data["typ"]  
     
-with open("geo_namn.json", "r") as geo_file:
-    geo_data = json.load(geo_file)
-    geo_dict = geo_data
+with open("expl_namn.json", "r") as expl_file:
+    expl_data = json.load(expl_file)
+    expl_dict = expl_data
 
-geologer_namn = [geo_dict[str(num)] for num in geologer]    
+explorers_namn = [expl_dict[str(num)] for num in explorers]    
     
 ### Hantera först att det är nån inkonsekvens i sökmönstret, sen gör en running2.py för explorers... fast det borde eg gå att kombinera?
 ### Bla verkar den klicka på stjärnan trots att stjärnmeny-bilden hittats...
@@ -36,7 +36,7 @@ class ProgressDialog(QDialog):
 
         layout = QVBoxLayout(self)
 
-        self.label = QLabel(f"Process pågår...\nSöker {geologer_namn} som ska leta {resurs}\nnödstopp genom att flytta musen till skärmens hörn.", self)
+        self.label = QLabel(f"Process pågår...\nSöker {explorers_namn} som ska leta {typ}.\nNödstopp genom att flytta musen till skärmens hörn.", self)
 
         self.label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.label)
@@ -56,12 +56,13 @@ class ProgressDialog(QDialog):
 
     def start_process(self):
         #self.hide()  # Göm minifönstret
-        leta_sten()  # Starta leta_sten-funktionen
+        leta_skatt()  # Starta leta_skatt-funktionen
 
 with open("nummer.json", "r") as json_file:
     data = json.load(json_file)
-    geologer = data["geologer"]
-    resurs = data["resurs"]
+    explorers = data["explorers"]
+    typ = data["typ"]
+    tid = data["tid"]
 
 
 #def prepare(): # Här kollar vi skalan och ser till att stjärn-fönstret är öppen och i rätt tab.
@@ -175,8 +176,9 @@ tab_stjarna("img/04_image.bmp", faktor)
 
 with open("nummer.json", "r") as json_file:
     data = json.load(json_file)
-    geologer = data["geologer"]
-    resurs = data["resurs"]
+    explorers = data["explorers"]
+    typ = data["typ"]
+    tid = data["tid"]
 
 #
 #   Finns en ide här om att pröva geolog vs explorer, för att köra båda i samma fil
@@ -187,13 +189,13 @@ with open("scale_data.json", "r") as json_file: # Ser till att vi läser in fär
     faktor = data["faktor"]
 
 flagga = True
-def hitta_geolog(bild_sokvag, faktor):
+def hitta_explorer(bild_sokvag, faktor):
     flagga  # Använd nonlocal för att ändra flagga i den yttre funktionen
     hittad = None
     bild = Image.open(bild_sokvag)
     skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
     bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
-    hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.7, grayscale=True, region=starmenu_area)
+    hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.7, grayscale=True, region=starmenu_area) #gråskala ger lättare träff men ökar osäkerheten. ändra till false om den gör många felträffar.
 
     if hittad_position is not None:
         hittad = pyautogui.center(hittad_position)
@@ -207,20 +209,20 @@ def hitta_geolog(bild_sokvag, faktor):
         print(f"{bild_sokvag} inte hittad") #testfas
     return hittad
 
-def leta_sten(): # Här bakar jag ihop för att (ev?) kunna välja explorer el geolog
+def leta_skatt(): # Här bakar jag ihop för att (ev?) kunna välja explorer el explorer
     global flagga  # Använd global för att referera till den globala variabeln
     flagga = True
-    for geolog in geologer:
+    for explorer in explorers:
         flagga = True  # Återställ flagga till True vid varje iteration
-        while flagga == True: # Loopar geolog+resurs tills geologen inte hittas, därefter tar den nästa geolog och upprepar
+        while flagga == True: # Loopar explorer+typ+tid tills exploreren inte hittas, därefter tar den nästa explorer och upprepar
 
-            hittad_geolog = hitta_geolog(f"img/{geolog}_geo.bmp", faktor)
-            if not hittad_geolog:
+            hittad_explorer = hitta_explorer(f"img/{explorer}_expl.bmp", faktor)
+            if not hittad_explorer:
                 flagga = False
 
-            hitta_geolog(f"img/{geolog}_geo.bmp", faktor)
+            hitta_explorer(f"img/{explorer}_expl.bmp", faktor)
 
-            def hitta_resurs(bild_sokvag, faktor):
+            def hitta_typ(bild_sokvag, faktor): # typ och tid söker gråskala pga att olika explorer får olika färg på texten.
                 for _ in range(3): # Loopa 3ggr
                     bild = Image.open(bild_sokvag)
                     skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
@@ -237,11 +239,34 @@ def leta_sten(): # Här bakar jag ihop för att (ev?) kunna välja explorer el g
                         time.sleep(3)  # minskar fel
                         break
                     else:
-                        print("resurs inte hittad")
+                        print("typ inte hittad")
+                        pyautogui.scroll(2)
                         time.sleep(1)
 
-            hitta_resurs(f"img/{resurs}_resurs.bmp", faktor)
+            hitta_typ(f"img/{typ}_typ.bmp", faktor)
+            
+            def hitta_tid(bild_sokvag, faktor):
+                for _ in range(3): # Loopa 3ggr
+                    bild = Image.open(bild_sokvag)
+                    skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
+                    bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
+                    hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True, region=starmenu_area)
 
+                    if hittad_position is not None:
+                        x, y, width, height = hittad_position # Klickar i högra hörnet för att kunna ha med texten brevid knappen
+                        knappens_plats = x + width - (width // 5), y + (height // 2)
+                        time.sleep(0.1)  # minskar fel
+                        pyautogui.moveTo(knappens_plats)
+                        pyautogui.click(duration=1)
+                        pyautogui.moveTo(200, 200)
+                        time.sleep(3)  # minskar fel
+                        break
+                    else:
+                        print("tid inte hittad")
+                        time.sleep(1)
+
+            hitta_tid(f"img/{tid}_tid.bmp", faktor)
+            
             def hitta_check(bild_sokvag, faktor):
                 for _ in range(3): # Loopa 3ggr
                     hittad = None
@@ -267,13 +292,13 @@ def leta_sten(): # Här bakar jag ihop för att (ev?) kunna välja explorer el g
 
 
 
-    leta_sten()
+    leta_skatt()
     print("Alla möjliga klick är genomförda.")
 
 if __name__ == "__main__":
     app = QApplication([])
     miniprogram = ProgressDialog()
     miniprogram.show()
-    leta_sten()
+    leta_skatt()
     app.exec_()
     sys.exit()

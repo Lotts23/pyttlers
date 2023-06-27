@@ -26,7 +26,7 @@ class ExplWindow(QtWidgets.QMainWindow):
         QtWidgets.QApplication.setPalette(palette)
         QtWidgets.QApplication.setFont(font)
 
-        # Skapa en box för den övre layouten (geologer och resurser)
+        # Skapa en box för den övre layouten (explorer och sökmål)
         self.upperBox = QtWidgets.QGroupBox()
         self.upperLayout = QtWidgets.QHBoxLayout(self.upperBox)
         self.upperBox.setStyleSheet("border: none; padding: 5px;")
@@ -36,7 +36,7 @@ class ExplWindow(QtWidgets.QMainWindow):
         self.leftLayout = QtWidgets.QGridLayout(self.leftBox)  
         self.leftBox.setStyleSheet("QGroupBox {border-top: 1px solid rgb(230, 153, 10); border-bottom: 1px solid rgb(230, 153, 10); padding: 5px;}")
 
-        # Skapa en box för högerinnehållet (söktyp)
+        # Skapa en box för högerinnehållet (typ)
         self.rightBox = QtWidgets.QGroupBox("   Söktyp")
         self.rightLayout = QtWidgets.QGridLayout(self.rightBox)  
         self.rightBox.setStyleSheet("QGroupBox {border-top: 1px solid rgb(230, 153, 10); border-bottom: 1px solid rgb(230, 153, 10); padding: 5px;}")
@@ -97,7 +97,7 @@ class ExplWindow(QtWidgets.QMainWindow):
         self.rightBox.setObjectName("rightBox")
         self.rightestBox.setObjectName("rightestBox")
 
-        # Skapa scrollområdet för geologknapparna
+        # Skapa scrollområdet för explorerknapparna
         self.scrollArea = QtWidgets.QScrollArea(self.leftBox)
         self.scrollArea.setWidgetResizable(True)
         self.leftLayout.addWidget(self.scrollArea)
@@ -140,7 +140,7 @@ class ExplWindow(QtWidgets.QMainWindow):
                                 "    border-radius: 5px;"
                                 "}")            
 
-        # Skapa scrollområdet för söktyps-knappar
+        # Skapa scrollområdet för typs-knappar
         self.scrollAreaRight = QtWidgets.QScrollArea(self.rightBox)
         self.scrollAreaRight.setWidgetResizable(True)
         self.rightLayout.addWidget(self.scrollAreaRight)
@@ -150,7 +150,7 @@ class ExplWindow(QtWidgets.QMainWindow):
 
         self.gridLayoutRight = QtWidgets.QGridLayout(self.scrollContentRight)
 
-        # Skapa knapparna för söktypen
+        # Skapa knapparna för typen
         for i in range(100, 102):
             value = str(i)
 
@@ -361,7 +361,7 @@ class ExplWindow(QtWidgets.QMainWindow):
     def update_json(self):
         json_data = {
             "explorers": self.selected_buttons_left,
-            "söktyp": self.selected_buttons_right,
+            "typ": self.selected_buttons_right,
             "tid": self.selected_buttons_rightest
         }
         with open("data.json", "w") as json_file:
@@ -388,11 +388,11 @@ class ExplWindow(QtWidgets.QMainWindow):
                                 "}")    
 
     def send_button_click(self):
-        söktyp_value = 0
+        typ_value = 0
         if self.selected_buttons_right:
-            söktyp_str = str(self.selected_buttons_right[0])
-            if söktyp_str.isdigit():
-                söktyp_value = int(söktyp_str)
+            typ_str = str(self.selected_buttons_right[0])
+            if typ_str.isdigit():
+                typ_value = int(typ_str)
         tid_value = 0
         if self.selected_buttons_rightest:
             tid_str = str(self.selected_buttons_rightest[0])
@@ -401,7 +401,7 @@ class ExplWindow(QtWidgets.QMainWindow):
 
         data = {
             "explorers": list(self.selected_buttons_left),
-            "söktyp": söktyp_value,
+            "typ": typ_value,
             "tid": tid_value
         }
 
@@ -412,7 +412,7 @@ class ExplWindow(QtWidgets.QMainWindow):
 
         print("Skicka-knappen klickad")
         self.close()
-        subprocess.Popen([sys.executable, "running_expl.py"])
+        subprocess.Popen([sys.executable, "running2.py"])
 
 
 if __name__ == "__main__":
