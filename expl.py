@@ -5,11 +5,11 @@ import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
-class GeoWindow(QtWidgets.QMainWindow):
+class ExplWindow(QtWidgets.QMainWindow):
     returnToDialog = QtCore.pyqtSignal()
 
     def __init__(self):
-        super(GeoWindow, self).__init__()
+        super(ExplWindow, self).__init__()
         self.setWindowTitle("Välj explorers att sända")
         self.setGeometry(500, 100, 640, 790)
 
@@ -420,6 +420,6 @@ if __name__ == "__main__":
     import sys
 
     app = QtWidgets.QApplication(sys.argv)
-    window = GeoWindow()
+    window = ExplWindow()
     window.show()
     sys.exit(app.exec_())
