@@ -13,7 +13,6 @@ class StartDialog(QtWidgets.QDialog):
         # Skapa en layout för dialogrutan
         layout = QtWidgets.QHBoxLayout(self)
 
-        # Hänvisning till en extern CSS-fil
         with open("stil.css", "r") as file:
             self.setStyleSheet(file.read())
 

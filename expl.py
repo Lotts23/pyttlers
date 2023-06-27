@@ -59,8 +59,7 @@ class ExplWindow(QtWidgets.QMainWindow):
         self.upperLayout.addWidget(self.leftBox)
         self.upperLayout.addWidget(self.rightareaBox)
         
-        # Lägg till höger och högerhöger i högerareaboxen
-        
+        # Lägg till höger och högerhöger i högerareaboxen        
         self.rightareaLayout.addStretch()
         self.rightareaLayout.addWidget(self.rightBox)
         self.rightareaLayout.addWidget(self.rightestBox)

@@ -14,6 +14,12 @@ with open("nummer.json", "r") as json_file:
     geologer = data["geologer"]
     resurs = data["resurs"]  
     
+with open("geo_namn.json", "r") as geo_file:
+    geo_data = json.load(geo_file)
+    geo_dict = geo_data
+
+geologer_namn = [geo_dict[str(num)] for num in geologer]    
+    
 ### Hantera först att det är nån inkonsekvens i sökmönstret, sen gör en running2.py för explorers... fast det borde eg gå att kombinera?
 ### Bla verkar den klicka på stjärnan trots att stjärnmeny-bilden hittats...
 ### Sen så behöver jag se över time.sleep som är obalanserad.
@@ -30,7 +36,7 @@ class ProgressDialog(QDialog):
 
         layout = QVBoxLayout(self)
 
-        self.label = QLabel(f"Process pågår...\nSöker {geologer} som ska leta {resurs}\nnödstopp genom att flytta musen till skärmens hörn.", self)
+        self.label = QLabel(f"Process pågår...\nSöker {geologer_namn} som ska leta {resurs}\nnödstopp genom att flytta musen till skärmens hörn.", self)
 
         self.label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.label)    
