@@ -128,7 +128,7 @@ class ExplWindow(QtWidgets.QMainWindow):
             self.gridLayout.addWidget(button, (i-10) // 4, (i-10) % 4)  
             self.buttonsLeft.append(button)
 
-            image = QtGui.QPixmap(f"img/knapp/{value}_eknapp.png")
+            image = QtGui.QPixmap(f"img/knapp/eknapp_{value}.png")
             self.button_images.append(image)
             button.setIcon(QtGui.QIcon(image))
             button.setIconSize(image.rect().size())
@@ -161,7 +161,7 @@ class ExplWindow(QtWidgets.QMainWindow):
             self.gridLayoutRight.addWidget(button, (i-100) // 2, (i-100) % 2)
             self.buttonsRight.append(button)  # Uppdaterad namn på listan
 
-            image = QtGui.QPixmap(f"img/{value}_treasure.bmp")
+            image = QtGui.QPixmap(f"img/knapp/treasure_{value}.bmp")
             self.button_images.append(image)
             button.setIcon(QtGui.QIcon(image))
             button.setIconSize(image.rect().size())
@@ -205,7 +205,7 @@ class ExplWindow(QtWidgets.QMainWindow):
             self.gridLayoutRightest.addWidget(button, (i-1000) // 2, (i-1000) % 2)
             self.buttonsRightest.append(button)  # Uppdaterad namn på listan
 
-            image = QtGui.QPixmap(f"img/{value}_time.bmp")
+            image = QtGui.QPixmap(f"img/knapp/time_{value}.bmp")
             self.button_images.append(image)
             button.setIcon(QtGui.QIcon(image))
             button.setIconSize(image.rect().size())
@@ -229,7 +229,7 @@ class ExplWindow(QtWidgets.QMainWindow):
             button.setAutoExclusive(True)
 
         # Skapa knapparna för bottom-innehållet
-        back_button = QtWidgets.QPushButton("Meny")
+        back_button = QtWidgets.QPushButton()
         back_button.setFixedSize(42, 30)
         self.bottomLayout.addWidget(back_button)
         image = QtGui.QPixmap(f"img/knapp/back.jpg")

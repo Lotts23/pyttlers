@@ -111,7 +111,7 @@ class GeoWindow(QtWidgets.QMainWindow):
             self.gridLayout.addWidget(button, (i-10) // 4, (i-10) % 4)  # Uppdatera layout för vänsterknapparna
             self.buttonsLeft.append(button)  # Uppdaterad namn på listan
 
-            image = QtGui.QPixmap(f"img/knapp/{value}_gknapp.png")
+            image = QtGui.QPixmap(f"img/knapp/gknapp_{value}.png")
             self.button_images.append(image)
             button.setIcon(QtGui.QIcon(image))
             button.setIconSize(image.rect().size())
@@ -144,7 +144,7 @@ class GeoWindow(QtWidgets.QMainWindow):
             self.gridLayoutRight.addWidget(button, (i-100) // 2, (i-100) % 2)
             self.buttonsRight.append(button)  # Uppdaterad namn på listan
 
-            image = QtGui.QPixmap(f"img/knapp/{value}_rknapp.jpg")
+            image = QtGui.QPixmap(f"img/knapp/rknapp_{value}.jpg")
             self.button_images.append(image)
             button.setIcon(QtGui.QIcon(image))
             button.setIconSize(image.rect().size())
@@ -168,7 +168,7 @@ class GeoWindow(QtWidgets.QMainWindow):
             button.setAutoExclusive(True)
 
         # Skapa knapparna för bottom-innehållet
-        back_button = QtWidgets.QPushButton("Meny")
+        back_button = QtWidgets.QPushButton()
         back_button.setFixedSize(42, 30)
         self.bottomLayout.addWidget(back_button)
         image = QtGui.QPixmap(f"img/knapp/back.jpg")

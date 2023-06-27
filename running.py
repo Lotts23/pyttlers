@@ -215,11 +215,11 @@ def leta_sten(): # Här bakar jag ihop för att (ev?) kunna välja explorer el g
         flagga = True  # Återställ flagga till True vid varje iteration
         while flagga == True: # Loopar geolog+resurs tills geologen inte hittas, därefter tar den nästa geolog och upprepar
 
-            hittad_geolog = hitta_geolog(f"img/{geolog}_geo.bmp", faktor)
+            hittad_geolog = hitta_geolog(f"img/geo_{geolog}.bmp", faktor)
             if not hittad_geolog:
                 flagga = False
 
-            hitta_geolog(f"img/{geolog}_geo.bmp", faktor)
+            hitta_geolog(f"img/geo_{geolog}.bmp", faktor)
 
             def hitta_resurs(bild_sokvag, faktor):
                 for _ in range(3): # Loopa 3ggr
@@ -241,7 +241,7 @@ def leta_sten(): # Här bakar jag ihop för att (ev?) kunna välja explorer el g
                         print("resurs inte hittad")
                         time.sleep(1)
 
-            hitta_resurs(f"img/{resurs}_resurs.bmp", faktor)
+            hitta_resurs(f"img/resurs_{resurs}.bmp", faktor)
 
             def hitta_check(bild_sokvag, faktor):
                 for _ in range(3): # Loopa 3ggr

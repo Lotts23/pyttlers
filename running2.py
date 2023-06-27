@@ -216,11 +216,11 @@ def leta_skatt(): # Här bakar jag ihop för att (ev?) kunna välja explorer el 
         flagga = True  # Återställ flagga till True vid varje iteration
         while flagga == True: # Loopar explorer+typ+tid tills exploreren inte hittas, därefter tar den nästa explorer och upprepar
 
-            hittad_explorer = hitta_explorer(f"img/{explorer}_expl.bmp", faktor)
+            hittad_explorer = hitta_explorer(f"img/expl_{explorer}.bmp", faktor)
             if not hittad_explorer:
                 flagga = False
 
-            hitta_explorer(f"img/{explorer}_expl.bmp", faktor)
+            hitta_explorer(f"img/expl_{explorer}.bmp"
 
             def hitta_typ(bild_sokvag, faktor): # typ och tid söker gråskala pga att olika explorer får olika färg på texten.
                 for _ in range(3): # Loopa 3ggr
