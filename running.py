@@ -12,8 +12,8 @@ from PyQt5.QtWidgets import (QApplication, QDialog, QLabel, QPushButton,
 with open("nummer.json", "r") as json_file:
     data = json.load(json_file)
     geologer = data["geologer"]
-    resurs = data["resurs"]  
-    
+    resurs = data["resurs"]
+
 ### Hantera först att det är nån inkonsekvens i sökmönstret, sen gör en running2.py för explorers... fast det borde eg gå att kombinera?
 ### Bla verkar den klicka på stjärnan trots att stjärnmeny-bilden hittats...
 ### Sen så behöver jag se över time.sleep som är obalanserad.
@@ -33,29 +33,29 @@ class ProgressDialog(QDialog):
         self.label = QLabel(f"Process pågår...\nSöker {geologer} som ska leta {resurs}\nnödstopp genom att flytta musen till skärmens hörn.", self)
 
         self.label.setAlignment(Qt.AlignCenter)
-        layout.addWidget(self.label)    
+        layout.addWidget(self.label)
 
         self.button = QPushButton("Starta om processen", self)
         layout.addWidget(self.button)
         self.button.clicked.connect(self.start_process)  # Anslut knappen till start_process-metoden
-        self.button.setFocus() 
-        
+        self.button.setFocus()
+
         self.button = QPushButton("Avbryt", self)
         layout.addWidget(self.button)
-        
+
         self.button.clicked.connect(self.stop_process)
-        
+
     def stop_process(self):
         self.close()  # Stäng minifönstret och avbryt processen
 
     def start_process(self):
         #self.hide()  # Göm minifönstret
-        leta_sten()  # Starta leta_sten-funktionen  
-        
+        leta_sten()  # Starta leta_sten-funktionen
+
 with open("nummer.json", "r") as json_file:
     data = json.load(json_file)
     geologer = data["geologer"]
-    resurs = data["resurs"]  
+    resurs = data["resurs"]
 
 
 #def prepare(): # Här kollar vi skalan och ser till att stjärn-fönstret är öppen och i rätt tab.
@@ -84,7 +84,7 @@ def hitta_skalfaktor(skalbild_sokvag): # Som det låter, vi kollar skalan
 
     return None
 
-hitta_skalfaktor("img/01_image.BMP")
+hitta_skalfaktor("img/01_image.bmp")
 
 with open("scale_data.json", "r") as json_file:
     data = json.load(json_file)
@@ -106,7 +106,7 @@ def oppna_stjarna(bild_sokvag, faktor): # Definitionen måste ligga före anrope
         time.sleep(4)  # minskar fel, starmenu tar ofta lång tid
     else:
         print(f"{bild_sokvag} inte hittad") # Testfas
-            
+
 def hitta_bild_stjarna(bild_sokvag, faktor):
     global starmenu_area
     bild = Image.open(bild_sokvag)
@@ -124,20 +124,20 @@ def hitta_bild_stjarna(bild_sokvag, faktor):
         starmenu_x = x + int(bredd / 2) - int(starmenu_bredd / 2)
         starmenu_y = y
         starmenu_area = (starmenu_x, starmenu_y, starmenu_bredd, starmenu_höjd)
-        
+
         time.sleep(0.1)  # Minskar antalet fel. 0.1 där det görs nya variabler o data, 3-4 mellan långsamma menyklick
         print("\nstjärnan öppen")
-        
+
         # Utför nästa sökning inom det begränsade området
         ##hittad_position_ny = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True, region=starmenu_area)
 
     else:
         print(f"{bild_sokvag} inte hittad")
-        oppna_stjarna("img/03_image.BMP", faktor) # Här öppnas stjärnan om stjärnmenyn inte hittats.
-        hitta_bild_stjarna("img/02_image.BMP", faktor)
+        oppna_stjarna("img/03_image.bmp", faktor) # Här öppnas stjärnan om stjärnmenyn inte hittats.
+        hitta_bild_stjarna("img/02_image.bmp", faktor)
 
 
-hitta_bild_stjarna("img/02_image.BMP", faktor)
+hitta_bild_stjarna("img/02_image.bmp", faktor)
 
 with open("scale_data.json", "r") as json_file: # Ser till att vi läser in färsk faktor
     data = json.load(json_file)
@@ -160,7 +160,7 @@ def tab_stjarna(bild_sokvag, faktor):
     except:
         pass
 
-tab_stjarna("img/04_image.BMP", faktor)
+tab_stjarna("img/04_image.bmp", faktor)
 
 #
 #   Nu börjar sökningen på riktigt, först läser vi in alla json
@@ -195,7 +195,7 @@ def hitta_geolog(bild_sokvag, faktor):
         pyautogui.moveTo(hittad)
         pyautogui.click(duration=1)
         pyautogui.moveTo(200, 200) # För att bli av med popup-bubblan
-        time.sleep(3) 
+        time.sleep(3)
     else:
         flagga = False
         print(f"{bild_sokvag} inte hittad") #testfas
@@ -207,12 +207,12 @@ def leta_sten(): # Här bakar jag ihop för att (ev?) kunna välja explorer el g
     for geolog in geologer:
         flagga = True  # Återställ flagga till True vid varje iteration
         while flagga == True: # Loopar geolog+resurs tills geologen inte hittas, därefter tar den nästa geolog och upprepar
-           
-            hittad_geolog = hitta_geolog(f"img/{geolog}_geo.BMP", faktor)
+
+            hittad_geolog = hitta_geolog(f"img/{geolog}_geo.bmp", faktor)
             if not hittad_geolog:
                 flagga = False
 
-            hitta_geolog(f"img/{geolog}_geo.BMP", faktor)
+            hitta_geolog(f"img/{geolog}_geo.bmp", faktor)
 
             def hitta_resurs(bild_sokvag, faktor):
                 for _ in range(3): # Loopa 3ggr
@@ -234,7 +234,7 @@ def leta_sten(): # Här bakar jag ihop för att (ev?) kunna välja explorer el g
                         print("resurs inte hittad")
                         time.sleep(1)
 
-            hitta_resurs(f"img/{resurs}_resurs.BMP", faktor)
+            hitta_resurs(f"img/{resurs}_resurs.bmp", faktor)
 
             def hitta_check(bild_sokvag, faktor):
                 for _ in range(3): # Loopa 3ggr
@@ -255,14 +255,14 @@ def leta_sten(): # Här bakar jag ihop för att (ev?) kunna välja explorer el g
                     else:
                         print("check inte hittad")
                         time.sleep(1)
-                
 
-            hitta_check("img/check.BMP", faktor)
 
-            
+            hitta_check("img/check.bmp", faktor)
+
+
 
     leta_sten()
-    print("Alla möjliga klick är genomförda.")  
+    print("Alla möjliga klick är genomförda.")
 
 if __name__ == "__main__":
     app = QApplication([])
