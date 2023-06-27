@@ -123,41 +123,42 @@ def hitta_bild_stjarna(bild_sokvag, faktor):
 
     if hittad_position is not None:
         # Om stjärnan hittas
-        x, y, bredd, hojd = hittad_position
-        starmenu_bredd = bredd * 10
-        starmenu_höjd = hojd * 7.5
+        #x, y, bredd, hojd = hittad_position
+        #starmenu_bredd = bredd * 10
+        #starmenu_höjd = hojd * 7.5
 
         # Beräkna det begränsade området
-        starmenu_x = x + int(bredd / 2) - int(starmenu_bredd / 2)
-        starmenu_y = y
-        starmenu_area = (starmenu_x, starmenu_y, starmenu_bredd, starmenu_höjd)
+      #  starmenu_x = x + int(bredd / 2) - int(starmenu_bredd / 2)
+       # starmenu_y = y
+        #starmenu_area = (starmenu_x, starmenu_y, starmenu_bredd, starmenu_höjd)
 
         time.sleep(0.1)  # Minskar antalet fel. 0.1 där det görs nya variabler o data, 3-4 mellan långsamma menyklick
         print("\nstjärnan öppen")
 
         # Utför nästa sökning inom det begränsade området
-        ##hittad_position_ny = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True, region=starmenu_area)
+        ##hittad_position_ny = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True) #, region=starmenu_area)
 
     else:
         print(f"{bild_sokvag} inte hittad")
         oppna_stjarna("img/03_image.bmp", faktor) # Här öppnas stjärnan om stjärnmenyn inte hittats.
-        hitta_bild_stjarna("img/02_image.bmp", faktor)
-
-
+        
 hitta_bild_stjarna("img/02_image.bmp", faktor)
+
+
 
 with open("scale_data.json", "r") as json_file: # Ser till att vi läser in färsk faktor
     data = json.load(json_file)
     faktor = data["faktor"]
-
+hitta_bild_stjarna("img/02_image.bmp", faktor)
 def tab_stjarna(bild_sokvag, faktor):
+    global starmenu_area
     hittad = None
     bild = Image.open(bild_sokvag)
     skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
     bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
 
     try:
-        hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=False, region=starmenu_area)
+        hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=False) #, region=starmenu_area)
         if hittad_position is not None:
             hittad = pyautogui.center(hittad_position)
             time.sleep(0.1)  # minskar fel
@@ -189,12 +190,13 @@ with open("scale_data.json", "r") as json_file: # Ser till att vi läser in fär
 
 flagga = True
 def hitta_geolog(bild_sokvag, faktor):
-    flagga  # Använd nonlocal för att ändra flagga i den yttre funktionen
+    global flagga  # Använd nonlocal för att ändra flagga i den yttre funktionen
+    global starmenu_area
     hittad = None
     bild = Image.open(bild_sokvag)
     skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
     bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
-    hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.7, grayscale=True, region=starmenu_area)
+    hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.7, grayscale=True) #, region=starmenu_area)
 
     if hittad_position is not None:
         hittad = pyautogui.center(hittad_position)
@@ -223,10 +225,11 @@ def leta_sten(): # Här bakar jag ihop för att (ev?) kunna välja explorer el g
 
             def hitta_resurs(bild_sokvag, faktor):
                 for _ in range(3): # Loopa 3ggr
+                    global starmenu_area
                     bild = Image.open(bild_sokvag)
                     skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
                     bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
-                    hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True, region=starmenu_area)
+                    hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True) #, region=starmenu_area)
 
                     if hittad_position is not None:
                         x, y, width, height = hittad_position # Klickar i högra hörnet för att kunna ha med texten brevid knappen
