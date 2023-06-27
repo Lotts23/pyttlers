@@ -182,7 +182,7 @@ with open("scale_data.json", "r") as json_file: # Ser till att vi läser in fär
 
 flagga = True
 def hitta_geolog(bild_sokvag, faktor):
-    nonlocal flagga  # Använd nonlocal för att ändra flagga i den yttre funktionen
+    flagga  # Använd nonlocal för att ändra flagga i den yttre funktionen
     hittad = None
     bild = Image.open(bild_sokvag)
     skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
