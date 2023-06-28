@@ -110,13 +110,13 @@ def prepare(): # Kolla om tidigare faktor fortfarande funkar.
     else:
         faktor = hitta_skalfaktor("img/01_image.bmp")
 
-    if faktor is not None:
-        # Här fortsätter du med resten av programmet med den hittade faktorn
-        print(f"Avgjord faktor: {faktor}")
-    else:
-        print("Ingen giltig skalfaktor hittades.")
+#    if faktor is not None:
+#        # Här fortsätter du med resten av programmet med den hittade faktorn
+#        print(f"Avgjord faktor: {faktor}")
+#    else:
+#        print("Ingen giltig skalfaktor hittades.")
 
-prepare()
+#prepare()
 
 with open("scale_data.json", "r") as json_file:
     data = json.load(json_file)
@@ -136,7 +136,7 @@ def oppna_stjarna(bild_sokvag, faktor): # Definitionen måste ligga före anrope
         time.sleep(0.5)  # minskar fel
         pyautogui.moveTo(hittad)
         time.sleep(0.1) 
-        pyautogui.mouseDown(2)
+        pyautogui.mouseDown(hittad)
         pyautogui.mouseUp()
         time.sleep(4)  # minskar fel, starmenu tar ofta lång tid
         print(f"{bild_sokvag} klickad")
@@ -190,7 +190,7 @@ def tab_stjarna(bild_sokvag, faktor):
         time.sleep(0.5)  # minskar fel
         pyautogui.moveTo(hittad)
         time.sleep(0.1) 
-        pyautogui.mouseDown(2)
+        pyautogui.mouseDown(hittad)
         pyautogui.mouseUp()
         print(f"{bild_sokvag} klickad")
         time.sleep(1)  # minskar fel
@@ -226,7 +226,7 @@ def hitta_geolog(bild_sokvag, faktor):
         time.sleep(1)  # minskar fel
         pyautogui.moveTo(hittad)
         time.sleep(0.1) 
-        pyautogui.mouseDown(2)
+        pyautogui.mouseDown(hittad)
         pyautogui.mouseUp()
         pyautogui.moveTo(200, 200) # För att bli av med popup-bubblan
         print(f"{bild_sokvag} klickad")
@@ -250,7 +250,7 @@ def hitta_resurs(bild_sokvag, faktor):
             time.sleep(0.5)  # minskar fel
             pyautogui.moveTo(knappens_plats)
             time.sleep(0.1) 
-            pyautogui.mouseDown(2)
+            pyautogui.mouseDown(knappens_plats)
             pyautogui.mouseUp()
             pyautogui.moveTo(200, 200)
             time.sleep(3)  # minskar fel
@@ -262,19 +262,19 @@ def hitta_resurs(bild_sokvag, faktor):
 
 def hitta_check(bild_sokvag, faktor):
     for _ in range(3): # Loopa 3ggr
-        hittad = None
+        hittad_check = None
         time.sleep(1)
         bild = Image.open(bild_sokvag)
         skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
         bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
-        hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.7, grayscale=True)
+        hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.7, grayscale=False)
 
         if hittad_position is not None:
-            hittad = pyautogui.center(hittad_position)
+            hittad_check = pyautogui.center(hittad_position)
             time.sleep(0.5)  # minskar fel
-            pyautogui.moveTo(hittad)
+            pyautogui.moveTo(hittad_check)
             time.sleep(0.1) 
-            pyautogui.mouseDown(2)
+            pyautogui.mouseDown(hittad_check)
             pyautogui.mouseUp()
             time.sleep(3)  # minskar fel
             print(f"{bild_sokvag} klickad")
@@ -288,7 +288,7 @@ def leta_sten(): # Här bakar jag ihop för att (ev?) kunna välja explorer el g
     
     for geolog in geologer:
         flagga = True  # Återställ flagga till True vid varje iteration
-        while flagga == Tru: # Loopar geolog+resurs tills geologen inte hittas, därefter tar den nästa geolog och upprepar
+        while flagga == True: # Loopar geolog+resurs tills geologen inte hittas, därefter tar den nästa geolog och upprepar
             hittad_geolog = hitta_geolog(f"img/geo_{geolog}.bmp", faktor)
             if not hittad_geolog:
                 flagga = False
@@ -297,10 +297,10 @@ def leta_sten(): # Här bakar jag ihop för att (ev?) kunna välja explorer el g
 
             hitta_resurs(f"img/resurs_{resurs}.bmp", faktor)
 
-            hitta_check("img/check.png", faktor)
+            hitta_check("img/check.bmp", faktor)
 
     print("Alla möjliga klick är genomförda.")
-
+leta_sten()
 if __name__ == "__prepare__":
     app = QApplication([])
     miniprogram = ProgressDialog()
