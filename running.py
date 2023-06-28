@@ -133,7 +133,7 @@ def oppna_stjarna(bild_sokvag, faktor): # Definitionen måste ligga före anrope
     else:
         print(f"{bild_sokvag} inte hittad") # Testfas
 
-def hitta_bild_stjarna(bild_sokvag, faktor):
+def hitta_bild_stjarna(bild_sokvag, faktor):    # kolla om stjärnmeny Else öppna stjärna
     #global starmenu_area
     bild = Image.open(bild_sokvag)
     skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
@@ -161,11 +161,9 @@ def hitta_bild_stjarna(bild_sokvag, faktor):
         print(f"{bild_sokvag} inte hittad")
         oppna_stjarna("img/03_image.bmp", faktor) # Här öppnas stjärnan om stjärnmenyn inte hittats.
         
-hitta_bild_stjarna("img/02_image.bmp", faktor)
+hitta_bild_stjarna("img/02_image.bmp", faktor) # Kör hitta om stjärnmenyn är öppen, else kör öppna stjärnan.
 
-
-
-with open("scale_data.json", "r") as json_file: # Ser till att vi läser in färsk faktor
+with open("scale_data.json", "r") as json_file: # Ser till att vi läser in färsk faktor, ja jäkligt onödigt men en del problem försvann. Tror man istället skulle kunna starta programmet med å rensa nån cache?
     data = json.load(json_file)
     faktor = data["faktor"]
     
@@ -175,44 +173,36 @@ def tab_stjarna(bild_sokvag, faktor):
     bild = Image.open(bild_sokvag)
     skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
     bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
-
-    try:
-        hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=False) #, region=starmenu_area)
-        if hittad_position is not None:
-            hittad = pyautogui.center(hittad_position)
-            time.sleep(0.5)  # minskar fel
-            pyautogui.moveTo(hittad)
-            time.sleep(0.1) 
-            pyautogui.mouseDown(2)
-            pyautogui.mouseUp()
-            print(f"{bild_sokvag} klickad")
-            time.sleep(1)  # minskar fel
-    except:
-        pass
+    hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=False) #, region=starmenu_area)
+    if hittad_position is not None:
+        hittad = pyautogui.center(hittad_position)
+        time.sleep(0.5)  # minskar fel
+        pyautogui.moveTo(hittad)
+        time.sleep(0.1) 
+        pyautogui.mouseDown(2)
+        pyautogui.mouseUp()
+        print(f"{bild_sokvag} klickad")
+        time.sleep(1)  # minskar fel
 
 tab_stjarna("img/04_image.bmp", faktor)
 
 #
 #   Nu börjar sökningen på riktigt, först läser vi in alla json
 #
-
-
+### Finns en ide här om att pröva geolog vs explorer, för att köra båda i samma fil
 with open("nummer.json", "r") as json_file:
     data = json.load(json_file)
     geologer = data["geologer"]
     resurs = data["resurs"]
-
-#
-#   Finns en ide här om att pröva geolog vs explorer, för att köra båda i samma fil
-#
 
 with open("scale_data.json", "r") as json_file: # Ser till att vi läser in färsk faktor
     data = json.load(json_file)
     faktor = data["faktor"]
 
 flagga = True
+
 def hitta_geolog(bild_sokvag, faktor):
-    global flagga  # Använd nonlocal för att ändra flagga i den yttre funktionen
+    global flagga
     #global starmenu_area
     hittad = None
     bild = Image.open(bild_sokvag)
@@ -237,7 +227,7 @@ def hitta_geolog(bild_sokvag, faktor):
 
 def leta_sten(): # Här bakar jag ihop för att (ev?) kunna välja explorer el geolog
     global flagga  # Använd global för att referera till den globala variabeln
-    flagga = True
+    
     for geolog in geologer:
         flagga = True  # Återställ flagga till True vid varje iteration
         while flagga == True: # Loopar geolog+resurs tills geologen inte hittas, därefter tar den nästa geolog och upprepar
