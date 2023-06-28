@@ -71,52 +71,23 @@ def hitta_skalfaktor(skalbild_sokvag):
 
     if os.path.isfile(json_fil):
         with open(json_fil, "r") as json_file:
-            try:
-                json_data = json.load(json_file)
-                tidigare_faktor = json_data.get("faktor")
+            json_data = json.load(json_file)
+            tidigare_faktor = json_data.get("faktor")
 
-                if tidigare_faktor is not None:
-                    print(f"Tidigare faktor: {tidigare_faktor}")
-                    hittad_skalfaktor = testa_faktor(skalbild_sokvag, tidigare_faktor)
+            if tidigare_faktor is not None:
+                print(f"Tidigare faktor: {tidigare_faktor}")
+                hittad_skalfaktor = testa_faktor(skalbild_sokvag, tidigare_faktor)
 
-                    if hittad_skalfaktor is not None:
-                        return hittad_skalfaktor
-
-            except json.JSONDecodeError:
-                pass
+                if hittad_skalfaktor is not None:
+                    return hittad_skalfaktor
 
     return utforska_skalfaktor(skalbild_sokvag)
 
 
 def testa_faktor(skalbild_sokvag, faktor):
-    skalbild = Image.open(skalbild_sokvag)
-
-    while faktor >= 0.2:
-        skalad_bild = skalbild.resize((int(skalbild.width * faktor), int(skalbild.height * faktor)))
-        skalbild_array = np.array(skalad_bild)
-        hittad_skalfaktor = pyautogui.locateOnScreen(skalbild_array, confidence=0.7, grayscale=True)
-
-        if hittad_skalfaktor is not None:
-            faktor = round(faktor, 1)
-            data = {"faktor": faktor}
-            with open("scale_data.json", "w") as json_file:
-                json.dump(data, json_file)
-            return faktor
-
-        print(".", end="", flush=True)
-        time.sleep(0.5)
-
-        faktor -= 0.02
-
-    return None
-
-
-def utforska_skalfaktor(skalbild_sokvag):
     for _ in range(3):
-        faktor = 1
-        skalbild = Image.open(skalbild_sokvag)
-
         while faktor >= 0.2:
+            skalbild = Image.open(skalbild_sokvag)
             skalad_bild = skalbild.resize((int(skalbild.width * faktor), int(skalbild.height * faktor)))
             skalbild_array = np.array(skalad_bild)
             hittad_skalfaktor = pyautogui.locateOnScreen(skalbild_array, confidence=0.7, grayscale=True)
