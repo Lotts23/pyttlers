@@ -7,6 +7,7 @@ import numpy as np
 import pyautogui
 from PIL import Image
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QKeyEvent
 from PyQt5.QtWidgets import (QApplication, QDialog, QLabel, QPushButton,
                              QVBoxLayout)
 
@@ -19,8 +20,11 @@ with open("geo_namn.json", "r") as geo_file:
     geo_data = json.load(geo_file)
     geo_dict = geo_data
 
+faktor = None
+
+tidigare_faktor = faktor
 geologer_namn = [geo_dict[str(num)] for num in geologer]    
-    
+
 ### Hantera först att det är nån inkonsekvens i sökmönstret, sen gör en running2.py för explorers... fast det borde eg gå att kombinera?
 ### Bla verkar den klicka på stjärnan trots att stjärnmeny-bilden hittats...
 ### Sen så behöver jag se över time.sleep som är obalanserad.
@@ -54,10 +58,15 @@ class ProgressDialog(QDialog):
 
     def stop_process(self):
         self.close()  # Stäng minifönstret och avbryt processen
+        sys.exit()  # Avsluta programmet
 
     def start_process(self):
         #self.hide()  # Göm minifönstret
         leta_sten()  # Starta leta_sten-funktionen
+    
+    def keyPressEvent(self, event: QKeyEvent):
+        if event.key() == Qt.Key_Q:
+            self.stop_process()
 
 # Här kollar vi skalan och ser till att stjärn-fönstret är öppen och i rätt tab.
 def hitta_skalfaktor(skalbild_sokvag):
@@ -89,32 +98,35 @@ def testa_skalfaktor(skalbild_sokvag, tidigare_faktor):
     hittad_testbild = pyautogui.locateOnScreen(testbild_array, confidence=0.8, grayscale=False)
 
     if hittad_testbild is not None:
-        return tidigare_faktor
+        print(f"vid hittad_testbild not none {skalbild_sokvag, tidigare_faktor}")
+        faktor = tidigare_faktor
+        return faktor
 
     return None
 
 def prepare(): # Kolla om tidigare faktor fortfarande funkar.
     json_fil = "scale_data.json"
-    tidigare_faktor = None
-
+    global faktor
+    global tidigare_faktor
     if os.path.isfile(json_fil):  # Om det finns en fil
         with open(json_fil, "r") as json_file:  # öppna den
             json_data = json.load(json_file)  # och läs datan
             tidigare_faktor = json_data.get("faktor")  # Hämta tidigare faktor
-
+            print(f"tidigare_faktor har nu blivit {tidigare_faktor}")
     if tidigare_faktor is not None:
         print(f"Tidigare faktor: {tidigare_faktor}")
-        faktor = testa_skalfaktor("img/01_image.bmp", tidigare_faktor)
-        if faktor is None:
+        testa_skalfaktor("img/01_image.bmp", tidigare_faktor)
+        if tidigare_faktor is None:
+            print(f"första if satsen {ny_faktor}")
             faktor = hitta_skalfaktor("img/01_image.bmp")
     else:
+        print("else grejen")
         faktor = hitta_skalfaktor("img/01_image.bmp")
 
-#    if faktor is not None:
-#        # Här fortsätter du med resten av programmet med den hittade faktorn
-#        print(f"Avgjord faktor: {faktor}")
-#    else:
-#        print("Ingen giltig skalfaktor hittades.")
+    if faktor is not None:
+        print(f"Avgjord faktor: {faktor}")
+    else:
+        print("Ingen giltig skalfaktor hittades.")
 
 prepare()
 
@@ -300,11 +312,15 @@ def leta_sten(): # Här bakar jag ihop för att (ev?) kunna välja explorer el g
             hitta_check("img/check.bmp", faktor)
 
     print("Alla möjliga klick är genomförda.")
-leta_sten()
+#leta_sten() # Används bara när koden testas.
+
+def stop_program():
+    app.quit()
+
 if __name__ == "__prepare__":
-    app = QApplication([])
+    app = QApplication(sys.argv)
     miniprogram = ProgressDialog()
-    #miniprogram.show()
+    miniprogram.show()
     leta_sten()
-    app.exec_()
-    sys.exit()
+    app.aboutToQuit.connect(stop_program)
+    sys.exit(app.exec_())
