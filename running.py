@@ -80,7 +80,7 @@ def hitta_skalfaktor(skalbild_sokvag):
 
         faktor -= 0.02
 
-    return None
+    return faktor
 
 def testa_skalfaktor(skalbild_sokvag, tidigare_faktor):
     testbild = Image.open(skalbild_sokvag)
@@ -93,7 +93,7 @@ def testa_skalfaktor(skalbild_sokvag, tidigare_faktor):
 
     return None
 
-def prepare():
+def prepare(): # Kolla om tidigare faktor fortfarande funkar.
     json_fil = "scale_data.json"
     tidigare_faktor = None
 
@@ -150,6 +150,7 @@ def hitta_bild_stjarna(bild_sokvag, faktor):    # kolla om stjärnmeny Else öpp
     bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
     hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True)
 
+# Började skriva här på en funktion som söker bara i ett område, men den måste fixas lite och det måste bli ett nytt område när leta_sten börjar.
     if hittad_position is not None:
         # Om stjärnan hittas
         #x, y, bredd, hojd = hittad_position
