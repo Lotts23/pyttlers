@@ -59,7 +59,7 @@ class ProgressDialog(QDialog):
         #self.hide()  # Göm minifönstret
         leta_sten()  # Starta leta_sten-funktionen
 
-#def prepare(): # Här kollar vi skalan och ser till att stjärn-fönstret är öppen och i rätt tab.
+# Här kollar vi skalan och ser till att stjärn-fönstret är öppen och i rätt tab.
 def hitta_skalfaktor(skalbild_sokvag):
     faktor = 1.0  # Startvärde för faktor
     while faktor >= 0.2:
@@ -116,7 +116,7 @@ def prepare(): # Kolla om tidigare faktor fortfarande funkar.
 #    else:
 #        print("Ingen giltig skalfaktor hittades.")
 
-#prepare()
+prepare()
 
 with open("scale_data.json", "r") as json_file:
     data = json.load(json_file)
@@ -267,7 +267,7 @@ def hitta_check(bild_sokvag, faktor):
         bild = Image.open(bild_sokvag)
         skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
         bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
-        hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.7, grayscale=False)
+        hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=False)
 
         if hittad_position is not None:
             hittad_check = pyautogui.center(hittad_position)
@@ -276,7 +276,7 @@ def hitta_check(bild_sokvag, faktor):
             time.sleep(0.1) 
             pyautogui.mouseDown(hittad_check)
             pyautogui.mouseUp()
-            time.sleep(3)  # minskar fel
+            time.sleep(5)  # minskar fel
             print(f"{bild_sokvag} klickad")
             break
         else:
