@@ -111,7 +111,8 @@ hitta_skalfaktor("img/01_image.bmp")
 with open("scale_data.json", "r") as json_file:
     data = json.load(json_file)
     faktor = data["faktor"]
-#starmenu_area = None
+
+#starmenu_area = None ### Jag vill ha den här funktionen, men den är inte helt bra just nu. dessutom måste jag ha en separat just för resurs/typ-fönster. De hamnar inte alltid på samma ställe....
 def oppna_stjarna(bild_sokvag, faktor): # Definitionen måste ligga före anropet.
     hittad = None
     bild = Image.open(bild_sokvag)
