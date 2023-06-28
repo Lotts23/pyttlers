@@ -1,7 +1,7 @@
 import json
+import os
 import sys
 import time
-import os
 
 import numpy as np
 import pyautogui
@@ -59,55 +59,64 @@ class ProgressDialog(QDialog):
         #self.hide()  # Göm minifönstret
         leta_sten()  # Starta leta_sten-funktionen
 
-with open("nummer.json", "r") as json_file:
-    data = json.load(json_file)
-    geologer = data["geologer"]
-    resurs = data["resurs"]
-
-
 #def prepare(): # Här kollar vi skalan och ser till att stjärn-fönstret är öppen och i rätt tab.
-
 def hitta_skalfaktor(skalbild_sokvag):
-    json_fil = "scale_data.json"
+    faktor = 1.0  # Startvärde för faktor
+    while faktor >= 0.2:
+        skalbild = Image.open(skalbild_sokvag)
+        skalad_bild = skalbild.resize((int(skalbild.width * faktor), int(skalbild.height * faktor)))
+        skalbild_array = np.array(skalad_bild)
+        hittad_skalfaktor = pyautogui.locateOnScreen(skalbild_array, confidence=0.7, grayscale=True)
 
-    if os.path.isfile(json_fil):
-        with open(json_fil, "r") as json_file:
-            json_data = json.load(json_file)
-            tidigare_faktor = json_data.get("faktor")
+        if hittad_skalfaktor is not None:
+            faktor = round(faktor, 1)
+            data = {"faktor": faktor}
+            with open("scale_data.json", "w") as json_file:
+                json.dump(data, json_file)
+            return faktor
 
-            if tidigare_faktor is not None:
-                print(f"Tidigare faktor: {tidigare_faktor}")
-                hittad_skalfaktor = testa_faktor(skalbild_sokvag, tidigare_faktor)
+        print(".", end="", flush=True)
+        time.sleep(0.5)
 
-                if hittad_skalfaktor is not None:
-                    return hittad_skalfaktor
-
-    return utforska_skalfaktor(skalbild_sokvag)
-
-
-def testa_faktor(skalbild_sokvag, faktor):
-    for _ in range(3):
-        while faktor >= 0.2:
-            skalbild = Image.open(skalbild_sokvag)
-            skalad_bild = skalbild.resize((int(skalbild.width * faktor), int(skalbild.height * faktor)))
-            skalbild_array = np.array(skalad_bild)
-            hittad_skalfaktor = pyautogui.locateOnScreen(skalbild_array, confidence=0.7, grayscale=True)
-
-            if hittad_skalfaktor is not None:
-                faktor = round(faktor, 1)
-                data = {"faktor": faktor}
-                with open("scale_data.json", "w") as json_file:
-                    json.dump(data, json_file)
-                return faktor
-
-            print(".", end="", flush=True)
-            time.sleep(0.5)
-
-            faktor -= 0.02
+        faktor -= 0.02
 
     return None
 
-hitta_skalfaktor("img/01_image.bmp")
+def testa_skalfaktor(skalbild_sokvag, tidigare_faktor):
+    testbild = Image.open(skalbild_sokvag)
+    testad_bild = testbild.resize((int(testbild.width * tidigare_faktor), int(testbild.height * tidigare_faktor)))
+    testbild_array = np.array(testad_bild)
+    hittad_testbild = pyautogui.locateOnScreen(testbild_array, confidence=0.8, grayscale=False)
+
+    if hittad_testbild is not None:
+        return tidigare_faktor
+
+    return None
+
+def prepare():
+    json_fil = "scale_data.json"
+    tidigare_faktor = None
+
+    if os.path.isfile(json_fil):  # Om det finns en fil
+        with open(json_fil, "r") as json_file:  # öppna den
+            json_data = json.load(json_file)  # och läs datan
+            tidigare_faktor = json_data.get("faktor")  # Hämta tidigare faktor
+
+    if tidigare_faktor is not None:
+        print(f"Tidigare faktor: {tidigare_faktor}")
+        faktor = testa_skalfaktor("img/01_image.bmp", tidigare_faktor)
+        if faktor is None:
+            faktor = hitta_skalfaktor("img/01_image.bmp")
+    else:
+        faktor = hitta_skalfaktor("img/01_image.bmp")
+
+    if faktor is not None:
+        # Här fortsätter du med resten av programmet med den hittade faktorn
+        print(f"Avgjord faktor: {faktor}")
+    else:
+        print("Ingen giltig skalfaktor hittades.")
+
+prepare()
 
 with open("scale_data.json", "r") as json_file:
     data = json.load(json_file)
@@ -226,77 +235,72 @@ def hitta_geolog(bild_sokvag, faktor):
         print(f"{bild_sokvag} inte hittad") #testfas
     return hittad
 
+def hitta_resurs(bild_sokvag, faktor):
+    for _ in range(3): # Loopa 3ggr
+        #global starmenu_area
+        bild = Image.open(bild_sokvag)
+        skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
+        bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
+        hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True) #, region=starmenu_area)
+
+        if hittad_position is not None:
+            x, y, width, height = hittad_position # Klickar i högra hörnet för att kunna ha med texten brevid knappen
+            knappens_plats = x + width - (width // 5), y + (height // 2)
+            time.sleep(0.5)  # minskar fel
+            pyautogui.moveTo(knappens_plats)
+            time.sleep(0.1) 
+            pyautogui.mouseDown(2)
+            pyautogui.mouseUp()
+            pyautogui.moveTo(200, 200)
+            time.sleep(3)  # minskar fel
+            print(f"{bild_sokvag} klickad")
+            break
+        else:
+            print("resurs inte hittad")
+            time.sleep(1)
+
+def hitta_check(bild_sokvag, faktor):
+    for _ in range(3): # Loopa 3ggr
+        hittad = None
+        time.sleep(1)
+        bild = Image.open(bild_sokvag)
+        skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
+        bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
+        hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.7, grayscale=True)
+
+        if hittad_position is not None:
+            hittad = pyautogui.center(hittad_position)
+            time.sleep(0.5)  # minskar fel
+            pyautogui.moveTo(hittad)
+            time.sleep(0.1) 
+            pyautogui.mouseDown(2)
+            pyautogui.mouseUp()
+            time.sleep(3)  # minskar fel
+            print(f"{bild_sokvag} klickad")
+            break
+        else:
+            print("check inte hittad")
+            time.sleep(1)
+
 def leta_sten(): # Här bakar jag ihop för att (ev?) kunna välja explorer el geolog
     global flagga  # Använd global för att referera till den globala variabeln
     
     for geolog in geologer:
         flagga = True  # Återställ flagga till True vid varje iteration
         while flagga == Tru: # Loopar geolog+resurs tills geologen inte hittas, därefter tar den nästa geolog och upprepar
-
             hittad_geolog = hitta_geolog(f"img/geo_{geolog}.bmp", faktor)
             if not hittad_geolog:
                 flagga = False
 
             #hitta_geolog(f"img/geo_{geolog}.bmp", faktor)
 
-            def hitta_resurs(bild_sokvag, faktor):
-                for _ in range(3): # Loopa 3ggr
-                    #global starmenu_area
-                    bild = Image.open(bild_sokvag)
-                    skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
-                    bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
-                    hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True) #, region=starmenu_area)
-
-                    if hittad_position is not None:
-                        x, y, width, height = hittad_position # Klickar i högra hörnet för att kunna ha med texten brevid knappen
-                        knappens_plats = x + width - (width // 5), y + (height // 2)
-                        time.sleep(0.5)  # minskar fel
-                        pyautogui.moveTo(knappens_plats)
-                        time.sleep(0.1) 
-                        pyautogui.mouseDown(2)
-                        pyautogui.mouseUp()
-                        pyautogui.moveTo(200, 200)
-                        time.sleep(3)  # minskar fel
-                        print(f"{bild_sokvag} klickad")
-                        break
-                    else:
-                        print("resurs inte hittad")
-                        time.sleep(1)
-
             hitta_resurs(f"img/resurs_{resurs}.bmp", faktor)
-
-            def hitta_check(bild_sokvag, faktor):
-                for _ in range(3): # Loopa 3ggr
-                    hittad = None
-                    time.sleep(1)
-                    bild = Image.open(bild_sokvag)
-                    skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
-                    bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
-                    hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.7, grayscale=True)
-
-                    if hittad_position is not None:
-                        hittad = pyautogui.center(hittad_position)
-                        time.sleep(0.5)  # minskar fel
-                        pyautogui.moveTo(hittad)
-                        time.sleep(0.1) 
-                        pyautogui.mouseDown(2)
-                        pyautogui.mouseUp()
-                        time.sleep(3)  # minskar fel
-                        print(f"{bild_sokvag} klickad")
-                        break
-                    else:
-                        print("check inte hittad")
-                        time.sleep(1)
-
 
             hitta_check("img/check.png", faktor)
 
-
-
-    leta_sten()
     print("Alla möjliga klick är genomförda.")
 
-if __name__ == "__main__":
+if __name__ == "__prepare__":
     app = QApplication([])
     miniprogram = ProgressDialog()
     #miniprogram.show()
