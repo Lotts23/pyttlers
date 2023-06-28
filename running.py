@@ -66,30 +66,74 @@ with open("nummer.json", "r") as json_file:
 
 #def prepare(): # Här kollar vi skalan och ser till att stjärn-fönstret är öppen och i rätt tab.
 
-def hitta_skalfaktor(skalbild_sokvag): # Som det låter, vi kollar skalan
-    for _ in range(3): # Loopa 3ggr
-        faktor = 1 # Vi kan börja med faktor 2 också och först skala upp bilden, med sämre resultat och längre tid
+def hitta_skalfaktor(skalbild_sokvag):
+    json_fil = "scale_data.json"
+
+    if os.path.isfile(json_fil):
+        with open(json_fil, "r") as json_file:
+            try:
+                json_data = json.load(json_file)
+                tidigare_faktor = json_data.get("faktor")
+
+                if tidigare_faktor is not None:
+                    print(f"Tidigare faktor: {tidigare_faktor}")
+                    hittad_skalfaktor = testa_faktor(skalbild_sokvag, tidigare_faktor)
+
+                    if hittad_skalfaktor is not None:
+                        return hittad_skalfaktor
+
+            except json.JSONDecodeError:
+                pass
+
+    return utforska_skalfaktor(skalbild_sokvag)
+
+
+def testa_faktor(skalbild_sokvag, faktor):
+    skalbild = Image.open(skalbild_sokvag)
+
+    while faktor >= 0.2:
+        skalad_bild = skalbild.resize((int(skalbild.width * faktor), int(skalbild.height * faktor)))
+        skalbild_array = np.array(skalad_bild)
+        hittad_skalfaktor = pyautogui.locateOnScreen(skalbild_array, confidence=0.7, grayscale=True)
+
+        if hittad_skalfaktor is not None:
+            faktor = round(faktor, 1)
+            data = {"faktor": faktor}
+            with open("scale_data.json", "w") as json_file:
+                json.dump(data, json_file)
+            return faktor
+
+        print(".", end="", flush=True)
+        time.sleep(0.5)
+
+        faktor -= 0.02
+
+    return None
+
+
+def utforska_skalfaktor(skalbild_sokvag):
+    for _ in range(3):
+        faktor = 1
         skalbild = Image.open(skalbild_sokvag)
 
-        while faktor >= 0.2: # Den behöver aldrig pröva mindre än så här. Om faktor 1 är 200% i spelet så är 0.25 50% och spelet går inte lägre.
+        while faktor >= 0.2:
             skalad_bild = skalbild.resize((int(skalbild.width * faktor), int(skalbild.height * faktor)))
-            skalbild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
+            skalbild_array = np.array(skalad_bild)
             hittad_skalfaktor = pyautogui.locateOnScreen(skalbild_array, confidence=0.7, grayscale=True)
 
-            if hittad_skalfaktor is not None: #skriv till json
-                #pyautogui.moveTo(hittad_skalfaktor)
+            if hittad_skalfaktor is not None:
                 faktor = round(faktor, 1)
                 data = {"faktor": faktor}
-                with open("scale_data.json", "w") as json_file: # Skriv i json
+                with open("scale_data.json", "w") as json_file:
                     json.dump(data, json_file)
                 return faktor
 
             print(".", end="", flush=True)
-            time.sleep(0.5) # Vid många fel kan denna ökas.
+            time.sleep(0.5)
 
-            faktor -= 0.02 # Lägre tal ger större nogrannhet i sökningen.
+            faktor -= 0.02
 
-        return None
+    return None
 
 hitta_skalfaktor("img/01_image.bmp")
 
