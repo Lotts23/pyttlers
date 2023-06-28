@@ -1,6 +1,7 @@
 import json
 import sys
 import time
+import os
 
 import numpy as np
 import pyautogui
@@ -230,7 +231,7 @@ def leta_sten(): # Här bakar jag ihop för att (ev?) kunna välja explorer el g
     
     for geolog in geologer:
         flagga = True  # Återställ flagga till True vid varje iteration
-        while flagga == True: # Loopar geolog+resurs tills geologen inte hittas, därefter tar den nästa geolog och upprepar
+        while flagga == Tru: # Loopar geolog+resurs tills geologen inte hittas, därefter tar den nästa geolog och upprepar
 
             hittad_geolog = hitta_geolog(f"img/geo_{geolog}.bmp", faktor)
             if not hittad_geolog:
