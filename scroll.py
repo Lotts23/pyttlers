@@ -57,3 +57,4 @@ with open("scale_data.json", "r") as json_file:
     faktor = data["faktor"]
 
 hitta_check("img/02_image.bmp", faktor)
+
