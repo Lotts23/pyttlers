@@ -335,6 +335,7 @@ def hitta_geolog(bild_sokvag, faktor):
         return senaste_plats
 
 def hitta_resurs(bild_sokvag, faktor):
+    vit_text = False
     for _ in range(3): # Loopa 3ggr
         command_area = berakna_command("img/05_image.bmp", faktor)
         bild = Image.open(bild_sokvag)
@@ -351,9 +352,19 @@ def hitta_resurs(bild_sokvag, faktor):
             pyautogui.mouseUp()
             pyautogui.moveTo(sovplats)
             print(f"{bild_sokvag} klickad")
+            vit_text = True
             break
         else:
             time.sleep(0.1)
+            
+    if not vit_text:
+        for _ in range(1): # Loopa inte
+            print("väljer guldfärgad resurs")
+            hitta_resurs(f"img/resurs_{resurs}g.bmp", faktor)
+            
+            break
+        
+                
 
 def hitta_check(bild_sokvag, faktor):
     for _ in range(3): # Loopa 3ggr
