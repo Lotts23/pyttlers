@@ -19,10 +19,14 @@ with open("nummer.json", "r") as json_file:
 with open("geo_namn.json", "r") as geo_file:
     geo_data = json.load(geo_file)
     geo_dict = geo_data
+    
+with open("resurs_namn.json", "r") as resurs_file:
+    resurs_data = json.load(resurs_file)
+    resurs_dict = resurs_data    
 
 faktor = None
-faktor = None
 geologer_namn = [geo_dict[str(num)] for num in geologer]    
+resurs_namn = [resurs_dict[str(num)] for num in resurs]  
 
 with open("scale_data.json", "r") as json_file:
     data = json.load(json_file)
@@ -84,7 +88,7 @@ def hitta_skalfaktor(skalbild_sokvag):
             return faktor
 
         print(".", end="", flush=True)
-        time.sleep(0.1)
+        time.sleep(0.01)
 
     return #tillatna_varden[3]  # Returnera 100% om ingen match hittades
 
@@ -98,7 +102,7 @@ def testa_skalfaktor(skalbild_sokvag, faktor):
         return faktor
     else:
         pyautogui.moveTo(hittad_testbild)
-        hitta_skalfaktor("img/01_image.bmp")
+        hitta_skalfaktor("img/01_image.bmp") ####### HHHHHÄÄÄÄÄRRRR.  ########
 
 def prepare(): # Kolla om tidigare faktor fortfarande funkar.
     json_fil = "scale_data.json"
