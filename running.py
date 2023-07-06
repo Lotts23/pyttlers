@@ -7,9 +7,9 @@ import numpy as np
 import pyautogui
 from PIL import Image
 from PyQt5.QtCore import Qt, QRect, QEvent
-from PyQt5.QtGui import QKeySequence, QShortcut
+from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import (QApplication, QDialog, QLabel, QPushButton,
-                             QVBoxLayout)
+                             QVBoxLayout, QAction, qApp)
 
 with open("nummer.json", "r") as json_file:
     data = json.load(json_file)
@@ -49,32 +49,37 @@ class ProgressDialog(QDialog):
         layout = QVBoxLayout(self)
 
         self.label = QLabel(self)
-        self.label.setText(f"Process pågår...\n\nSöker {geologer_namn} som ska leta {resurs_namn}\nnödstopp genom att flytta musen till skärmens hörn.")
+        geologer_str = ", ".join(geologer_namn)
+        self.label.setText(f"Process pågår...\n\nSöker {geologer_str} som ska leta efter{resurs_namn}.\nnödstopp genom att flytta musen till skärmens hörn.")
         self.label.setWordWrap(True)
-
+        
         self.label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.label)
+        
+        self.restart_button = QPushButton("Starta om sökning", self)
+        layout.addWidget(self.restart_button)
+        self.restart_button.clicked.connect(self.start_process)
+        
+        self.stop_action = QAction("Avbryt (q)", self)
+        self.stop_action.setShortcut(QKeySequence("q"))
+        self.stop_action.triggered.connect(self.stop_process)
+        self.addAction(self.stop_action)
 
-        self.button = QPushButton("Starta om processen", self)
-        layout.addWidget(self.button)
-        self.button.clicked.connect(self.start_process)  # Anslut knappen till start_process-metoden
-        self.button.setFocus()
-
-        self.button = QPushButton("Avbryt", self)
-        layout.addWidget(self.button)
-
-        self.button.clicked.connect(self.stop_process)
+        self.stop_button = QPushButton("Avbryt", self)
+        layout.addWidget(self.stop_button)
+        self.stop_button.clicked.connect(self.stop_process)
 
     def stop_process(self):
         self.close()  # Stäng minifönstret och avbryt processen
-        sys.exit()  # Avsluta programmet
+        qApp.quit()  # Avsluta programmet
 
     def start_process(self):
         #self.hide()  # Göm minifönstret
         leta_sten()  # Starta leta_sten-funktionen
-    
-    shortcut = QShortcut(QKeySequence("q"), self)
-    shortcut.activated.connect(self.stop_process)
+        self.process_completed()
+        
+    def process_completed(self):
+        self.label.setText("Processen är klar.\nAlla möjliga klick är genomförda.")
     
     def event(self, event):
         if event.type() == QEvent.KeyPress and event.key() == Qt.Key_Q:
@@ -365,7 +370,7 @@ def hitta_geolog(bild_sokvag, faktor):
         bild = Image.open(bild_sokvag)
         skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
         bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
-        hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.75, grayscale=True, region=starmenu_area)
+        hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.77, grayscale=True, region=starmenu_area)
     
         if hittad_position is not None:
             hittad = pyautogui.center(hittad_position)
@@ -398,7 +403,7 @@ def leta_sten(): # Här bakar jag ihop för att (ev?) kunna välja explorer el g
 
 
 
-    print("Alla möjliga klick är genomförda.")
+    #print("Alla möjliga klick är genomförda.")
 #leta_sten() # Används bara när koden testas.
 
 
@@ -407,10 +412,13 @@ def leta_sten(): # Här bakar jag ihop för att (ev?) kunna välja explorer el g
 def stop_program():
     app.quit()
 
+def process_completed():
+    miniprogram.process_completed()
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     miniprogram = ProgressDialog()
     miniprogram.show()
     leta_sten()
-    app.aboutToQuit.connect(stop_program)
+    process_completed()
     sys.exit(app.exec_())
