@@ -35,10 +35,10 @@ class StartDialog(QtWidgets.QDialog):
     def open_geo_window(self):
         # Stäng dialogrutan och öppna geo-fönstret
         self.accept()
-        geo_window = GeoWindow()
+        self.geo_window = GeoWindow()
         self.hide()
-        geo_window.returnToDialog.connect(self.show)  # Lägg till signalhantering för att visa dialogrutan igen
-        geo_window.show()
+        self.geo_window.returnToDialog.connect(self.show)  # Lägg till signalhantering för att visa dialogrutan igen
+        self.geo_window.show()
 
     def open_expl_window(self):
         # Stäng dialogrutan och öppna expl-fönstret

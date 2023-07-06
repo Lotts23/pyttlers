@@ -241,8 +241,8 @@ class GeoWindow(QtWidgets.QMainWindow):
         back_button.clicked.connect(self.return_to_dialog)
 
     def return_to_dialog(self):
-        self.returnToDialog.emit()
         self.close()
+        self.returnToDialog.emit()
         
     def get_button_by_value(self, value):
         for button in self.buttonsLeft + self.buttonsRight:

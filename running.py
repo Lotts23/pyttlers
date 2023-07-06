@@ -6,8 +6,8 @@ import time
 import numpy as np
 import pyautogui
 from PIL import Image
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QKeyEvent
+from PyQt5.QtCore import Qt, QRect, QEvent
+from PyQt5.QtGui import QKeySequence, QShortcut
 from PyQt5.QtWidgets import (QApplication, QDialog, QLabel, QPushButton,
                              QVBoxLayout)
 
@@ -37,14 +37,20 @@ class ProgressDialog(QDialog):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Pågår...")
-        self.setFixedSize(300, 150)
+        self.setFixedSize(350, 200)
         self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)  # Fönstret alltid överst
 
         self.setStyleSheet(open("stil.css").read())  # Länk till stil.css
 
+        desktop = QApplication.desktop()
+        screen_rect = desktop.availableGeometry()
+        self.setGeometry(QRect(screen_rect.width() - self.width(), 0, self.width(), self.height()))
+
         layout = QVBoxLayout(self)
 
-        self.label = QLabel(f"Process pågår...\nSöker {geologer_namn} som ska leta {resurs}\nnödstopp genom att flytta musen till skärmens hörn.", self)
+        self.label = QLabel(self)
+        self.label.setText(f"Process pågår...\n\nSöker {geologer_namn} som ska leta {resurs_namn}\nnödstopp genom att flytta musen till skärmens hörn.")
+        self.label.setWordWrap(True)
 
         self.label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.label)
@@ -67,9 +73,13 @@ class ProgressDialog(QDialog):
         #self.hide()  # Göm minifönstret
         leta_sten()  # Starta leta_sten-funktionen
     
-    def keyPressEvent(self, event: QKeyEvent):
-        if event.key() == Qt.Key_Q:
+    shortcut = QShortcut(QKeySequence("q"), self)
+    shortcut.activated.connect(self.stop_process)
+    
+    def event(self, event):
+        if event.type() == QEvent.KeyPress and event.key() == Qt.Key_Q:
             self.stop_process()
+        return super().event(event)
 
 # Här kollar vi skalan och ser till att stjärn-fönstret är öppen och i rätt tab.
 def hitta_skalfaktor(skalbild_sokvag):
@@ -225,7 +235,7 @@ with open("scale_data.json", "r") as json_file: # Ser till att vi läser in fär
     faktor = data["faktor"]
 #print(starmenu_area)
 ### Scrolla till fösta geologen 
-def hitta_scroll(bild_sokvag, faktor):
+def hitta_scroll(bild_sokvag, faktor): # Den här scrollar tills den hittar en geolog ur listan
     global starmenu_area
     hittad_starmenu = None
     hittad_position = None
@@ -251,9 +261,8 @@ def hitta_scroll(bild_sokvag, faktor):
         #print("Letar...")
         time.sleep(0.01)
 
+sovplats = 200, 200 # Bara för att alltid iallf ha nån giltlig sovplats - alltså där inga inforutor stör sökningen
 
-
-sovplats = 200, 200
 def hitta_starmenu(bild_sokvag, faktor):
     hittad_starmenu = None
     global sovplats
@@ -272,11 +281,11 @@ def hitta_starmenu(bild_sokvag, faktor):
         pyautogui.mouseDown(hittad_starmenu)
         pyautogui.mouseUp()
         pyautogui.moveTo(sovplats)
-        hitta_scroll(f"img/geo_{geologer[0]}.bmp", faktor)
+        hitta_scroll(f"img/geo_{geologer[0]}.bmp", faktor) # Första geologen i listan. Tyvärr inte bäst då ordningen kan variera och en geologtyp kan scrollas förbi.
+        return sovplats
     else:
         #print("Stjärnmeny inte hittad")
         time.sleep(1)
-
 
 with open("scale_data.json", "r") as json_file:
     data = json.load(json_file)
@@ -284,7 +293,7 @@ with open("scale_data.json", "r") as json_file:
 
 hitta_starmenu("img/02_image.bmp", faktor)
 ###
-def berakna_command(bild_sokvag, faktor):    
+def berakna_command(bild_sokvag, faktor): # Hitta sökområdet för resurser och check.
     global command_area
     bild = Image.open(bild_sokvag)
     skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
@@ -302,37 +311,8 @@ def berakna_command(bild_sokvag, faktor):
         command_area = (command_x, command_y, round(command_bredd), round(command_höjd))
         return command_area
 
-flagga = True
-senaste_plats = None
-
 print(f"Process pågår...\nSöker {', '.join(geologer_namn)} som ska leta efter {resurs_namn}")
-def hitta_geolog(bild_sokvag, faktor):
-    global flagga
-    global starmenu_area
-    global senaste_plats
-    global geolog
-    for _ in range(3): # Loopa 3ggr om den inte hittar
-        hittad = None
-        bild = Image.open(bild_sokvag)
-        skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
-        bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
-        hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.7, grayscale=True, region=starmenu_area)
-    
-        if hittad_position is not None  and hittad_position != senaste_plats:
-            senaste_plats = hittad_position
-            hittad = pyautogui.center(hittad_position)
-            pyautogui.moveTo(hittad)
-            time.sleep(0.1) 
-            pyautogui.mouseDown(hittad)
-            pyautogui.mouseUp()
-            pyautogui.moveTo(sovplats) # För att bli av med popup-bubblan
-            print(f"{bild_sokvag} klickad")
-            time.sleep(0.1)
-        else:
-            hitta_scroll(f"img/geo_{geolog}.bmp", faktor)
-            flagga = False
-            time.sleep(0.1)
-        return senaste_plats
+
 
 def hitta_resurs(bild_sokvag, faktor):
     for _ in range(3): # Loopa 3ggr
@@ -350,18 +330,15 @@ def hitta_resurs(bild_sokvag, faktor):
             pyautogui.mouseDown(knappens_plats)
             pyautogui.mouseUp()
             pyautogui.moveTo(sovplats)
-            print(f"{bild_sokvag} klickad")
+            #print(f"{bild_sokvag} klickad")
             break
         else:
             time.sleep(0.1)
-            
-        
-                
 
 def hitta_check(bild_sokvag, faktor):
     for _ in range(3): # Loopa 3ggr
         hittad_check = None
-        time.sleep(1)
+        time.sleep(0.1)
         bild = Image.open(bild_sokvag)
         skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
         bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
@@ -372,38 +349,65 @@ def hitta_check(bild_sokvag, faktor):
             pyautogui.moveTo(hittad_check)
             pyautogui.mouseDown(hittad_check)
             pyautogui.mouseUp()
-            time.sleep(1)  # minskar fel
-            print(f"{bild_sokvag} klickad")
+            time.sleep(3)  # minskar fel
+            #print(f"{bild_sokvag} klickad")
             break
         else:
             time.sleep(0.1)
 
+def hitta_geolog(bild_sokvag, faktor):
+    global flagga
+    flagga = True
+    global starmenu_area
+    global geolog
+    for _ in range(3): # Loopa 3ggr om den inte hittar
+        hittad = None
+        bild = Image.open(bild_sokvag)
+        skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
+        bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
+        hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.75, grayscale=True, region=starmenu_area)
+    
+        if hittad_position is not None:
+            hittad = pyautogui.center(hittad_position)
+            pyautogui.moveTo(hittad)
+            time.sleep(0.1) 
+            pyautogui.mouseDown(hittad)
+            pyautogui.mouseUp()
+            pyautogui.moveTo(sovplats) # För att bli av med popup-bubblan
+            #print(f"{bild_sokvag} klickad")
+            time.sleep(0.1)
+            hitta_resurs(f"img/resurs_{resurs}.bmp", faktor)
+            hitta_check("img/check.bmp", faktor)
+        else:
+            flagga = False
+            time.sleep(0.1)
+    return hittad
+
+
 def leta_sten(): # Här bakar jag ihop för att (ev?) kunna välja explorer el geolog
     global flagga  # Använd global för att referera till den globala variabeln
     global geolog
-    for geolog in geologer:
-        geolog = geolog
-        flagga = True  # Återställ flagga till True vid varje iteration
-        while flagga == True: # Loopar geolog+resurs tills geologen inte hittas, därefter tar den nästa geolog och upprepar
+    
+    for geolog in geologer: # Här itererar vi alla nummer i listan från json
+        flagga = True # Återställ flagga till True vid varje iteration
+        while flagga: # Loopar geolog+resurs tills geologen inte hittas, därefter tar den nästa geolog och upprepar
             hittad_geolog = hitta_geolog(f"img/geo_{geolog}.bmp", faktor)
             if not hittad_geolog:
                 flagga = False
-                return geolog
+                break
 
-            hitta_resurs(f"img/resurs_{resurs}.bmp", faktor)
 
-            hitta_check("img/check.bmp", faktor)
 
     print("Alla möjliga klick är genomförda.")
-hitta_scroll(f"img/geo_{geologer[0]}.bmp", faktor)
+#leta_sten() # Används bara när koden testas.
 
-leta_sten() # Används bara när koden testas.
- 
 
+#hitta_scroll(f"img/geo_{geolog}.bmp", faktor)
+#hitta_scroll(f"img/geo_{geologer[0]}.bmp", faktor)
 def stop_program():
     app.quit()
 
-if __name__ == "__prepare__":
+if __name__ == "__main__":
     app = QApplication(sys.argv)
     miniprogram = ProgressDialog()
     miniprogram.show()

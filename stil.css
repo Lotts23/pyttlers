@@ -46,7 +46,8 @@ QWidget#rightestBox {
 }  
 QWidget {
     background-color: #5f5b54;
-    border: 4px double rgb(230, 153, 10);
+    color: white;
+    /* border: 4px double rgb(230, 153, 10); */
 }
 /* Dessa fungerar rätt dåligt när de ligger här, finns nu direkt i koden istället.
 QPushButton {

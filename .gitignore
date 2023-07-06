@@ -9,3 +9,4 @@ bin/
 bin/*
 Säk/*
 .DS_Store
+*.log
