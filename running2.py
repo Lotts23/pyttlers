@@ -15,6 +15,7 @@ with open("nummer.json", "r") as json_file:
     data = json.load(json_file)
     explorers = data["explorers"]
     typ = data["typ"]  
+    tid = data["tid"]  
     
 with open("expl_namn.json", "r") as expl_file:
     expl_data = json.load(expl_file)
@@ -23,15 +24,23 @@ with open("expl_namn.json", "r") as expl_file:
 with open("typ_namn.json", "r") as typ_file:
     typ_data = json.load(typ_file)
     typ_dict = typ_data    
+    
+with open("tid_namn.json", "r") as tid_file:
+    tid_data = json.load(tid_file)
+    tid_dict = tid_data        
 
 faktor = None
 explorers_namn = [expl_dict[str(num)] for num in explorers]    
 typ_namn = typ_dict[str(typ)] 
+tid_namn = tid_dict[str(tid)] 
 explorer = None
-with open("scale_data.json", "r") as json_file:
-    data = json.load(json_file)
-    faktor = data["faktor"]
-    faktor = faktor
+
+try:
+    with open("scale_data.json", "r") as json_file:
+        data = json.load(json_file)
+        faktor = data["faktor"]
+except FileNotFoundError:
+    faktor = 0.5
 
 class ProgressDialog(QDialog):
     def __init__(self):
@@ -43,14 +52,14 @@ class ProgressDialog(QDialog):
         self.setStyleSheet(open("stil.css").read())  # Länk till stil.css
 
         desktop = QApplication.desktop()
-        screen_rect = desktop.availableexplmetry()
-        self.setexplmetry(QRect(screen_rect.width() - self.width(), 0, self.width(), self.height()))
+        screen_rect = desktop.availableGeometry()
+        self.setGeometry(QRect(screen_rect.width() - self.width(), 0, self.width(), self.height()))
 
         layout = QVBoxLayout(self)
 
         self.label = QLabel(self)
         explorers_str = ", ".join(explorers_namn)
-        self.label.setText(f"Process pågår...\n\nSöker {explorers_str} som ska leta efter {typ_namn}.\nnödstopp genom att flytta musen till skärmens hörn.")
+        self.label.setText(f"Process pågår...\n\nSöker {explorers_str} som ska leta efter {typ_namn}, under {tid_namn} tid.\nNödstopp genom att flytta musen till skärmens hörn.")
         self.label.setWordWrap(True)
         
         self.label.setAlignment(Qt.AlignCenter)
@@ -75,7 +84,7 @@ class ProgressDialog(QDialog):
 
     def start_process(self):
         #self.hide()  # Göm minifönstret
-        leta_sten()  # Starta leta_sten-funktionen
+        leta_skatt()  # Starta leta_skatt-funktionen
         self.process_completed()
         
     def process_completed(self):
@@ -146,7 +155,7 @@ with open("scale_data.json", "r") as json_file:
     faktor = data["faktor"]
     #print(faktor)
 
-def oppna_stjarna(bild_sokvag, faktor): # Definitionen måste ligga före anropet.
+def oppna_stjarna(bild_sokvag, faktor): 
     hittad = None
     bild = Image.open(bild_sokvag)
     skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
@@ -236,18 +245,18 @@ with open("nummer.json", "r") as json_file:
     data = json.load(json_file)
     explorers = data["explorers"]
     typ = data["typ"]
+    tid = data["tid"]
 
 with open("scale_data.json", "r") as json_file: # Ser till att vi läser in färsk faktor
     data = json.load(json_file)
     faktor = data["faktor"]
 #print(starmenu_area)
 ### Scrolla till fösta exploreren 
-rad = 0
+rad = 0 # Används för att hålla reda på när det är dags att scrolla
 
 def hitta_scroll(bild_sokvag, faktor):
     global starmenu_area 
     global explorer
-    hittad_starmenu = None
     hittad_position = None
     bild = Image.open(bild_sokvag)
     skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
@@ -318,7 +327,7 @@ def berakna_command(bild_sokvag, faktor): # Hitta sökområdet för typer och ch
         command_area = (command_x, command_y, round(command_bredd), round(command_höjd))
         return command_area
 
-print(f"Process pågår...\nSöker {', '.join(explorers_namn)} som ska leta efter {typ_namn}")
+print(f"Process pågår...\nSöker {', '.join(explorers_namn)} som ska leta efter {typ_namn}, under {tid_namn} tid.")
 
 
 def hitta_typ(bild_sokvag, faktor):
@@ -341,6 +350,27 @@ def hitta_typ(bild_sokvag, faktor):
             break
         else:
             time.sleep(0.1)
+            
+def hitta_tid(bild_sokvag, faktor):
+    for _ in range(3): # Loopa 3ggr
+        command_area = berakna_command("img/05_image.bmp", faktor)
+        bild = Image.open(bild_sokvag)
+        skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
+        bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
+        hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.85, grayscale=False, region=command_area)
+
+        if hittad_position is not None:
+            x, y, width, height = hittad_position # Klickar i högra hörnet för att kunna ha med texten brevid knappen
+            knappens_plats = x + width - (width // 5), y + (height // 2)
+            pyautogui.moveTo(knappens_plats)
+            time.sleep(0.1) 
+            pyautogui.mouseDown(knappens_plats)
+            pyautogui.mouseUp()
+            pyautogui.moveTo(sovplats)
+            #print(f"{bild_sokvag} klickad")
+            break
+        else:
+            time.sleep(0.1)            
 
 def hitta_check(bild_sokvag, faktor):
     for _ in range(3): # Loopa 3ggr
@@ -356,7 +386,7 @@ def hitta_check(bild_sokvag, faktor):
             pyautogui.moveTo(hittad_check)
             pyautogui.mouseDown(hittad_check)
             pyautogui.mouseUp()
-            time.sleep(4)  # minskar fel
+            
             #print(f"{bild_sokvag} klickad")
             break
         else:
@@ -386,6 +416,10 @@ def hitta_explorer(bild_sokvag, faktor):
             time.sleep(0.1)
             hitta_typ(f"img/typ_{typ}.bmp", faktor)
             hitta_check("img/check.bmp", faktor)
+            time.sleep(1)
+            hitta_tid(f"img/tid_{tid}.bmp", faktor)
+            hitta_check("img/check.bmp", faktor)
+            time.sleep(4)  # minskar fel
             rad = rad + 1
             #print(rad)
             if rad >= 9: # En rad rymmer 9 specialister, scrolla sedan en rad ner.
@@ -398,7 +432,7 @@ def hitta_explorer(bild_sokvag, faktor):
     return hittad
 
 
-def leta_sten(): # Här bakar jag ihop för att (ev?) kunna välja explorer el explorer
+def leta_skatt(): # Här bakar jag ihop för att (ev?) kunna välja explorer el explorer
     global flagga  # Använd global för att referera till den globala variabeln
     global explorer
     global sovplats
@@ -417,7 +451,7 @@ def leta_sten(): # Här bakar jag ihop för att (ev?) kunna välja explorer el e
     return explorer
 
         
-#leta_sten() # Används bara när koden testas.
+#leta_skatt() # Används bara när koden testas.
 
 
 def stop_program():
@@ -430,6 +464,6 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     miniprogram = ProgressDialog()
     miniprogram.show()
-    explorer = leta_sten()
+    explorer = leta_skatt()
     miniprogram.process_completed()
     sys.exit(app.exec_())

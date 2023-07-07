@@ -52,7 +52,7 @@ class ProgressDialog(QDialog):
 
         self.label = QLabel(self)
         geologer_str = ", ".join(geologer_namn)
-        self.label.setText(f"Process pågår...\n\nSöker {geologer_str} som ska leta efter {resurs_namn}.\nnödstopp genom att flytta musen till skärmens hörn.")
+        self.label.setText(f"Process pågår...\n\nSöker {geologer_str} som ska leta efter {resurs_namn}.\nNödstopp genom att flytta musen till skärmens hörn.")
         self.label.setWordWrap(True)
         
         self.label.setAlignment(Qt.AlignCenter)
