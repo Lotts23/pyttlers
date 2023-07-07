@@ -28,10 +28,12 @@ faktor = None
 geologer_namn = [geo_dict[str(num)] for num in geologer]    
 resurs_namn = resurs_dict[str(resurs)] 
 geolog = None
-with open("scale_data.json", "r") as json_file:
-    data = json.load(json_file)
-    faktor = data["faktor"]
-    faktor = faktor
+try:
+    with open("scale_data.json", "r") as json_file:
+        data = json.load(json_file)
+        faktor = data["faktor"]
+except FileNotFoundError:
+    faktor = 0.5
 
 class ProgressDialog(QDialog):
     def __init__(self):

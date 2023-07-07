@@ -364,7 +364,7 @@ class ExplWindow(QtWidgets.QMainWindow):
             "typ": self.selected_buttons_right,
             "tid": self.selected_buttons_rightest
         }
-        with open("scale_data.json", "w") as json_file:
+        with open("nummer.json", "w") as json_file:
             json.dump(json_data, json_file)  
   
     def clear_button_click(self):
