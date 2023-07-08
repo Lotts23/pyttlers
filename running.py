@@ -52,7 +52,7 @@ class ProgressDialog(QDialog):
 
         self.label = QLabel(self)
         geologer_str = ", ".join(geologer_namn)
-        self.label.setText(f"Process pågår...\n\nSöker {geologer_str} som ska leta efter {resurs_namn}.\nNödstopp genom att flytta musen till skärmens hörn.")
+        self.label.setText(f"Process pågår...\n\nSöker {geologer_str} som ska leta efter {resurs_namn}.\n\nNödstopp genom att flytta musen till skärmens hörn.")
         self.label.setWordWrap(True)
         
         self.label.setAlignment(Qt.AlignCenter)
@@ -230,9 +230,6 @@ starmenu_area = berakna_starmenu("img/02_image.bmp", faktor)
 #
 #   Nu börjar sökningen på riktigt, först läser vi in alla json
 #
-### Finns en ide här om att pröva geolog vs explorer, för att köra båda i samma fil
-
-
 
 with open("nummer.json", "r") as json_file:
     data = json.load(json_file)
@@ -242,14 +239,12 @@ with open("nummer.json", "r") as json_file:
 with open("scale_data.json", "r") as json_file: # Ser till att vi läser in färsk faktor
     data = json.load(json_file)
     faktor = data["faktor"]
-#print(starmenu_area)
-### Scrolla till fösta geologen 
+
 rad = 0
 
 def hitta_scroll(bild_sokvag, faktor):
     global starmenu_area 
-    global geolog
-    hittad_starmenu = None
+    global individ
     hittad_position = None
     bild = Image.open(bild_sokvag)
     skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
@@ -257,18 +252,38 @@ def hitta_scroll(bild_sokvag, faktor):
     hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True, region=starmenu_area)
     
     if hittad_position is None:
-        pyautogui.scroll(-2) # Scrollar neråt
         time.sleep(0.01)
-        # Och här loopas hitta_scroll genom funktionen scroll.
+        return False
+    else:
+        return True
 
-def scroll(): # Letar efter alla geologer en efter en.
+def scroll():
     global geologer
-    global geolog
-    for i, geolog in enumerate(geologer):
-        geolog_index = i
-        hitta_scroll(f"img/geo_{geologer[geolog_index]}.bmp", faktor)
+    global individ
+    geolog_index = 0
+    riktning = -1
+    counting = 0
+    vimpel = False
+    while vimpel is False:
+        for _ in range(len(geologer)):
+            individ = geologer[geolog_index]
+            hittad_geolog = hitta_scroll(f"img/geo_{individ}.bmp", faktor)
+            if hittad_geolog:
+                vimpel = True
+                break    
+            geolog_index = (geolog_index + 1) % len(geologer)
+        counting += 1
+        pyautogui.scroll(riktning) # Scrollar neråt
+        if counting >= 11 and riktning == -1:
+            riktning = 1
+            counting = 0
+        if counting >= 11 and riktning == 1:
+            break
+
+
 
 sovplats = 200, 200 # Bara för att alltid iallf ha nån giltlig sovplats - alltså där inga inforutor stör sökningen
+rad = 0
 
 def hitta_starmenu(bild_sokvag, faktor):
     hittad_starmenu = None
@@ -289,7 +304,7 @@ def hitta_starmenu(bild_sokvag, faktor):
         pyautogui.mouseDown(hittad_starmenu)
         pyautogui.mouseUp()
         pyautogui.moveTo(sovplats)
-        scroll() 
+        #scroll() 
         return sovplats
     else:
         #print("Stjärnmeny inte hittad")
@@ -301,7 +316,7 @@ with open("scale_data.json", "r") as json_file:
     faktor = data["faktor"] 
 
 hitta_starmenu("img/02_image.bmp", faktor)
-###
+
 def berakna_command(bild_sokvag, faktor): # Hitta sökområdet för resurser och check.
     global command_area
     bild = Image.open(bild_sokvag)
@@ -401,26 +416,28 @@ def hitta_geolog(bild_sokvag, faktor):
 
 
 def leta_sten(): # Här bakar jag ihop för att (ev?) kunna välja explorer el geolog
-    global flagga  # Använd global för att referera till den globala variabeln
+    global flagga  
     global geolog
     global sovplats
     
-    for geolog in geologer: # Här itererar vi alla nummer i listan från json
-        flagga = True # Återställ flagga till True vid varje iteration
-        while flagga: # Loopar geolog+resurs tills geologen inte hittas, därefter tar den nästa geolog och upprepar
+    for geolog in geologer:
+        flagga = True
+        while flagga:
             hittad_geolog = hitta_geolog(f"img/geo_{geolog}.bmp", faktor)
             if not hittad_geolog:
                 pyautogui.moveTo(sovplats)
-                pyautogui.scroll(-2)
+                pyautogui.mouseDown(sovplats)
+                pyautogui.mouseUp()
+                scroll()
                 hittad_geolog = hitta_geolog(f"img/geo_{geolog}.bmp", faktor)
-                if not hittad_geolog:
-                    flagga = False
-                    break
+                for geolog_inre in geologer:
+                    hittad_geolog_inre = hitta_geolog(f"img/geo_{geolog_inre}.bmp", faktor)
+                    if not hittad_geolog_inre:
+                        flagga = False
+                        break
     return geolog
 
-        
 #leta_sten() # Används bara när koden testas.
-
 
 def stop_program():
     app.quit()
