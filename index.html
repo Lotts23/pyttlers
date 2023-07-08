@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Index</title>
+  <style>
+    #center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 70vh;
+      width: 70vh;
+    }
+    
+    #rubrik {
+      margin-bottom: 10px;
+    }
+    
+    #container {
+      width: 400px;
+      height: 300px;
+      overflow: auto;
+      text-align: center;
+    }
+    
+    #popup {
+      width: 400px;
+      height: 300px;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: none;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      padding: 10px;
+    }
+    
+    tr,
+    td,
+    table,
+    div {
+      border: 1px solid black;
+    }
+  </style>
+  <script>
+    function createTable() {
+      var table = document.createElement('table');
+  
+      var count = 10;
+      for (var row = 0; row < 10; row++) {
+        var tableRow = document.createElement('tr');
+        for (var col = 0; col < 4; col++) {
+          var image;
+          if (count >= 32 && count <= 57) {
+            image = 'img/geo_' + (count - 22) + '.bmp';
+          } else {
+            image = 'img/expl_' + count + '.bmp';
+          }
+          var link = document.createElement('a');
+          link.setAttribute('href', '#');
+          link.setAttribute('onclick', 'openPopup("' + image + '");');
+          var img = document.createElement('img');
+          img.setAttribute('src', image);
+          link.appendChild(img);
+          var cell = document.createElement('td');
+          cell.appendChild(link);
+          tableRow.appendChild(cell);
+          count++;
+        }
+        table.appendChild(tableRow);
+      }
+  
+      return table;
+    }
+  
+    function openPopup(image) {
+      document.getElementById('popup').style.display = 'block';
+      document.getElementById('popup').innerHTML = '<table>' +
+        '<tr><th><img src="img/05_image.bmp"></th></tr>' +
+        '<tr><td><a href="#" onclick="addToClicked(\'' + image + '\');"><img src="' + image + '"></a></td></tr>' +
+        '<tr><td><a href="#" onclick="addToClicked(\'img/typ_100.bmp\');"><img src="img/typ_100.bmp"></a></td></tr>' +
+        '<tr><td><a href="#" onclick="addToClicked(\'img/typ_101.bmp\');"><img src="img/typ_101.bmp"></a></td></tr>' +
+        '<tr><td><a href="#" onclick="openPopup2();"><img src="img/check.png"></a></td></tr>' +
+        '</table>';
+    }
+  
+    function openPopup2() {
+    document.getElementById('popup').style.display = 'block';  
+      document.getElementById('popup').innerHTML = '<table>' +
+        '<tr><th><img src="img/05_image.bmp"></th></tr>' +
+        '<tr><td><a href="#" onclick="addToClicked(\'img/tid_t_1000.bmp\');"><img src="img/tid_t_1000.bmp"></a></td></tr>' +
+        '<tr><td><a href="#" onclick="addToClicked(\'img/tid_t_1001.bmp\');"><img src="img/tid_t_1001.bmp"></a></td></tr>' +
+        '<tr><td><a href="#" onclick="addToClicked(\'img/tid_t_1002.bmp\');"><img src="img/tid_t_1002.bmp"></a></td></tr>' +
+        '<tr><td><a href="#" onclick="addToClicked(\'img/tid_t_1003.bmp\');"><img src="img/tid_t_1003.bmp"></a></td></tr>' +
+        '<tr><td><a href="#" onclick="addToClicked(\'img/tid_t_1004.bmp\');"><img src="img/tid_t_1004.bmp"></a></td></tr>' +
+        '<tr><td><a href="#" onclick="closePopup();"><img src="img/check.png"></a></td></tr>' +
+        '</table>';
+    }
+  
+    function closePopup() {
+      document.getElementById('popup').style.display = 'none';
+    }
+  
+    function addToClicked(image) {
+      var clickedList = document.getElementById('clickedList');
+      var listItem = document.createElement('li');
+      listItem.appendChild(document.createTextNode(image));
+      clickedList.appendChild(listItem);
+    }
+  
+    window.onload = function() {
+      var rubrikDiv = document.getElementById('rubrik');
+      var img = document.createElement('img');
+      img.setAttribute('src', 'img/02_image.bmp');
+      img.style.display = 'block';
+      img.style.margin = '0 auto';
+      rubrikDiv.appendChild(img);
+  
+      var container = document.getElementById('container');
+      container.appendChild(createTable());
+    };
+  </script>
+</head>
+<body>
+  <div id="center">
+    <div id="rubrik"></div>
+    <div id="container"></div>
+  </div>
+  
+  <div id="popup"></div>
+  
+  <ul id="clickedList"></ul>
+</body>
+</html>
