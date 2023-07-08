@@ -11,3 +11,6 @@ Säk/*
 .DS_Store
 *.log
 .vscode
+build
+*.spec
+dist
