@@ -421,7 +421,7 @@ def hitta_geolog(bild_sokvag, faktor):
             hitta_check("img/check.bmp", faktor)
             x, y, width, height = hittad_position
             area_width, area_height = starmenu_area[2], starmenu_area[3]
-            # Om den hittar en geolog längst bort på en rad, scrolla åt det håller
+            # Om den hittar en geolog längst bort på en rad, scrolla åt det hållet
             if x + width >= starmenu_area[0] + area_width - (width * 2) and y + height >= starmenu_area[1] + area_height - (height * 2):
                 pyautogui.moveTo(sovplats)
                 pyautogui.scroll(-2)
@@ -433,20 +433,21 @@ def hitta_geolog(bild_sokvag, faktor):
             #flagga = False
             time.sleep(0.1)
             
-    return hittad
+    return True
 
 def leta_sten():
     global flagga  
     global geolog
     global sovplats
+    
     for _ in range(2):    
         for geolog in geologer:
             flagga = True
-            while flagga:
-                hittad_geolog = hitta_geolog(f"img/geo_{geolog}.bmp", faktor)
+            while flagga:                
                 popup_flagga.clear()
                 popup_trad = threading.Thread(target=hantera_popup)
                 popup_trad.start()
+                hittad_geolog = hitta_geolog(f"img/geo_{geolog}.bmp", faktor)
                 if not hittad_geolog:
                     pyautogui.moveTo(sovplats)
                     pyautogui.mouseDown(sovplats)
