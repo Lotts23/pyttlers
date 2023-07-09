@@ -303,13 +303,16 @@ class GeoWindow(QtWidgets.QMainWindow):
 
     def send_button_click(self):
         resurs_value = 0
+        custom_order = [18, 16, 21, 12, 20, 25, 24, 17, 13, 11, 23, 22, 14, 19, 15, 10]
+        geologer_sorted = self.selected_buttons_left[:]
+        geologer_sorted = sorted(geologer_sorted, key=lambda x: custom_order.index(x) if x in custom_order else float('inf'))
         if self.selected_buttons_right:
             resurs_str = str(self.selected_buttons_right[0])
             if resurs_str.isdigit():
                 resurs_value = int(resurs_str)
 
         data = {
-            "geologer": list(self.selected_buttons_left),
+            "geologer": list(geologer_sorted),
             "resurs": resurs_value
         }
 
