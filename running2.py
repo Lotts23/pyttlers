@@ -417,7 +417,7 @@ def hitta_explorer(bild_sokvag, faktor):
             hitta_typ(f"img/typ_{typ}.bmp", faktor)
             hitta_check("img/check.bmp", faktor)
             time.sleep(1)
-            hitta_tid(f"img/tid_{tid}.bmp", faktor)
+            hitta_tid(f"img/tid_{sort}_{tid}.bmp", faktor)
             hitta_check("img/check.bmp", faktor)
             time.sleep(4)  # minskar fel
             rad = rad + 1
@@ -436,7 +436,12 @@ def leta_skatt(): # Här bakar jag ihop för att (ev?) kunna välja explorer el 
     global flagga  # Använd global för att referera till den globala variabeln
     global explorer
     global sovplats
-    
+    global typ
+    global sort
+    if typ == 100:
+        sort = "t"
+    else:
+        sort = "a"
     for explorer in explorers: # Här itererar vi alla nummer i listan från json
         flagga = True # Återställ flagga till True vid varje iteration
         while flagga: # Loopar explorer+typ tills exploreren inte hittas, därefter tar den nästa explorer och upprepar
