@@ -109,7 +109,7 @@ def hitta_skalfaktor(skalbild_sokvag):# Här kollar vi skalan och ser till att s
                 json.dump(data, json_file)
             return faktor
 
-        print(".", end="", flush=True)
+        #print(".", end="", flush=True)
         time.sleep(0.01)
 
     return #tillatna_varden[3]  # Returnera 100% om ingen match hittades
@@ -181,7 +181,7 @@ def hitta_bild_stjarna(bild_sokvag, faktor):    # kolla om stjärnmeny Else öpp
 
     if hittad_position is not None:
         time.sleep(0.1)  # Minskar antalet fel. 0.1 där det görs nya variabler o data, 3-4 mellan långsamma menyklick
-        print("\nStjärnan öppen")
+        #print("\nStjärnan öppen")
     else:
         oppna_stjarna("img/03_image.bmp", faktor) # Här öppnas stjärnan om stjärnmenyn inte hittats.
         
@@ -252,9 +252,9 @@ def hitta_scroll(bild_sokvag, faktor):
     
     if hittad_position is None:
         time.sleep(0.01)
-        return False
+        return False # inte hittad
     else:
-        return True
+        return True # hittad
 
 
 def scroll(geolog):
@@ -262,40 +262,44 @@ def scroll(geolog):
     vimpel = False
     riktning = -2
     counting = 0
-    if geolog is not None:
+    while vimpel is False and geolog is not None: # När en viss geolog saknas
         individ = geolog
         hittad_geolog = hitta_scroll(f"img/geo_{individ}.bmp", faktor)
         if hittad_geolog:
-            vimpel = True 
-        while vimpel is False and geolog is not None: # När en viss geolog saknas
-            pyautogui.scroll(riktning)
+            vimpel = True
+            return vimpel
+        pyautogui.moveTo(sovplats)
+        pyautogui.mouseDown(sovplats)
+        pyautogui.mouseUp()
+        pyautogui.scroll(riktning)
+        counting += 1 # Håll reda på hur många scroll-sök
+        if counting >= 11 and riktning == -2:
+            riktning = 2
+            counting = 0
+        if counting >= 11 and riktning == 2:
+            vimpel = False
+            return vimpel
+    while vimpel is False and geolog is None: # Och vi inte söker efter nån särskilld.
+        geolog_index = 0
+        for _ in range(len(geologer)):
+            individ = geologer[geolog_index]
             hittad_geolog = hitta_scroll(f"img/geo_{individ}.bmp", faktor)
-            counting += 1 # Håll reda på hur många scroll-sök
             if hittad_geolog:
                 vimpel = True
-                break
-            if counting >= 11 and riktning == -2:
-                riktning = 2
-                counting = 0
-            if counting >= 11 and riktning == 2:
-                geolog = None
-        while vimpel is False and geolog is None: # Och vi inte söker efter nån särskilld.
-            geolog_index = 0
-            for _ in range(len(geologer)):
-                individ = geologer[geolog_index]
-                hittad_geolog = hitta_scroll(f"img/geo_{individ}.bmp", faktor)
-                if hittad_geolog:
-                    vimpel = True
-                    break    
-                geolog_index = (geolog_index + 1) % len(geologer)
+                return vimpel  
+            geolog_index = (geolog_index + 1) % len(geologer)
             counting += 1
+            pyautogui.moveTo(sovplats)
+            pyautogui.mouseDown(sovplats)
+            pyautogui.mouseUp()
             pyautogui.scroll(riktning) # Scrollar neråt
             if counting >= 11 and riktning == -2:
                 riktning = 2
                 counting = 0
             if counting >= 11 and riktning == 2:
-                break
-#### Nej nej nej, vi kan inte söka o skrolla så här
+                geolog = None
+                return vimpel
+
 def hitta_starmenu(bild_sokvag, faktor):
     hittad_starmenu = None
     global sovplats
@@ -416,8 +420,12 @@ def hitta_geolog(bild_sokvag, faktor):
             pyautogui.mouseDown(hittad)
             pyautogui.mouseUp()
             pyautogui.moveTo(sovplats) # För att bli av med popup-bubblan
+            popup_flagga.clear()
+            popup_trad = threading.Thread(target=hantera_popup)
+            popup_trad.start()
             time.sleep(0.1)
             hitta_resurs(f"img/resurs_{resurs}.bmp", faktor)
+            popup_flagga.set()
             hitta_check("img/check.bmp", faktor)
             x, y, width, height = hittad_position
             area_width, area_height = starmenu_area[2], starmenu_area[3]
@@ -432,34 +440,56 @@ def hitta_geolog(bild_sokvag, faktor):
             flagga = True # Vi har hittat den     
         else:
             time.sleep(0.1)
+    #pyautogui.moveTo(sovplats)
+    #pyautogui.scroll(-2)
             #flagga = False # Nope, för vi ska försöka tre gånger först.
     #flagga = False        Vi sköter detta i leta_sten
     return hittad # Om den hittats har hittad ett värde, annars none
 
 def leta_sten():
-    global flagga  
+    global flagga
     global geolog
     global sovplats
-    
-    for _ in range(2):    
+    hitta = None
+    flagga = True
+    for _ in range(2):
         for geolog in geologer:
-            flagga = True
-            while flagga:     
-                scroll(geolog)           
-                popup_flagga.clear()
-                popup_trad = threading.Thread(target=hantera_popup)
-                popup_trad.start()
-                hittad_geolog = hitta_geolog(f"img/geo_{geolog}.bmp", faktor)
-                if hittad_geolog is None:
-                    flagga = False
+            while flagga:
+                hitta = scroll(geolog)
+                if hitta is not None:
+                    hittad_geolog = hitta_geolog(f"img/geo_{geolog}.bmp", faktor)
+                    if hittad_geolog is not None:
+                        flagga = True
+                    else:
+                        flagga = False
+                        
+                        
+"""             
+Jag vill ha följande mönster:
+scrolla tills första geologen i listan hittas, annars scrolla tills andra osv
+när någon hittats, börja köra geolog och klicka - skicka tills ingen mer hittas *men om överst/nederst scroll en rad o leta mer
+När ingen mer av en TIDIGARE FUNNEN sort, scrolla en upp och två ner, en upp.
+nästa i listan, scrolla tills den hittas, annars nästa osv
 
-"""    if geolog == geologer[-1]:
-            hittad_sista_geolog = hitta_geolog(f"img/geo_{geolog}.bmp", faktor)
-            if not hittad_sista_geolog:
-                flagga = False
-                popup_flagga.set()
-                break             
-                return """    
+           
+            while flagga is False:
+                for _ in range(8):
+                    hittad_geolog = hitta_geolog(f"img/geo_{geolog}.bmp", faktor)
+                    pyautogui.moveTo(sovplats)
+                    pyautogui.scroll(-2)
+                    if hittad_geolog is not None:
+                        flagga = True
+                for _ in range(8):    
+                    hittad_geolog = hitta_geolog(f"img/geo_{geolog}.bmp", faktor)
+                    pyautogui.moveTo(sovplats)
+                    pyautogui.scroll(2)
+                    if hittad_geolog is not None:
+                        flagga = True
+                if hittad_geolog is None:
+                    scroll(geolog)
+                    if hittad_geolog is None:
+                        flagga = False
+"""
 
 def stop_program():
     app.quit()
