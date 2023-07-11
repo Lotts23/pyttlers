@@ -279,7 +279,7 @@ def scroll(geolog):
         if counting >= 11 and riktning == 2:
             vimpel = False
             return vimpel
-    while vimpel is False and geolog is None: # Och vi inte söker efter nån särskilld.
+    while vimpel is False and geolog is None: # Och vi inte söker efter nån särskilld. Tror inte det händer längre?
         geolog_index = 0
         for _ in range(len(geologer)):
             individ = geologer[geolog_index]
@@ -432,18 +432,18 @@ def hitta_geolog(bild_sokvag, faktor):
             # Om den hittar en geolog längst bort på en rad, scrolla åt det hållet
             if x + width >= starmenu_area[0] + area_width - (width * 2) and y + height >= starmenu_area[1] + area_height - (height * 2):
                 pyautogui.moveTo(sovplats)
+                pyautogui.mouseDown(sovplats)
+                pyautogui.mouseUp()                
                 pyautogui.scroll(-2)
             if x + width <= starmenu_area[0] - (width * 3) and y + height <= starmenu_area[1] - (height * 3):
                 pyautogui.moveTo(sovplats)
+                pyautogui.mouseDown(sovplats)
+                pyautogui.mouseUp()  
                 pyautogui.scroll(2)
             time.sleep(0.5)  
             flagga = True # Vi har hittat den     
         else:
             time.sleep(0.1)
-    #pyautogui.moveTo(sovplats)
-    #pyautogui.scroll(-2)
-            #flagga = False # Nope, för vi ska försöka tre gånger först.
-    #flagga = False        Vi sköter detta i leta_sten
     return hittad # Om den hittats har hittad ett värde, annars none
 
 def leta_sten():
@@ -454,10 +454,10 @@ def leta_sten():
     flagga = True
     for _ in range(2):
         for geolog in geologer:
-            while flagga:
-                hitta = scroll(geolog)
-                if hitta is not None:
-                    hittad_geolog = hitta_geolog(f"img/geo_{geolog}.bmp", faktor)
+            hitta = scroll(geolog)
+            if hitta is not None: # Vore det inte bättre att använda true/false som vimpeln?
+                while flagga:
+                    hittad_geolog = hitta_geolog(f"img/geo_{geolog}.bmp", faktor) # Returnerar hittad/none
                     if hittad_geolog is not None:
                         flagga = True
                     else:
@@ -468,7 +468,7 @@ def leta_sten():
 Jag vill ha följande mönster:
 scrolla tills första geologen i listan hittas, annars scrolla tills andra osv
 när någon hittats, börja köra geolog och klicka - skicka tills ingen mer hittas *men om överst/nederst scroll en rad o leta mer
-När ingen mer av en TIDIGARE FUNNEN sort, scrolla en upp och två ner, en upp.
+När ingen mer av en TIDIGARE FUNNEN sort, scrolla en upp och två ner, en upp. ? Verkligen? Är det bara för att inte störa användaren? Varför inte scroll bara?
 nästa i listan, scrolla tills den hittas, annars nästa osv
 
            
@@ -501,6 +501,6 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     miniprogram = ProgressDialog()
     miniprogram.show()
-    geolog = leta_sten()
+    leta_sten()
     miniprogram.process_completed()
     sys.exit(app.exec_())
