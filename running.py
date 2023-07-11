@@ -218,13 +218,13 @@ def berakna_starmenu(bild_sokvag, faktor):   # Definierar starmenu_area för att
 
     if hittad_position is not None: # Om stjärnan hittas
         x, y, bredd, hojd = hittad_position
-        starmenu_bredd = bredd * 11
+        starmenu_bredd = bredd * 10
         starmenu_höjd = hojd * 8.8
 
         #Beräkna det begränsade området
-        starmenu_x = x + int(bredd / 2) - int(starmenu_bredd / 2)
+        starmenu_x = x - int(starmenu_bredd / 2)
         starmenu_y = y
-        starmenu_area = (starmenu_x, starmenu_y, round(starmenu_bredd), round(starmenu_höjd))
+        starmenu_area = (starmenu_x, starmenu_y, round(starmenu_bredd), round(starmenu_höjd))    
         return starmenu_area
         
 starmenu_area = berakna_starmenu("img/02_image.bmp", faktor)
@@ -273,10 +273,10 @@ def scroll(geolog):
         pyautogui.mouseUp()
         pyautogui.scroll(riktning)
         counting += 1 # Håll reda på hur många scroll-sök
-        if counting >= 11 and riktning == -2:
+        if counting >= 20 and riktning == -2:
             riktning = 2
             counting = 0
-        if counting >= 11 and riktning == 2:
+        if counting >= 20 and riktning == 2:
             vimpel = False
             return vimpel
     while vimpel is False and geolog is None: # Och vi inte söker efter nån särskilld. Tror inte det händer längre?
@@ -412,7 +412,6 @@ def hitta_geolog(bild_sokvag, faktor):
         skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
         bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
         hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.77, grayscale=True, region=starmenu_area)
-
         if hittad_position is not None:
             hittad = pyautogui.center(hittad_position)
             pyautogui.moveTo(hittad)
@@ -428,9 +427,10 @@ def hitta_geolog(bild_sokvag, faktor):
             popup_flagga.set()
             hitta_check("img/check.bmp", faktor)
             x, y, width, height = hittad_position
-            area_width, area_height = starmenu_area[2], starmenu_area[3]
+            #area_width, area_height = starmenu_area[2], starmenu_area[3]
+            print(x, starmenu_area[0], y, starmenu_area[1])
             # Om den hittar en geolog längst bort på en rad, scrolla åt det hållet
-            if x + width >= starmenu_area[0] + area_width - (width * 2) and y + height >= starmenu_area[1] + area_height - (height * 2):
+            if x <= starmenu_area[0] and y <= starmenu_area[1]:
                 pyautogui.moveTo(sovplats)
                 pyautogui.mouseDown(sovplats)
                 pyautogui.mouseUp()                
@@ -455,42 +455,14 @@ def leta_sten():
     for _ in range(2):
         for geolog in geologer:
             hitta = scroll(geolog)
-            if hitta is not None: # Vore det inte bättre att använda true/false som vimpeln?
+            if hitta is not False: # Vore det inte bättre att använda true/false som vimpeln?
                 while flagga:
                     hittad_geolog = hitta_geolog(f"img/geo_{geolog}.bmp", faktor) # Returnerar hittad/none
                     if hittad_geolog is not None:
                         flagga = True
                     else:
                         flagga = False
-                        
-                        
-"""             
-Jag vill ha följande mönster:
-scrolla tills första geologen i listan hittas, annars scrolla tills andra osv
-när någon hittats, börja köra geolog och klicka - skicka tills ingen mer hittas *men om överst/nederst scroll en rad o leta mer
-När ingen mer av en TIDIGARE FUNNEN sort, scrolla en upp och två ner, en upp. ? Verkligen? Är det bara för att inte störa användaren? Varför inte scroll bara?
-nästa i listan, scrolla tills den hittas, annars nästa osv
-
-           
-            while flagga is False:
-                for _ in range(8):
-                    hittad_geolog = hitta_geolog(f"img/geo_{geolog}.bmp", faktor)
-                    pyautogui.moveTo(sovplats)
-                    pyautogui.scroll(-2)
-                    if hittad_geolog is not None:
-                        flagga = True
-                for _ in range(8):    
-                    hittad_geolog = hitta_geolog(f"img/geo_{geolog}.bmp", faktor)
-                    pyautogui.moveTo(sovplats)
-                    pyautogui.scroll(2)
-                    if hittad_geolog is not None:
-                        flagga = True
-                if hittad_geolog is None:
-                    scroll(geolog)
-                    if hittad_geolog is None:
-                        flagga = False
-"""
-
+             
 def stop_program():
     app.quit()
 
