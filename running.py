@@ -219,11 +219,11 @@ def berakna_starmenu(bild_sokvag, faktor):   # Definierar starmenu_area för att
     if hittad_position is not None: # Om stjärnan hittas
         x, y, bredd, hojd = hittad_position
         starmenu_bredd = bredd * 10
-        starmenu_höjd = hojd * 8.8
+        starmenu_höjd = hojd * 8
 
         #Beräkna det begränsade området
-        starmenu_x = x - int(starmenu_bredd / 2)
-        starmenu_y = y
+        starmenu_x = x - int(starmenu_bredd / 2.1)
+        starmenu_y = y + int(y / 8)
         starmenu_area = (starmenu_x, starmenu_y, round(starmenu_bredd), round(starmenu_höjd))    
         return starmenu_area
         
@@ -314,11 +314,12 @@ def hitta_starmenu(bild_sokvag, faktor):
         hittad_starmenu = pyautogui.center(hittad_position)
         time.sleep(0.1)
         x, y, width, height = starmenu_area
-        sovplats = (x + width - (width / 15), y + (height / 3))
+        sovplats = (x + width, y + (height / 3))
         time.sleep(0.1)
         pyautogui.mouseDown(hittad_starmenu)
         pyautogui.mouseUp()
         pyautogui.moveTo(sovplats)
+        time.sleep(0.1)
         return sovplats
     else:
         time.sleep(1)
@@ -426,21 +427,22 @@ def hitta_geolog(bild_sokvag, faktor):
             hitta_resurs(f"img/resurs_{resurs}.bmp", faktor)
             popup_flagga.set()
             hitta_check("img/check.bmp", faktor)
-            x, y, width, height = hittad_position
-            #area_width, area_height = starmenu_area[2], starmenu_area[3]
-            print(x, starmenu_area[0], y, starmenu_area[1])
+            h_x, h_y, h_width, h_height = hittad_position
+            lower_corner_x, lower_corner_y = h_x + h_width, h_y + h_height # Av den hittade bilden
+            upper_corner_x, upper_corner_y = h_x, h_y
             # Om den hittar en geolog längst bort på en rad, scrolla åt det hållet
-            if x <= starmenu_area[0] and y <= starmenu_area[1]:
+            x, y, bredd, hojd = starmenu_area
+
+            if lower_corner_x <= (x + (h_width * 1.5)) and lower_corner_y <= (y + (h_height * 1.5)):
                 pyautogui.moveTo(sovplats)
                 pyautogui.mouseDown(sovplats)
-                pyautogui.mouseUp()                
-                pyautogui.scroll(-2)
-            if x + width <= starmenu_area[0] - (width * 3) and y + height <= starmenu_area[1] - (height * 3):
+                pyautogui.mouseUp()              
+                pyautogui.scroll(2)
+            if upper_corner_x >= (x + bredd - (h_width * 1.5)) and upper_corner_y >= (y + hojd - (h_height * 1.5)):
                 pyautogui.moveTo(sovplats)
                 pyautogui.mouseDown(sovplats)
                 pyautogui.mouseUp()  
-                pyautogui.scroll(2)
-            time.sleep(0.5)  
+                pyautogui.scroll(-2) 
             flagga = True # Vi har hittat den     
         else:
             time.sleep(0.1)
@@ -455,7 +457,7 @@ def leta_sten():
     for _ in range(2):
         for geolog in geologer:
             hitta = scroll(geolog)
-            if hitta is not False: # Vore det inte bättre att använda true/false som vimpeln?
+            if hitta is not False: 
                 while flagga:
                     hittad_geolog = hitta_geolog(f"img/geo_{geolog}.bmp", faktor) # Returnerar hittad/none
                     if hittad_geolog is not None:
