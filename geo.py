@@ -52,9 +52,10 @@ class GeoWindow(QtWidgets.QMainWindow):
                 
         # Skapa textrutan för infotexten
         self.infoText = QtWidgets.QLabel()
-        self.infoText.setFixedHeight(50)  # Höjden på textrutan
+        self.infoText.setFixedHeight(60)  # Höjden på textrutan
         self.infoText.setFixedWidth(540)
-        self.infoText.setText("När du klickar Check så kommer programmet ta kontroll över musen och genomföra alla klick för sökningen. \nDra musen till skärmens hörn för att avbryta akut.")
+        self.infoText.setText("När du klickar på check så kommer programmet ta kontroll över musen och genomföra alla klick för sökningen. \nDra musen till skärmens hörn i några sekunder för att avbryta akut.")
+        self.infoText.setWordWrap(True)
         self.infoText.setStyleSheet("background-color: #4b453a; padding-left: 10px; padding-right: 10px; border: 2px ridge #363229")
         
         # Skapa en layout för att centrera infoText-rutan
