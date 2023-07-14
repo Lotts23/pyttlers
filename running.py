@@ -353,9 +353,10 @@ def hitta_resurs(bild_sokvag, faktor):
                 #pyautogui.moveTo(sovplats)
                 return True
             time.sleep(2)
-    return False
+    return False, command_area
 
 def hitta_check(bild_sokvag, faktor):
+    global command_area
     for _ in range(3): # Loopa 3ggr
         hittad_check = None
         time.sleep(0.1)
