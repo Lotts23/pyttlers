@@ -3,6 +3,7 @@ import subprocess
 import sys
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import QMessageBox
 
 
 class GeoWindow(QtWidgets.QMainWindow):
@@ -52,9 +53,9 @@ class GeoWindow(QtWidgets.QMainWindow):
                 
         # Skapa textrutan för infotexten
         self.infoText = QtWidgets.QLabel()
-        self.infoText.setFixedHeight(60)  # Höjden på textrutan
+        self.infoText.setFixedHeight(88)  # Höjden på textrutan
         self.infoText.setFixedWidth(540)
-        self.infoText.setText("När du klickar på check så kommer programmet ta kontroll över musen och genomföra alla klick för sökningen. \nDra musen till skärmens hörn i några sekunder för att avbryta akut.")
+        self.infoText.setText("När du klickar på check så kommer programmet ta kontroll över musen och genomföra alla klick för sökningen. \nDra musen till skärmens hörn i några sekunder för att avbryta akut.\n\nEndast den sist klickade resursen kommer sökas, grafikfel.")
         self.infoText.setWordWrap(True)
         self.infoText.setStyleSheet("background-color: #4b453a; padding-left: 10px; padding-right: 10px; border: 2px ridge #363229")
         
@@ -76,7 +77,7 @@ class GeoWindow(QtWidgets.QMainWindow):
         self.centralLayout.addWidget(self.bottomBox)
 
         # Hänvisning till en extern CSS-fil
-        with open("stil.css", "r") as file:
+        with open("./src/stil.css", "r") as file:
             self.setStyleSheet(file.read())
 
         # Skapa id för de två områdena
@@ -112,7 +113,7 @@ class GeoWindow(QtWidgets.QMainWindow):
             self.gridLayout.addWidget(button, (i-10) // 4, (i-10) % 4)  # Uppdatera layout för vänsterknapparna
             self.buttonsLeft.append(button)  # Uppdaterad namn på listan
 
-            image = QtGui.QPixmap(f"img/knapp/gknapp_{value}.png")
+            image = QtGui.QPixmap(f"./src/img/knapp/gknapp_{value}.png")
             self.button_images.append(image)
             button.setIcon(QtGui.QIcon(image))
             button.setIconSize(image.rect().size())
@@ -145,7 +146,7 @@ class GeoWindow(QtWidgets.QMainWindow):
             self.gridLayoutRight.addWidget(button, (i-100) // 2, (i-100) % 2)
             self.buttonsRight.append(button)  # Uppdaterad namn på listan
 
-            image = QtGui.QPixmap(f"img/knapp/rknapp_{value}.jpg")
+            image = QtGui.QPixmap(f"./src/img/knapp/rknapp_{value}.jpg")
             self.button_images.append(image)
             button.setIcon(QtGui.QIcon(image))
             button.setIconSize(image.rect().size())
@@ -172,7 +173,7 @@ class GeoWindow(QtWidgets.QMainWindow):
         back_button = QtWidgets.QPushButton()
         back_button.setFixedSize(42, 30)
         self.bottomLayout.addWidget(back_button)
-        image = QtGui.QPixmap(f"img/knapp/back.jpg")
+        image = QtGui.QPixmap(f"./src/img/knapp/back.jpg")
         self.button_images.append(image)
         back_button.setIcon(QtGui.QIcon(image))
         back_button.setIconSize(QtCore.QSize(38, 30))  # Justera storleken på ikonen vid behov
@@ -196,7 +197,7 @@ class GeoWindow(QtWidgets.QMainWindow):
         clear_button.setFixedSize(42, 30)
         clear_button.clicked.connect(self.clear_button_click)
         self.bottomLayout.addWidget(clear_button)
-        image = QtGui.QPixmap(f"img/knapp/clear.jpg")
+        image = QtGui.QPixmap(f"./src/img/knapp/clear.jpg")
         self.button_images.append(image)
         clear_button.setIcon(QtGui.QIcon(image))
         clear_button.setIconSize(QtCore.QSize(38, 30))  # Justera storleken på ikonen vid behov
@@ -220,7 +221,7 @@ class GeoWindow(QtWidgets.QMainWindow):
         send_button.clicked.connect(self.send_button_click)
         self.bottomLayout.addStretch()
         self.bottomLayout.addWidget(send_button)
-        image = QtGui.QPixmap(f"img/knapp/check.jpg")
+        image = QtGui.QPixmap(f"./src/img/knapp/check.jpg")
         self.button_images.append(image)
         send_button.setIcon(QtGui.QIcon(image))
         send_button.setIconSize(QtCore.QSize(38, 30))  # Justera storleken på ikonen vid behov
@@ -244,7 +245,7 @@ class GeoWindow(QtWidgets.QMainWindow):
     def return_to_dialog(self):
         self.close()
         self.returnToDialog.emit()
-        
+       
     def get_button_by_value(self, value):
         for button in self.buttonsLeft + self.buttonsRight:
             if button.property("value") == value:
@@ -286,9 +287,9 @@ class GeoWindow(QtWidgets.QMainWindow):
             "geologer": self.selected_buttons_left,
             "resurs": self.selected_buttons_right
         }
-        with open("nummer.json", "w") as json_file:
-            json.dump(json_data, json_file)  
-  
+        with open("./src/nummer.json", "w") as json_file:
+            json.dump(json_data, json_file)
+
     def clear_button_click(self):
         self.selected_buttons_left = []  # Återställ markerade knappar i vänster box
         self.selected_buttons_right = []  # Återställ markerade knappar i höger box
@@ -303,7 +304,11 @@ class GeoWindow(QtWidgets.QMainWindow):
                                 "}")
 
     def send_button_click(self):
-        resurs_value = 0
+        if not self.selected_buttons_left or not self.selected_buttons_right:
+            QMessageBox.warning(self, "Gör alla val först", "Vänligen välj både en geolog och en resurs innan du klickar på Check.")
+            return
+    
+        resurs_value = 100
         custom_order = [18, 16, 21, 12, 20, 25, 24, 17, 13, 11, 23, 22, 14, 19, 15, 10]
         geologer_sorted = self.selected_buttons_left[:]
         geologer_sorted = sorted(geologer_sorted, key=lambda x: custom_order.index(x) if x in custom_order else float('inf'))
@@ -317,14 +322,14 @@ class GeoWindow(QtWidgets.QMainWindow):
             "resurs": resurs_value
         }
 
-        with open("nummer.json", "w") as json_file:
+        with open("./src/nummer.json", "w") as json_file:
             json.dump(data, json_file)
 
 
 
         print("Skicka-knappen klickad")
         self.close()
-        subprocess.Popen([sys.executable, "running.py"])
+        subprocess.Popen([sys.executable, "./src/running.py"])
 
 
 if __name__ == "__main__":
@@ -334,3 +339,4 @@ if __name__ == "__main__":
     window = GeoWindow()
     window.show()
     sys.exit(app.exec_())
+    

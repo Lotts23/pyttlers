@@ -1,8 +1,13 @@
-import sys
 import json
-from PyQt5 import QtWidgets, QtGui
-from geo import GeoWindow
-from expl import ExplWindow
+import os
+import sys
+
+from PyQt5 import QtGui, QtWidgets
+from PyQt5.QtWidgets import QMessageBox
+
+from src.expl import ExplWindow
+from src.geo import GeoWindow
+
 
 class StartDialog(QtWidgets.QDialog):
     def __init__(self):
@@ -13,13 +18,23 @@ class StartDialog(QtWidgets.QDialog):
         # Skapa en layout för dialogrutan
         layout = QtWidgets.QHBoxLayout(self)
 
-        with open("stil.css", "r") as file:
+        with open("./src/stil.css", "r") as file:
             self.setStyleSheet(file.read())
+            
+        # Kontrollera om json-filen med varning finns, dvs om användaren fått en varning tidigare
+        if not os.path.exists("./src/popup.json"):
+            # Visa popup-rutan för första gången
+            QMessageBox.information(None, "Viktig information", "När du har valt specialister och klickar ''check'' så tar programmet kontroll över din mus. Den är lärd att hantera vanligare felklick som om den råkar klicka på en specialist som redan är ute, men skulle problem uppstå så för du muspekaren längst ut i ett av skärmens hörn och håller den där. Det är en generell nödbroms som stoppar programmet.\nSläpp musen när programmet börjar jobba.\n\nDet här programmet är en demonstration av GUI-styrkod med Pyautogui och inte avsett att användas för att bryta mot TSO-regler.")
+            
 
+            # Skapajson-filen och markera användaren som informerad
+            with open("./src/popup.json", "w") as json_file:
+                json.dump({"informed": True}, json_file)     
+                
         # Skapa knappen för geolog-läget
         geo_button = QtWidgets.QPushButton()
         geo_button.setFixedSize(57, 68)
-        geo_button.setIcon(QtGui.QIcon("img/knapp/geo_knapp.png"))
+        geo_button.setIcon(QtGui.QIcon("./src/img/knapp/geo_knapp.png"))
         geo_button.setIconSize(geo_button.rect().size())
         geo_button.clicked.connect(self.open_geo_window)
         layout.addWidget(geo_button)
@@ -27,7 +42,7 @@ class StartDialog(QtWidgets.QDialog):
         # Skapa knappen för explorer-läget
         expl_button = QtWidgets.QPushButton()
         expl_button.setFixedSize(57, 68)
-        expl_button.setIcon(QtGui.QIcon("img/knapp/expl_knapp.png"))
+        expl_button.setIcon(QtGui.QIcon("./src/img/knapp/expl_knapp.png"))
         expl_button.setIconSize(expl_button.rect().size())
         expl_button.clicked.connect(self.open_expl_window)
         layout.addWidget(expl_button)

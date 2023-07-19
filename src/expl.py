@@ -3,7 +3,7 @@ import subprocess
 import sys
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-
+from PyQt5.QtWidgets import QMessageBox
 
 class ExplWindow(QtWidgets.QMainWindow):
     returnToDialog = QtCore.pyqtSignal()
@@ -66,9 +66,10 @@ class ExplWindow(QtWidgets.QMainWindow):
                 
         # Skapa textrutan för infotexten
         self.infoText = QtWidgets.QLabel()
-        self.infoText.setFixedHeight(50)  # Höjden på textrutan
+        self.infoText.setFixedHeight(88)  # Höjden på textrutan
         self.infoText.setFixedWidth(540)
-        self.infoText.setText("När du klickar Check så kommer programmet ta kontroll över musen och genomföra alla klick för sökningen. \nDra musen till skärmens hörn för att avbryta akut.")
+        self.infoText.setText("När du klickar på check så kommer programmet ta kontroll över musen och genomföra alla klick för sökningen. \nDra musen till skärmens hörn i några sekunder för att avbryta akut.\n\nEndast den sist klickade söktyp/längd kommer sökas, grafikfel.")
+        self.infoText.setWordWrap(True)        
         self.infoText.setStyleSheet("background-color: #4b453a; padding-left: 10px; padding-right: 10px; border: 2px ridge #363229")
         
         # Skapa en layout för att centrera infoText-rutan
@@ -89,7 +90,7 @@ class ExplWindow(QtWidgets.QMainWindow):
         self.centralLayout.addWidget(self.bottomBox)
 
         # Hänvisning till en extern CSS-fil
-        with open("stil.css", "r") as file:
+        with open("./src/stil.css", "r") as file:
             self.setStyleSheet(file.read())
 
         # Skapa id för de två områdena
@@ -128,7 +129,7 @@ class ExplWindow(QtWidgets.QMainWindow):
             self.gridLayout.addWidget(button, (i-10) // 4, (i-10) % 4)  
             self.buttonsLeft.append(button)
 
-            image = QtGui.QPixmap(f"img/knapp/eknapp_{value}.png")
+            image = QtGui.QPixmap(f"./src/img/knapp/eknapp_{value}.png")
             self.button_images.append(image)
             button.setIcon(QtGui.QIcon(image))
             button.setIconSize(image.rect().size())
@@ -161,7 +162,7 @@ class ExplWindow(QtWidgets.QMainWindow):
             self.gridLayoutRight.addWidget(button, (i-100) // 2, (i-100) % 2)
             self.buttonsRight.append(button)  # Uppdaterad namn på listan
 
-            image = QtGui.QPixmap(f"img/knapp/treasure_{value}.bmp")
+            image = QtGui.QPixmap(f"./src/img/knapp/treasure_{value}.bmp")
             self.button_images.append(image)
             button.setIcon(QtGui.QIcon(image))
             button.setIconSize(image.rect().size())
@@ -205,7 +206,7 @@ class ExplWindow(QtWidgets.QMainWindow):
             self.gridLayoutRightest.addWidget(button, (i-1000) // 2, (i-1000) % 2)
             self.buttonsRightest.append(button)  # Uppdaterad namn på listan
 
-            image = QtGui.QPixmap(f"img/knapp/time_{value}.bmp")
+            image = QtGui.QPixmap(f"./src/img/knapp/time_{value}.bmp")
             self.button_images.append(image)
             button.setIcon(QtGui.QIcon(image))
             button.setIconSize(image.rect().size())
@@ -232,7 +233,7 @@ class ExplWindow(QtWidgets.QMainWindow):
         back_button = QtWidgets.QPushButton()
         back_button.setFixedSize(42, 30)
         self.bottomLayout.addWidget(back_button)
-        image = QtGui.QPixmap(f"img/knapp/back.jpg")
+        image = QtGui.QPixmap(f"./src/img/knapp/back.jpg")
         self.button_images.append(image)
         back_button.setIcon(QtGui.QIcon(image))
         back_button.setIconSize(QtCore.QSize(38, 30))  # Justera storleken på ikonen vid behov
@@ -256,7 +257,7 @@ class ExplWindow(QtWidgets.QMainWindow):
         clear_button.setFixedSize(42, 30)
         clear_button.clicked.connect(self.clear_button_click)
         self.bottomLayout.addWidget(clear_button)
-        image = QtGui.QPixmap(f"img/knapp/clear.jpg")
+        image = QtGui.QPixmap(f"./src/img/knapp/clear.jpg")
         self.button_images.append(image)
         clear_button.setIcon(QtGui.QIcon(image))
         clear_button.setIconSize(QtCore.QSize(38, 30))  # Justera storleken på ikonen vid behov
@@ -280,7 +281,7 @@ class ExplWindow(QtWidgets.QMainWindow):
         send_button.clicked.connect(self.send_button_click)
         self.bottomLayout.addStretch()
         self.bottomLayout.addWidget(send_button)
-        image = QtGui.QPixmap(f"img/knapp/check.jpg")
+        image = QtGui.QPixmap(f"./src/img/knapp/check.jpg")
         self.button_images.append(image)
         send_button.setIcon(QtGui.QIcon(image))
         send_button.setIconSize(QtCore.QSize(38, 30))  # Justera storleken på ikonen vid behov
@@ -364,7 +365,7 @@ class ExplWindow(QtWidgets.QMainWindow):
             "typ": self.selected_buttons_right,
             "tid": self.selected_buttons_rightest
         }
-        with open("nummer.json", "w") as json_file:
+        with open("./src/nummer.json", "w") as json_file:
             json.dump(json_data, json_file)  
   
     def clear_button_click(self):
@@ -388,6 +389,9 @@ class ExplWindow(QtWidgets.QMainWindow):
                                 "}")    
 
     def send_button_click(self):
+        if not self.selected_buttons_left or not self.selected_buttons_right:
+            QMessageBox.warning(self, "Gör alla val först", "Vänligen välj en explorer, en söktyp och en längd innan du klickar på Check.")
+            return
         typ_value = 0
         if self.selected_buttons_right:
             typ_str = str(self.selected_buttons_right[0])
@@ -405,14 +409,14 @@ class ExplWindow(QtWidgets.QMainWindow):
             "tid": tid_value
         }
 
-        with open("nummer.json", "w") as json_file:
+        with open("./src/nummer.json", "w") as json_file:
             json.dump(data, json_file)
 
 
 
         print("Skicka-knappen klickad")
         self.close()
-        subprocess.Popen([sys.executable, "running2.py"])
+        subprocess.Popen([sys.executable, "./src/running2.py"])
 
 
 if __name__ == "__main__":
