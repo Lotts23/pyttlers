@@ -131,7 +131,7 @@ def testa_skalfaktor(skalbild_sokvag, faktor):
     if hittad_testbild is not None:
         return faktor
     else:
-        hitta_skalfaktor("img/01_image.bmp")
+        hitta_skalfaktor("./img/01_image.bmp")
         return faktor
 
 def prepare(): 
@@ -143,14 +143,14 @@ def prepare():
             json_data = json.load(json_file)  # och läs datan
             faktor = json_data.get("faktor")  # Hämta tidigare faktor
         if faktor is not None: # Om faktor-värdet inte är tomt, testa det
-            testa_skalfaktor("img/01_image.bmp", faktor) # Testar om gamla faktorn funkar
+            testa_skalfaktor("./img/01_image.bmp", faktor) # Testar om gamla faktorn funkar
             if faktor is None:
-                hitta_skalfaktor("img/01_image.bmp")
+                hitta_skalfaktor("./img/01_image.bmp")
             else:
                 #print("Tidigare skalfaktor accepterad")
                 return faktor
     else:
-        hitta_skalfaktor("img/01_image.bmp")
+        hitta_skalfaktor("./img/01_image.bmp")
     
 prepare()# Kolla om tidigare faktor fortfarande funkar.
 
@@ -191,9 +191,9 @@ def hitta_bild_stjarna(bild_sokvag, faktor):    # kolla om stjärnmeny Else öpp
         time.sleep(0.1)  # Minskar antalet fel. 0.1 där det görs nya variabler o data, 3-4 mellan långsamma menyklick
         #print("\nStjärnan öppen")
     else:
-        oppna_stjarna("img/03_image.bmp", faktor) # Här öppnas stjärnan om stjärnmenyn inte hittats.
+        oppna_stjarna("./img/03_image.bmp", faktor) # Här öppnas stjärnan om stjärnmenyn inte hittats.
         
-hitta_bild_stjarna("img/02_image.bmp", faktor) # Kör hitta om stjärnmenyn är öppen, else kör öppna stjärnan.
+hitta_bild_stjarna("./img/02_image.bmp", faktor) # Kör hitta om stjärnmenyn är öppen, else kör öppna stjärnan.
 
 with open("scale_data.json", "r") as json_file: # Ser till att vi läser in färsk faktor, ja jäkligt onödigt men en del problem försvann. Tror man istället skulle kunna starta programmet med å rensa nån cache?
     data = json.load(json_file)
@@ -215,7 +215,7 @@ def tab_stjarna(bild_sokvag, faktor):
         #print(f"{bild_sokvag} klickad")
         time.sleep(1)  # minskar fel
 
-tab_stjarna("img/04_image.bmp", faktor) # Gå till rätt tab så blir det inte så mycket scroll
+tab_stjarna("./img/04_image.bmp", faktor) # Gå till rätt tab så blir det inte så mycket scroll
 
 def berakna_starmenu(bild_sokvag, faktor):   # Definierar starmenu_area för att söka på begränsad yta 
     global starmenu_area
@@ -235,7 +235,7 @@ def berakna_starmenu(bild_sokvag, faktor):   # Definierar starmenu_area för att
         starmenu_area = (starmenu_x, starmenu_y, round(starmenu_bredd), round(starmenu_höjd))    
         return starmenu_area
         
-starmenu_area = berakna_starmenu("img/02_image.bmp", faktor)
+starmenu_area = berakna_starmenu("./img/02_image.bmp", faktor)
 
 #
 #   Nu börjar sökningen på riktigt, först läser vi in alla json
@@ -272,7 +272,7 @@ def scroll(geolog):
     counting = 0
     while vimpel is False and geolog is not None: # När en viss geolog saknas
         individ = geolog
-        hittad_geolog = hitta_scroll(f"img/geo_{individ}.bmp", faktor)
+        hittad_geolog = hitta_scroll(f"./img/geo_{individ}.bmp", faktor)
         if hittad_geolog:
             vimpel = True
             return vimpel
@@ -317,7 +317,7 @@ with open("scale_data.json", "r") as json_file:
     data = json.load(json_file)
     faktor = data["faktor"] 
 
-hitta_starmenu("img/02_image.bmp", faktor)
+hitta_starmenu("./img/02_image.bmp", faktor)
 
 def berakna_command(bild_sokvag, faktor): # Hitta sökområdet för resurser och check.
     global command_area
@@ -337,7 +337,7 @@ def berakna_command(bild_sokvag, faktor): # Hitta sökområdet för resurser och
 
 def hitta_resurs(bild_sokvag, faktor):
     for _ in range(3):  # Loopa 3 gånger
-        command_area = berakna_command("img/05_image.bmp", faktor)
+        command_area = berakna_command("./img/05_image.bmp", faktor)
         bild = Image.open(bild_sokvag)
         skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
         bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
@@ -391,7 +391,7 @@ def error_bild(bild_sokvag, faktor):
 
 def hantera_popup():
     while not popup_flagga.is_set():
-        error_bild("img/error.png", faktor)
+        error_bild("./img/error.png", faktor)
 
 popup_flagga = threading.Event()      
 
@@ -417,9 +417,9 @@ def hitta_geolog(bild_sokvag, faktor):
             popup_trad = threading.Thread(target=hantera_popup)
             popup_trad.start()
             time.sleep(0.1)
-            hitta_resurs(f"img/resurs_{resurs}.bmp", faktor)
+            hitta_resurs(f"./img/resurs_{resurs}.bmp", faktor)
             popup_flagga.set()
-            hitta_check("img/check.bmp", faktor)
+            hitta_check("./img/check.bmp", faktor)
             # Om den hittar en geolog längst bort på en rad, scrolla åt det hållet            
             h_x, h_y, h_width, h_height = hittad_position
             lower_corner_x, lower_corner_y = h_x + h_width, h_y + h_height # Av den hittade bilden
@@ -453,7 +453,7 @@ def leta_sten():
         flagga = True
         pyautogui.moveTo(sovplats)
         while flagga:
-            hittad_geolog = hitta_geolog(f"img/geo_{geolog}.bmp", faktor) # Returnerar hittad/none
+            hittad_geolog = hitta_geolog(f"./img/geo_{geolog}.bmp", faktor) # Returnerar hittad/none
             if hittad_geolog is not None:
                 flagga_funnen = True
                 flagga = True
