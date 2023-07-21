@@ -371,10 +371,10 @@ def hitta_tid(bild_sokvag, faktor):
         skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
         bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
         for _ in range(3):  # Loopa 3 gånger för varje försök
-            hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.9, grayscale=True, region=command_area)     
+            hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.85, grayscale=True, region=command_area)     
             if hittad_position is not None:
                 x, y, width, height = hittad_position  # Klickar i högra hörnet för att kunna ha med texten brevid knappen
-                knappens_plats = x + width - (width // 5), y + (height // 2)
+                knappens_plats = x + width - (width // 6), y + (height // 2)
                 pyautogui.moveTo(knappens_plats)
                 time.sleep(0.1)
                 pyautogui.mouseDown(knappens_plats)

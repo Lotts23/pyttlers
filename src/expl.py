@@ -1,9 +1,12 @@
 import json
 import subprocess
 import sys
+import os
+import importlib
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QMessageBox
+from PyQt5.QtWidgets import QApplication, QMessageBox
+
 
 class ExplWindow(QtWidgets.QMainWindow):
     returnToDialog = QtCore.pyqtSignal()
@@ -419,8 +422,8 @@ class ExplWindow(QtWidgets.QMainWindow):
 
         print("Skicka-knappen klickad")
         self.close()
-        subprocess.Popen([sys.executable, "./src/running2.py"])
-
+        running2_path = os.path.join(os.path.dirname(sys.argv[0]), "src", "running2.py")
+        subprocess.Popen([sys.executable, running2_path])
 
 if __name__ == "__main__":
     import sys

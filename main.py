@@ -1,5 +1,6 @@
 import json
 import os
+import importlib
 import sys
 
 from PyQt5 import QtGui, QtWidgets
@@ -7,7 +8,6 @@ from PyQt5.QtWidgets import QMessageBox
 
 from src.expl import ExplWindow
 from src.geo import GeoWindow
-
 
 
 class StartDialog(QtWidgets.QDialog):
