@@ -62,7 +62,7 @@ class ProgressDialog(QDialog):
 
         self.label = QLabel(self)
         explorers_str = ", ".join(explorers_namn)
-        self.label.setText(f"Process pågår...\n\nSöker {explorers_str} som ska leta efter {typ_namn} under {tid_namn}.\n\nNödstopp genom att flytta musen till skärmens hörn.")
+        self.label.setText(f"Process pågår...\n\nSöker {explorers_str} som ska leta efter {typ_namn} under {tid_namn} tid.\n\nNödstopp genom att flytta musen till skärmens hörn.")
         self.label.setWordWrap(True)
         
         self.label.setAlignment(Qt.AlignCenter)
@@ -288,10 +288,10 @@ def scroll(explorer):
         pyautogui.mouseUp()
         pyautogui.scroll(riktning)
         counting += 1 # Håll reda på hur många scroll-sök
-        if counting >= 20 and riktning == -2:
+        if counting >= 15 and riktning == -2:
             riktning = 2
             counting = 0
-        if counting >= 20 and riktning == 2:
+        if counting >= 15 and riktning == 2:
             vimpel = False
             return None
 
@@ -334,35 +334,17 @@ def berakna_command(bild_sokvag, faktor): # Hitta sökområdet för typer och ch
     hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True)
     if hittad_position is not None:
         x, y, bredd, hojd = hittad_position
-        command_bredd = bredd * 5
+        command_bredd = bredd * 8
         command_höjd = hojd * 15
         #Beräkna det begränsade området
         command_x = x + int(bredd / 2) - int(command_bredd / 2)
         command_y = y
         command_area = (command_x, command_y, round(command_bredd), round(command_höjd))
         return command_area
+    else:
+        return None
 
 def hitta_typ(bild_sokvag, faktor):
-    for _ in range(3):  # Loopa 3 gånger
-        command_area = berakna_command("./src/img/05_image.bmp", faktor)
-        bild = Image.open(bild_sokvag)
-        skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
-        bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
-        for _ in range(3):  # Loopa 3 gånger för varje försök
-            hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.85, grayscale=False, region=command_area)     
-            if hittad_position is not None:
-                x, y, width, height = hittad_position  # Klickar i högra hörnet för att kunna ha med texten brevid knappen
-                knappens_plats = x + width - (width // 5), y + (height // 2)
-                pyautogui.moveTo(knappens_plats)
-                time.sleep(0.1)
-                pyautogui.mouseDown(knappens_plats)
-                pyautogui.mouseUp()
-                #pyautogui.moveTo(sovplats)
-                return True
-            time.sleep(2)
-    return False, command_area
-
-def hitta_tid(bild_sokvag, faktor):
     for _ in range(3):  # Loopa 3 gånger
         command_area = berakna_command("./src/img/05_image.bmp", faktor)
         bild = Image.open(bild_sokvag)
@@ -377,9 +359,29 @@ def hitta_tid(bild_sokvag, faktor):
                 time.sleep(0.1)
                 pyautogui.mouseDown(knappens_plats)
                 pyautogui.mouseUp()
-                #pyautogui.moveTo(sovplats)
+                pyautogui.moveTo(sovplats)
                 return True
-            time.sleep(2)
+            time.sleep(0.5)
+    return False, command_area
+
+def hitta_tid(bild_sokvag, faktor):
+    for _ in range(3):  # Loopa 3 gånger
+        command_area = berakna_command("./src/img/05_image.bmp", faktor)
+        bild = Image.open(bild_sokvag)
+        skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
+        bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
+        for _ in range(3):  # Loopa 3 gånger för varje försök
+            hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.9, grayscale=True, region=command_area)     
+            if hittad_position is not None:
+                x, y, width, height = hittad_position  # Klickar i högra hörnet för att kunna ha med texten brevid knappen
+                knappens_plats = x + width - (width // 5), y + (height // 2)
+                pyautogui.moveTo(knappens_plats)
+                time.sleep(0.1)
+                pyautogui.mouseDown(knappens_plats)
+                pyautogui.mouseUp()
+                pyautogui.moveTo(sovplats)
+                return True
+            time.sleep(0.1)
     return False, command_area
 
 def hitta_check(bild_sokvag, faktor):
@@ -412,6 +414,8 @@ def error_bild(bild_sokvag, faktor):
     bild_array = cv2.cvtColor(bild_array, cv2.COLOR_RGB2BGR)
     error_found = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=False)
     if error_found is not None:
+        pyautogui.mouseDown(error_found)
+        time.sleep(0.1)
         pyautogui.press('esc')
         popup_flagga.set()
     time.sleep(0.1)
@@ -472,7 +476,12 @@ def hitta_explorer(bild_sokvag, faktor):
                 time.sleep(0.1)
             flagga = True # Vi har hittat den     
         else:
-            time.sleep(0.5) ### Else hitta command-bilden, hittas den så tryck esc, kontrollera att stjärnan är öppen och fortsätt.
+            time.sleep(0.1) ### Else hitta command-bilden, hittas den så tryck esc, kontrollera att stjärnan är öppen och fortsätt.
+            error_bild("./src/img/05_image.bmp", faktor)
+            time.sleep(0.1)
+            hitta_bild_stjarna("./src/img/02_image.bmp", faktor)
+            
+           
     return hittad # Om den hittats har hittad ett värde, annars none
 
 def leta_skatt():

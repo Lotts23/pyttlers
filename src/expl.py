@@ -119,7 +119,7 @@ class ExplWindow(QtWidgets.QMainWindow):
         self.buttonsRightest = []  # Lista för knapparna i högerhöger box
 
         # Skapa knapparna för explorerna
-        for i in range(10, 32):
+        for i in range(10, 33):
             value = str(i)  
 
             button = QtWidgets.QPushButton(self.scrollContent)
