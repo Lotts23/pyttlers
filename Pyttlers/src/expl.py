@@ -392,12 +392,15 @@ class ExplWindow(QtWidgets.QMainWindow):
         if not self.selected_buttons_left or not self.selected_buttons_right:
             QMessageBox.warning(self, "Gör alla val först", "Vänligen välj en explorer, en söktyp och en längd innan du klickar på Check.")
             return
-        typ_value = 0
+        custom_order = [19, 29, 21, 24, 16, 15, 20, 12, 32, 22, 14, 23, 17, 13, 28, 31, 18, 27, 30, 11, 25, 26, 10]
+        explorers_sorted = self.selected_buttons_left[:]
+        explorers_sorted = sorted(explorers_sorted, key=lambda x: custom_order.index(x) if x in custom_order else float('inf'))
+        typ_value = 100
         if self.selected_buttons_right:
             typ_str = str(self.selected_buttons_right[0])
             if typ_str.isdigit():
                 typ_value = int(typ_str)
-        tid_value = 0
+        tid_value = 1000
         if self.selected_buttons_rightest:
             tid_str = str(self.selected_buttons_rightest[0])
             if tid_str.isdigit():

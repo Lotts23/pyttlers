@@ -9,6 +9,7 @@ from src.expl import ExplWindow
 from src.geo import GeoWindow
 
 
+
 class StartDialog(QtWidgets.QDialog):
     def __init__(self):
         super(StartDialog, self).__init__()
@@ -65,6 +66,14 @@ class StartDialog(QtWidgets.QDialog):
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
+    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+    img_folder = os.path.join(os.path.dirname(__file__), "src", "img")
+    image_files = [f for f in os.listdir(img_folder) if f.lower().endswith((".bmp", ".png", ".jpg"))]
+    css_folder = os.path.join(os.path.dirname(__file__), "src")
+    css_files = [f for f in os.listdir(css_folder) if f.lower().endswith(".css")]
+    json_folder = os.path.join(os.path.dirname(__file__), "src")
+    json_files = [f for f in os.listdir(json_folder) if f.lower().endswith(".json")]
+    
     start_dialog = StartDialog()
     if start_dialog.exec_() == QtWidgets.QDialog.Accepted:
         sys.exit(app.exec_())
