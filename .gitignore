@@ -15,3 +15,5 @@ build
 *.spec
 dist
 popup.json
+*.pyc
+src/__pycache__
