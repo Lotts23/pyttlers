@@ -279,6 +279,8 @@ def scroll(explorer):
     counting = 0
     while vimpel is False and explorer is not None: # När en viss explorer saknas
         individ = explorer
+        position_top = hitta_scroll(f"./src/img/top.png", faktor)
+        position_bottom = hitta_scroll(f"./src/img/bottom.png", faktor)
         hittad_explorer = hitta_scroll(f"./src/img/expl_{individ}.bmp", faktor)
         if hittad_explorer:
             vimpel = True
@@ -287,11 +289,15 @@ def scroll(explorer):
         pyautogui.mouseDown(sovplats)
         pyautogui.mouseUp()
         pyautogui.scroll(riktning)
+        if position_top is True:
+            riktning = -2
+        if position_bottom is True:
+            riktning = 2    
         counting += 1 # Håll reda på hur många scroll-sök
-        if counting >= 15 and riktning == -2:
+        if counting >= 20 and riktning == -2:
             riktning = 2
             counting = 0
-        if counting >= 15 and riktning == 2:
+        if counting >= 20 and riktning == 2:
             vimpel = False
             return None
 
@@ -444,14 +450,14 @@ def hitta_explorer(bild_sokvag, faktor):
         hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.77, grayscale=True, region=starmenu_area)
         if hittad_position is not None:
             hittad = pyautogui.center(hittad_position)
+            popup_flagga.clear()
+            popup_trad = threading.Thread(target=hantera_popup)
+            popup_trad.start()
             pyautogui.moveTo(hittad)
             time.sleep(0.1) 
             pyautogui.mouseDown(hittad)
             pyautogui.mouseUp()
             pyautogui.moveTo(sovplats) # För att bli av med popup-bubblan
-            popup_flagga.clear()
-            popup_trad = threading.Thread(target=hantera_popup)
-            popup_trad.start()
             time.sleep(0.1)
             hitta_typ(f"./src/img/typ_{typ}.bmp", faktor)
             popup_flagga.set()
@@ -474,7 +480,8 @@ def hitta_explorer(bild_sokvag, faktor):
                 pyautogui.mouseUp()
                 pyautogui.scroll(-2)
                 time.sleep(0.1)
-            flagga = True # Vi har hittat den     
+            flagga = True # Vi har hittat den    
+            return hittad 
         else:
             time.sleep(0.1) ### Else hitta command-bilden, hittas den så tryck esc, kontrollera att stjärnan är öppen och fortsätt.
             error_bild("./src/img/05_image.bmp", faktor)

@@ -272,6 +272,8 @@ def scroll(geolog):
     counting = 0
     while vimpel is False and geolog is not None: # När en viss geolog saknas
         individ = geolog
+        position_top = hitta_scroll(f"./src/img/top.png", faktor)
+        position_bottom = hitta_scroll(f"./src/img/bottom.png", faktor)
         hittad_geolog = hitta_scroll(f"./src/img/geo_{individ}.bmp", faktor)
         if hittad_geolog:
             vimpel = True
@@ -280,6 +282,10 @@ def scroll(geolog):
         pyautogui.mouseDown(sovplats)
         pyautogui.mouseUp()
         pyautogui.scroll(riktning)
+        if position_top is True:
+            riktning = -2
+        if position_bottom is True:
+            riktning = 2    
         counting += 1 # Håll reda på hur många scroll-sök
         if counting >= 20 and riktning == -2:
             riktning = 2
@@ -363,7 +369,7 @@ def hitta_check(bild_sokvag, faktor):
         bild = Image.open(bild_sokvag)
         skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
         bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
-        hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=False, region=command_area)
+        hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=False)#, region=command_area)
 
         if hittad_position is not None:
             hittad_check = pyautogui.center(hittad_position)
@@ -409,13 +415,13 @@ def hitta_geolog(bild_sokvag, faktor):
         if hittad_position is not None:
             hittad = pyautogui.center(hittad_position)
             pyautogui.moveTo(hittad)
+            popup_flagga.clear()
+            popup_trad = threading.Thread(target=hantera_popup)
+            popup_trad.start()
             time.sleep(0.1) 
             pyautogui.mouseDown(hittad)
             pyautogui.mouseUp()
             pyautogui.moveTo(sovplats) # För att bli av med popup-bubblan
-            popup_flagga.clear()
-            popup_trad = threading.Thread(target=hantera_popup)
-            popup_trad.start()
             time.sleep(0.1)
             hitta_resurs(f"./src/img/resurs_{resurs}.bmp", faktor)
             popup_flagga.set()
@@ -437,9 +443,13 @@ def hitta_geolog(bild_sokvag, faktor):
                 pyautogui.mouseUp()
                 pyautogui.scroll(-2)
                 time.sleep(0.1)
-            flagga = True # Vi har hittat den     
+            flagga = True # Vi har hittat den  
+            return hittad   
         else:
+            time.sleep(0.1) ### Else hitta command-bilden, hittas den så tryck esc, kontrollera att stjärnan är öppen och fortsätt.
+            error_bild("./src/img/05_image.bmp", faktor)
             time.sleep(0.1)
+            hitta_bild_stjarna("./src/img/02_image.bmp", faktor)
     return hittad # Om den hittats har hittad ett värde, annars none
 
 def leta_sten():
