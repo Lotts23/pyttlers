@@ -422,7 +422,7 @@ class ExplWindow(QtWidgets.QMainWindow):
 
         print("Skicka-knappen klickad")
         self.close()
-        running2_path = os.path.join(os.path.dirname(sys.argv[0]), "src", "running2.py")
+        running2_path = os.path.join(os.path.dirname(sys.argv[0]), "running2.py")
         subprocess.Popen([sys.executable, running2_path])
 
 if __name__ == "__main__":

@@ -37,6 +37,8 @@ typ_namn = typ_dict[str(typ)]
 tid_namn = tid_dict[str(tid)] 
 explorer = None
 sovplats = 200, 200 # Bara för att alltid iallf ha nån giltlig sovplats - alltså där inga inforutor stör sökningen
+command_area = 0
+starmenu_area = 0
 
 try:
     with open("./src/scale_data.json", "r") as json_file:
@@ -258,12 +260,13 @@ with open("./src/scale_data.json", "r") as json_file: # Ser till att vi läser i
     faktor = data["faktor"]
 
 def hitta_scroll(bild_sokvag, faktor):
-    global starmenu_area 
+    #global starmenu_area 
     hittad_position = None
     bild = Image.open(bild_sokvag)
     skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
     bild_array = np.array(skalad_bild)
-    hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True, region=starmenu_area)
+    scroll_region = (starmenu_area[0], round(starmenu_area[1] * 0.6), round(starmenu_area[2] * 1.5), round(starmenu_area[3] * 1.5))
+    hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True, region=scroll_region)
     
     if hittad_position is None:
         time.sleep(0.01)
@@ -273,7 +276,7 @@ def hitta_scroll(bild_sokvag, faktor):
 
 
 def scroll(explorer):
-    global explorers
+    #global explorers
     vimpel = False
     riktning = -2
     counting = 0
@@ -289,22 +292,28 @@ def scroll(explorer):
         pyautogui.mouseDown(sovplats)
         pyautogui.mouseUp()
         pyautogui.scroll(riktning)
+        if position_bottom is True:
+            riktning = 2
+            counting += 1
+            #position_bottom = False
         if position_top is True:
             riktning = -2
-        if position_bottom is True:
-            riktning = 2    
-        counting += 1 # Håll reda på hur många scroll-sök
-        if counting >= 20 and riktning == -2:
-            riktning = 2
-            counting = 0
-        if counting >= 20 and riktning == 2:
+            counting += 1
+            #position_top = False
+        if counting >= 5 and position_top is True:
             vimpel = False
+            return None
+        if counting >= 5 and position_bottom is True:
+            vimpel = False
+            return None
+         # Håll reda på hur många scroll-sök så det inte spårar ut
+        if counting >= 50:
             return None
 
 def hitta_starmenu(bild_sokvag, faktor):
     hittad_starmenu = None
     global sovplats
-    global explorers
+    #global explorers
     time.sleep(1)
     bild = Image.open(bild_sokvag)
     skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
@@ -347,8 +356,8 @@ def berakna_command(bild_sokvag, faktor): # Hitta sökområdet för typer och ch
         command_y = y
         command_area = (command_x, command_y, round(command_bredd), round(command_höjd))
         return command_area
-    else:
-        return None
+    #else:
+        #return None
 
 def hitta_typ(bild_sokvag, faktor):
     for _ in range(3):  # Loopa 3 gånger
@@ -377,7 +386,7 @@ def hitta_tid(bild_sokvag, faktor):
         skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
         bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
         for _ in range(3):  # Loopa 3 gånger för varje försök
-            hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.85, grayscale=True, region=command_area)     
+            hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True, region=command_area)     
             if hittad_position is not None:
                 x, y, width, height = hittad_position  # Klickar i högra hörnet för att kunna ha med texten brevid knappen
                 knappens_plats = x + width - (width // 6), y + (height // 2)

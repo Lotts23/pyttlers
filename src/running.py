@@ -31,6 +31,8 @@ geologer_namn = [geo_dict[str(num)] for num in geologer]
 resurs_namn = resurs_dict[str(resurs)] 
 geolog = None
 sovplats = 200, 200 # Bara för att alltid iallf ha nån giltlig sovplats - alltså där inga inforutor stör sökningen
+command_area = 0
+starmenu_area = 0
 
 try:
     with open("./src/scale_data.json", "r") as json_file:
@@ -232,7 +234,9 @@ def berakna_starmenu(bild_sokvag, faktor):   # Definierar starmenu_area för att
         #Beräkna det begränsade området
         starmenu_x = x - int(starmenu_bredd / 2.1)
         starmenu_y = y + int(y / 8)
-        starmenu_area = (starmenu_x, starmenu_y, round(starmenu_bredd), round(starmenu_höjd))    
+        starmenu_area = (starmenu_x, starmenu_y, round(starmenu_bredd), round(starmenu_höjd)) 
+        #print(starmenu_x, starmenu_y, round(starmenu_bredd), round(starmenu_höjd))   
+        #pyautogui.moveTo(starmenu_x + starmenu_bredd, starmenu_y)
         return starmenu_area
         
 starmenu_area = berakna_starmenu("./src/img/02_image.bmp", faktor)
@@ -251,13 +255,13 @@ with open("./src/scale_data.json", "r") as json_file: # Ser till att vi läser i
     faktor = data["faktor"]
 
 def hitta_scroll(bild_sokvag, faktor):
-    global starmenu_area 
+    #global starmenu_area 
     hittad_position = None
     bild = Image.open(bild_sokvag)
     skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
     bild_array = np.array(skalad_bild)
-    hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True, region=starmenu_area)
-    
+    scroll_region = (starmenu_area[0], round(starmenu_area[1] * 0.6), round(starmenu_area[2] * 1.5), round(starmenu_area[3] * 1.5))
+    hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True, region=scroll_region)
     if hittad_position is None:
         time.sleep(0.01)
         return False # inte hittad
@@ -266,7 +270,7 @@ def hitta_scroll(bild_sokvag, faktor):
 
 
 def scroll(geolog):
-    global geologer
+    #global geologer
     vimpel = False
     riktning = -2
     counting = 0
@@ -281,23 +285,30 @@ def scroll(geolog):
         pyautogui.moveTo(sovplats)
         pyautogui.mouseDown(sovplats)
         pyautogui.mouseUp()
-        pyautogui.scroll(riktning)
+        pyautogui.scroll(riktning)    
+        if position_bottom is True:
+            riktning = 2
+            counting += 1
+            #position_bottom = False
         if position_top is True:
             riktning = -2
-        if position_bottom is True:
-            riktning = 2    
-        counting += 1 # Håll reda på hur många scroll-sök
-        if counting >= 20 and riktning == -2:
-            riktning = 2
-            counting = 0
-        if counting >= 20 and riktning == 2:
+            counting += 1
+            #position_top = False
+        if counting >= 5 and position_top is True:
             vimpel = False
             return None
+        if counting >= 5 and position_bottom is True:
+            vimpel = False
+            return None
+         # Håll reda på hur många scroll-sök så det inte spårar ut
+        if counting >= 50:
+            return None
+            
 
 def hitta_starmenu(bild_sokvag, faktor):
     hittad_starmenu = None
     global sovplats
-    global geologer
+    #global geologer
     time.sleep(1)
     bild = Image.open(bild_sokvag)
     skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
@@ -316,7 +327,7 @@ def hitta_starmenu(bild_sokvag, faktor):
         time.sleep(0.1)
         return sovplats
     else:
-        time.sleep(1)
+        time.sleep(0.1)
         return None
 
 with open("./src/scale_data.json", "r") as json_file:
@@ -393,7 +404,7 @@ def error_bild(bild_sokvag, faktor):
     if error_found is not None:
         pyautogui.press('esc')
         popup_flagga.set()
-    time.sleep(0.1)
+        hitta_bild_stjarna("./src/img/02_image.bmp", faktor)
 
 def hantera_popup():
     while not popup_flagga.is_set():
@@ -446,10 +457,7 @@ def hitta_geolog(bild_sokvag, faktor):
             flagga = True # Vi har hittat den  
             return hittad   
         else:
-            time.sleep(0.1) ### Else hitta command-bilden, hittas den så tryck esc, kontrollera att stjärnan är öppen och fortsätt.
-            error_bild("./src/img/05_image.bmp", faktor)
             time.sleep(0.1)
-            hitta_bild_stjarna("./src/img/02_image.bmp", faktor)
     return hittad # Om den hittats har hittad ett värde, annars none
 
 def leta_sten():

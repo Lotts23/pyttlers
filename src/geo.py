@@ -329,7 +329,7 @@ class GeoWindow(QtWidgets.QMainWindow):
 
         print("Skicka-knappen klickad")
         self.close()
-        subprocess.Popen([sys.executable, "./src/running.py"])
+        subprocess.Popen([sys.executable, "./running.py"])
 
 
 if __name__ == "__main__":
