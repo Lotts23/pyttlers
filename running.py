@@ -224,7 +224,7 @@ def berakna_starmenu(bild_sokvag, faktor):   # Definierar starmenu_area för att
     bild = Image.open(bild_sokvag)
     skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
     bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
-    hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True)
+    hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.7, grayscale=True)
 
     if hittad_position is not None: # Om stjärnan hittas
         x, y, bredd, hojd = hittad_position
@@ -236,7 +236,7 @@ def berakna_starmenu(bild_sokvag, faktor):   # Definierar starmenu_area för att
         starmenu_y = y + int(y / 8)
         starmenu_area = (starmenu_x, starmenu_y, round(starmenu_bredd), round(starmenu_höjd)) 
         #print(starmenu_x, starmenu_y, round(starmenu_bredd), round(starmenu_höjd))   
-        #pyautogui.moveTo(starmenu_x + starmenu_bredd, starmenu_y)
+        pyautogui.moveTo(starmenu_x + starmenu_bredd, starmenu_y)
         return starmenu_area
         
 starmenu_area = berakna_starmenu("./src/img/02_image.bmp", faktor)
@@ -274,6 +274,9 @@ def scroll(geolog):
     vimpel = False
     riktning = -2
     counting = 0
+    been = None
+    position_top = False
+    position_bottom = False
     while vimpel is False and geolog is not None: # När en viss geolog saknas
         individ = geolog
         position_top = hitta_scroll(f"./src/img/top.png", faktor)
@@ -287,17 +290,21 @@ def scroll(geolog):
         pyautogui.mouseUp()
         pyautogui.scroll(riktning)    
         if position_bottom is True:
-            riktning = 2
+            riktning = 2 # Om vi är längst ner börja skrolla upp
             counting += 1
+            if been is None:
+                been = "bottom"
             #position_bottom = False
         if position_top is True:
             riktning = -2
             counting += 1
+            if been is None:
+                been = "top"
             #position_top = False
-        if counting >= 5 and position_top is True:
+        if counting >= 2 and position_top is True and been == "bottom":
             vimpel = False
             return None
-        if counting >= 5 and position_bottom is True:
+        if counting >= 2 and position_bottom is True and been == "top":
             vimpel = False
             return None
          # Håll reda på hur många scroll-sök så det inte spårar ut
@@ -402,9 +409,13 @@ def error_bild(bild_sokvag, faktor):
     bild_array = cv2.cvtColor(bild_array, cv2.COLOR_RGB2BGR)
     error_found = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=False)
     if error_found is not None:
-        pyautogui.press('esc')
         popup_flagga.set()
+        pyautogui.mouseDown(error_found)
+        pyautogui.mouseUp()
+        pyautogui.press('esc')
+        time.sleep(0.1)
         hitta_bild_stjarna("./src/img/02_image.bmp", faktor)
+        
 
 def hantera_popup():
     while not popup_flagga.is_set():
@@ -416,6 +427,7 @@ def hitta_geolog(bild_sokvag, faktor):
     global flagga
     flagga = True
     global starmenu_area
+    hittad = None
     for _ in range(3): # Loopa 3ggr om den INTE hittar
         hittad = None
         bild = Image.open(bild_sokvag)
@@ -466,7 +478,6 @@ def leta_sten():
     global sovplats
     hitta = None
     flagga_funnen = False
-    scroll(geologer[0])
     for geolog in geologer:
         flagga = True
         pyautogui.moveTo(sovplats)
