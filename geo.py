@@ -1,13 +1,16 @@
 import json
+import os
 import subprocess
 import sys
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QMessageBox
 
+from running import ProgressDialog
 
 class GeoWindow(QtWidgets.QMainWindow):
     returnToDialog = QtCore.pyqtSignal()
+    startProgressDialog = QtCore.pyqtSignal()
 
     def __init__(self):
         super(GeoWindow, self).__init__()
@@ -192,7 +195,7 @@ class GeoWindow(QtWidgets.QMainWindow):
                                 "    border-radius: 5px;"
                                 "}")
 
-# Rensa
+        # Rensa
         clear_button = QtWidgets.QPushButton()
         clear_button.setFixedSize(42, 30)
         clear_button.clicked.connect(self.clear_button_click)
@@ -277,7 +280,6 @@ class GeoWindow(QtWidgets.QMainWindow):
                 self.selected_buttons_right = []  # Reset
 
         self.selected_buttons = self.selected_buttons_left + self.selected_buttons_right
-        print("Markerade knappar:", self.selected_buttons)
 
         if button in self.buttonsRight:
             self.update_json()  # Updatera json
@@ -302,7 +304,19 @@ class GeoWindow(QtWidgets.QMainWindow):
                                 "    border: 4px ridge #a49777;"
                                 "    border-radius: 5px;"
                                 "}")
+        
+    def open_running_window(self):
+        # Close the GeoWindow and open the ProgressDialog
+        self.close()
+        self.running_window = ProgressDialog()
+        self.running_window.returnToGeoWindow.connect(self.show)  # Show GeoWindow again after ProgressDialog closes
+        self.running_window.show()     
+        self.running_window.startProgressDialog.emit()
 
+    def start_process(self):
+        self.update_json()  # Update the JSON data before starting the process
+        self.open_running_window()  # Open the ProgressDialog
+    
     def send_button_click(self):
         if not self.selected_buttons_left or not self.selected_buttons_right:
             QMessageBox.warning(self, "Gör alla val först", "Vänligen välj både en geolog och en resurs innan du klickar på Check.")
@@ -324,19 +338,18 @@ class GeoWindow(QtWidgets.QMainWindow):
 
         with open("./src/nummer.json", "w") as json_file:
             json.dump(data, json_file)
-
-
-
-        print("Skicka-knappen klickad")
+        
         self.close()
-        subprocess.Popen([sys.executable, "./running.py"])
-
+        self.running_window = ProgressDialog()
+        self.running_window.returnToDialog.connect(self.show) 
+        self.running_window.startProgressDialog.connect(self.start_process)  # Connect the signal to start the process
+        self.running_window.show()
+        self.running_window.start_process()
 
 if __name__ == "__main__":
     import sys
 
     app = QtWidgets.QApplication(sys.argv)
     window = GeoWindow()
-    window.show()
-    sys.exit(app.exec_())
+    app.exec_()
     

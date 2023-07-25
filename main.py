@@ -1,16 +1,17 @@
+import importlib
 import json
 import os
-import importlib
 import sys
 
-
-
 from PyQt5 import QtGui, QtWidgets
-from PyQt5.QtWidgets import QMessageBox
+from PyQt5.QtCore import QEvent, QRect, Qt
+from PyQt5.QtGui import QKeySequence
+from PyQt5.QtWidgets import (QAction, QApplication, QDialog, QLabel,
+                             QMessageBox, QPushButton, QVBoxLayout, qApp)
 
 from expl import ExplWindow
 from geo import GeoWindow
-
+from running import ProgressDialog
 
 class StartDialog(QtWidgets.QDialog):
     def __init__(self):
@@ -29,8 +30,7 @@ class StartDialog(QtWidgets.QDialog):
             # Visa popup-rutan för första gången
             QMessageBox.information(None, "Viktig information", "När du har valt specialister och klickar ''check'' så tar programmet kontroll över din mus. Den är lärd att hantera vanligare felklick som om den råkar klicka på en specialist som redan är ute, men skulle problem uppstå så för du muspekaren längst ut i ett av skärmens hörn och håller den där. Det är en generell nödbroms som stoppar programmet.\nSläpp musen när programmet börjar jobba.\n\nDet här programmet är en demonstration av GUI-styrkod med Pyautogui och inte avsett att användas för att bryta mot TSO-regler.")
             
-
-            # Skapajson-filen och markera användaren som informerad
+            # Skapa json-filen och markera användaren som informerad
             with open("./src/popup.json", "w") as json_file:
                 json.dump({"informed": True}, json_file)     
                 
@@ -61,21 +61,15 @@ class StartDialog(QtWidgets.QDialog):
     def open_expl_window(self):
         # Stäng dialogrutan och öppna expl-fönstret
         self.accept()
-        expl_window = ExplWindow()
+        self.expl_window = ExplWindow()
         self.hide()
-        expl_window.returnToDialog.connect(self.show)  # Lägg till signalhantering för att visa dialogrutan igen
-        expl_window.show()
+        self.expl_window.returnToDialog.connect(self.show)  # Lägg till signalhantering för att visa dialogrutan igen
+        self.expl_window.show()
 
 if __name__ == "__main__":
-    app = QtWidgets.QApplication([])
-    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
-    img_folder = os.path.join(os.path.dirname(__file__), "src", "img")
-    image_files = [f for f in os.listdir(img_folder) if f.lower().endswith((".bmp", ".png", ".jpg"))]
-    css_folder = os.path.join(os.path.dirname(__file__), "src")
-    css_files = [f for f in os.listdir(css_folder) if f.lower().endswith(".css")]
-    json_folder = os.path.join(os.path.dirname(__file__), "src")
-    json_files = [f for f in os.listdir(json_folder) if f.lower().endswith(".json")]
+    app = QtWidgets.QApplication(sys.argv)
     
     start_dialog = StartDialog()
-    if start_dialog.exec_() == QtWidgets.QDialog.Accepted:
-        sys.exit(app.exec_())
+    start_dialog.show()
+
+    sys.exit(app.exec_())

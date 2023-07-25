@@ -7,7 +7,6 @@ import importlib
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QMessageBox
 
-
 class ExplWindow(QtWidgets.QMainWindow):
     returnToDialog = QtCore.pyqtSignal()
 
@@ -255,7 +254,7 @@ class ExplWindow(QtWidgets.QMainWindow):
                                 "    border-radius: 5px;"
                                 "}")
 
-# Rensa
+
         clear_button = QtWidgets.QPushButton()
         clear_button.setFixedSize(42, 30)
         clear_button.clicked.connect(self.clear_button_click)
@@ -354,7 +353,7 @@ class ExplWindow(QtWidgets.QMainWindow):
                 self.selected_buttons_rightest = []  # Reset    
 
         self.selected_buttons = self.selected_buttons_left + self.selected_buttons_right + self.selected_buttons_rightest
-        print("Markerade knappar:", self.selected_buttons)
+        #print("Markerade knappar:", self.selected_buttons)
 
         if button in self.buttonsRight:
             self.update_json()  # Updatera json
@@ -420,7 +419,7 @@ class ExplWindow(QtWidgets.QMainWindow):
 
 
 
-        print("Skicka-knappen klickad")
+
         self.close()
         running2_path = os.path.join(os.path.dirname(sys.argv[0]), "running2.py")
         subprocess.Popen([sys.executable, running2_path])
@@ -432,3 +431,5 @@ if __name__ == "__main__":
     window = ExplWindow()
     window.show()
     sys.exit(app.exec_())
+    
+    
