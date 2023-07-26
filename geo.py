@@ -195,7 +195,6 @@ class GeoWindow(QtWidgets.QMainWindow):
                                 "    border-radius: 5px;"
                                 "}")
 
-        # Rensa
         clear_button = QtWidgets.QPushButton()
         clear_button.setFixedSize(42, 30)
         clear_button.clicked.connect(self.clear_button_click)
@@ -248,7 +247,7 @@ class GeoWindow(QtWidgets.QMainWindow):
     def return_to_dialog(self):
         self.close()
         self.returnToDialog.emit()
-       
+
     def get_button_by_value(self, value):
         for button in self.buttonsLeft + self.buttonsRight:
             if button.property("value") == value:
@@ -289,7 +288,7 @@ class GeoWindow(QtWidgets.QMainWindow):
             "geologer": self.selected_buttons_left,
             "resurs": self.selected_buttons_right
         }
-        with open("./src/nummer.json", "w") as json_file:
+        with open("./src/geo_nummer.json", "w") as json_file:
             json.dump(json_data, json_file)
 
     def clear_button_click(self):
@@ -304,7 +303,7 @@ class GeoWindow(QtWidgets.QMainWindow):
                                 "    border: 4px ridge #a49777;"
                                 "    border-radius: 5px;"
                                 "}")
-        
+
     def open_running_window(self):
         # Close the GeoWindow and open the ProgressDialog
         self.close()
@@ -316,12 +315,11 @@ class GeoWindow(QtWidgets.QMainWindow):
     def start_process(self):
         self.update_json()  # Update the JSON data before starting the process
         self.open_running_window()  # Open the ProgressDialog
-    
+
     def send_button_click(self):
         if not self.selected_buttons_left or not self.selected_buttons_right:
             QMessageBox.warning(self, "Gör alla val först", "Vänligen välj både en geolog och en resurs innan du klickar på Check.")
             return
-    
         resurs_value = 100
         custom_order = [18, 16, 21, 12, 20, 25, 24, 17, 13, 11, 23, 22, 14, 19, 15, 10]
         geologer_sorted = self.selected_buttons_left[:]
@@ -336,7 +334,7 @@ class GeoWindow(QtWidgets.QMainWindow):
             "resurs": resurs_value
         }
 
-        with open("./src/nummer.json", "w") as json_file:
+        with open("./src/geo_nummer.json", "w") as json_file:
             json.dump(data, json_file)
         
         self.close()
@@ -345,8 +343,6 @@ class GeoWindow(QtWidgets.QMainWindow):
         self.running_window.startProgressDialog.connect(self.start_process)  # Connect the signal to start the process
         self.running_window.show()
         self.running_window.start_process() # Här startar vi processen i running
-        #miniprogram = ProgressDialog()
-        #miniprogram.show()
 
 if __name__ == "__main__":
     import sys
@@ -354,4 +350,3 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     window = GeoWindow()
     app.exec_()
-    

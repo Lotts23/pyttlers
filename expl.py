@@ -1,14 +1,17 @@
+import importlib
 import json
+import os
 import subprocess
 import sys
-import os
-import importlib
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QMessageBox
 
+from running2 import ProgressDialog
+
 class ExplWindow(QtWidgets.QMainWindow):
     returnToDialog = QtCore.pyqtSignal()
+    startProgressDialog = QtCore.pyqtSignal()
 
     def __init__(self):
         super(ExplWindow, self).__init__()
@@ -71,7 +74,7 @@ class ExplWindow(QtWidgets.QMainWindow):
         self.infoText.setFixedHeight(88)  # Höjden på textrutan
         self.infoText.setFixedWidth(540)
         self.infoText.setText("När du klickar på check så kommer programmet ta kontroll över musen och genomföra alla klick för sökningen. \nDra musen till skärmens hörn i några sekunder för att avbryta akut.\n\nEndast den sist klickade söktyp/längd kommer sökas, grafikfel.")
-        self.infoText.setWordWrap(True)        
+        self.infoText.setWordWrap(True)
         self.infoText.setStyleSheet("background-color: #4b453a; padding-left: 10px; padding-right: 10px; border: 2px ridge #363229")
         
         # Skapa en layout för att centrera infoText-rutan
@@ -128,7 +131,7 @@ class ExplWindow(QtWidgets.QMainWindow):
             button.setFixedSize(57, 68)
             button.setCheckable(True)
             button.clicked.connect(lambda _, b=button, v=value: self.button_click(b, v))
-            self.gridLayout.addWidget(button, (i-10) // 4, (i-10) % 4)  
+            self.gridLayout.addWidget(button, (i-10) // 4, (i-10) % 4)
             self.buttonsLeft.append(button)
 
             image = QtGui.QPixmap(f"./src/img/knapp/eknapp_{value}.png")
@@ -143,7 +146,7 @@ class ExplWindow(QtWidgets.QMainWindow):
                                 "    border-radius: 5px;"
                                 "}")            
 
-        # Skapa scrollområdet för typs-knappar
+        # Skapa scrollområdet för typ-knappar
         self.scrollAreaRight = QtWidgets.QScrollArea(self.rightBox)
         self.scrollAreaRight.setWidgetResizable(True)
         self.rightLayout.addWidget(self.scrollAreaRight)
@@ -156,7 +159,7 @@ class ExplWindow(QtWidgets.QMainWindow):
         # Skapa knapparna för typen
         for i in range(100, 102):
             value = str(i)
-            
+
             button = QtWidgets.QPushButton(self.scrollContentRight)
             button.setFixedSize(42, 30)
             button.setCheckable(True)
@@ -197,7 +200,7 @@ class ExplWindow(QtWidgets.QMainWindow):
 
         self.gridLayoutRightest = QtWidgets.QGridLayout(self.scrollContentRightest)
 
-        # Skapa knapparna för söklängd
+        # Skapa knapparna för söklängd ### Lägg till 4, 5, 6 OM treasure är valt
         for i in range(1000, 1004):
             value = str(i)
 
@@ -254,7 +257,6 @@ class ExplWindow(QtWidgets.QMainWindow):
                                 "    border-radius: 5px;"
                                 "}")
 
-
         clear_button = QtWidgets.QPushButton()
         clear_button.setFixedSize(42, 30)
         clear_button.clicked.connect(self.clear_button_click)
@@ -305,9 +307,9 @@ class ExplWindow(QtWidgets.QMainWindow):
         back_button.clicked.connect(self.return_to_dialog)
 
     def return_to_dialog(self):
-        self.returnToDialog.emit()
         self.close()
-        
+        self.returnToDialog.emit()
+
     def get_button_by_value(self, value):
         for button in self.buttonsLeft + self.buttonsRight + self.buttonsRightest:
             if button.property("value") == value:
@@ -342,7 +344,7 @@ class ExplWindow(QtWidgets.QMainWindow):
                                 "}")
 
                 button.setStyleSheet("border: 6px ridge yellow; border-radius: 5px;")
-                self.selected_buttons_rightest = [int(value)]  # Spara värdet    
+                self.selected_buttons_rightest = [int(value)]  # Spara värdet
         else:
             button.setStyleSheet("")
             if button in self.buttonsLeft:
@@ -350,16 +352,15 @@ class ExplWindow(QtWidgets.QMainWindow):
             elif button in self.buttonsRight:
                 self.selected_buttons_right = []  # Reset
             elif button in self.buttonsRightest:
-                self.selected_buttons_rightest = []  # Reset    
+                self.selected_buttons_rightest = []  # Reset
 
         self.selected_buttons = self.selected_buttons_left + self.selected_buttons_right + self.selected_buttons_rightest
-        #print("Markerade knappar:", self.selected_buttons)
 
         if button in self.buttonsRight:
             self.update_json()  # Updatera json
-            
+
         if button in self.buttonsRightest:
-            self.update_json()  # Updatera json    
+            self.update_json()  # Updatera json
 
     def update_json(self):
         json_data = {
@@ -367,9 +368,9 @@ class ExplWindow(QtWidgets.QMainWindow):
             "typ": self.selected_buttons_right,
             "tid": self.selected_buttons_rightest
         }
-        with open("./src/nummer.json", "w") as json_file:
-            json.dump(json_data, json_file)  
-  
+        with open("./src/expl_nummer.json", "w") as json_file:
+            json.dump(json_data, json_file)
+
     def clear_button_click(self):
         self.selected_buttons_left = []  # Återställ markerade knappar i vänster box
         self.selected_buttons_right = []  # Återställ markerade knappar i höger box
@@ -388,7 +389,19 @@ class ExplWindow(QtWidgets.QMainWindow):
             btn.setStyleSheet("QPushButton {"
                                 "    border: 4px ridge #a49777;"
                                 "    border-radius: 5px;"
-                                "}")    
+                                "}")
+
+    def open_running_window(self):
+        # Close the ExplWindow and open the ProgressDialog
+        self.close()
+        self.running_window = ProgressDialog()
+        self.running_window.returnToExplWindow.connect(self.show)  # Show ExplWindow again after ProgressDialog closes
+        self.running_window.show()     
+        self.running_window.startProgressDialog.emit()
+
+    def start_process(self):
+        self.update_json()  # Update the JSON data before starting the process
+        self.open_running_window()  # Open the ProgressDialog
 
     def send_button_click(self):
         if not self.selected_buttons_left or not self.selected_buttons_right:
@@ -414,22 +427,19 @@ class ExplWindow(QtWidgets.QMainWindow):
             "tid": tid_value
         }
 
-        with open("./src/nummer.json", "w") as json_file:
+        with open("./src/expl_nummer.json", "w") as json_file:
             json.dump(data, json_file)
 
-
-
-
         self.close()
-        running2_path = os.path.join(os.path.dirname(sys.argv[0]), "running2.py")
-        subprocess.Popen([sys.executable, running2_path])
+        self.running_window = ProgressDialog()
+        self.running_window.returnToDialog.connect(self.show) 
+        self.running_window.startProgressDialog.connect(self.start_process)  # Connect the signal to start the process
+        self.running_window.show()
+        self.running_window.start_process() # Här startar vi processen i running
 
 if __name__ == "__main__":
     import sys
 
     app = QtWidgets.QApplication(sys.argv)
     window = ExplWindow()
-    window.show()
-    sys.exit(app.exec_())
-    
-    
+    app.exec_()

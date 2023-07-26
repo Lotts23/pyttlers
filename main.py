@@ -13,6 +13,7 @@ from PyQt5.QtWidgets import (QAction, QApplication, QDialog, QLabel,
 from expl import ExplWindow
 from geo import GeoWindow
 from running import ProgressDialog
+from running2 import ProgressDialog
 
 
 class StartDialog(QtWidgets.QDialog):
@@ -72,7 +73,6 @@ class StartDialog(QtWidgets.QDialog):
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    
 
     start_dialog = StartDialog()
     miniprogram = ProgressDialog()
