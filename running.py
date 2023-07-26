@@ -13,6 +13,9 @@ from PyQt5.QtCore import QEvent, QRect, Qt, pyqtSignal
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import (QAction, QApplication, QDialog, QLabel,
                              QPushButton, QVBoxLayout, qApp)
+from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtWidgets import QStackedWidget
+
 
 with open("./src/nummer.json", "r") as json_file:
     data = json.load(json_file)
@@ -162,44 +165,46 @@ def hitta_starmenu(bild_sokvag, faktor):
         return None
  
 class ProgressDialog(QtWidgets.QDialog):
-    returnToGeoWindow = QtCore.pyqtSignal()
     startProgressDialog = QtCore.pyqtSignal()
+    go_to_start_dialog_signal = QtCore.pyqtSignal()
     returnToDialog = pyqtSignal()
+    
     
     def __init__(self):
         super(ProgressDialog, self).__init__()
         self.initUI()
-            
-    def initUI(self):    
-        
         self.setWindowTitle("Pågår...")
+        
         self.setFixedSize(350, 220)
         self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)  # Fönstret alltid överst
-
+        
         self.setStyleSheet(open("./src/stil.css").read())  # Länk till stil.css
-
+        
         desktop = QApplication.desktop()
         screen_rect = desktop.availableGeometry()
         self.setGeometry(QRect(screen_rect.width() - self.width(), 0, self.width(), self.height()))
-
-        layout = QVBoxLayout(self)
-
+        
+        
+        
+    def initUI(self):
         self.label = QLabel(self)
         geologer_str = ", ".join(geologer_namn)
         self.label.setText(f"Process pågår...\n\nSöker {geologer_str} som ska leta efter {resurs_namn}.\n\nNödstopp genom att flytta musen till skärmens hörn.")
         self.label.setWordWrap(True)
         
+        layout = QtWidgets.QVBoxLayout(self)
+                
         self.label.setAlignment(Qt.AlignCenter)
-        layout.addWidget(self.label)
+        layout.addWidget(self.label)   
         
         self.restart_button = QPushButton("Upprepa", self)
         layout.addWidget(self.restart_button)
         self.restart_button.clicked.connect(self.start_process_again)
-        
-        self.start_button = QPushButton("Start", self)
+        """
+        self.start_button = QtWidgets.QPushButton("Huvudmeny", self)
         layout.addWidget(self.start_button)
         self.start_button.clicked.connect(self.go_to_start_dialog)
-      
+      """
         self.stop_action = QAction("Avsluta (q)", self)
         self.stop_action.setShortcut(QKeySequence("q"))
         self.stop_action.triggered.connect(self.stop_process)
@@ -210,14 +215,15 @@ class ProgressDialog(QtWidgets.QDialog):
         self.stop_button.clicked.connect(self.stop_process)
         
     def go_to_start_dialog(self):
-        self.close()
-        self.returnToDialog.emit()    
+        self.go_to_start_dialog_signal.emit()    
 
     def stop_process(self):
         self.close()  # Stäng minifönstret och avbryt processen
         qApp.quit()  # Avsluta programmet
 
     def start_process(self):
+        self.show()
+        QApplication.processEvents()
         self.prepare()
         self.leta_sten()  # Starta leta_sten-funktionen
         self.process_completed()
@@ -228,7 +234,7 @@ class ProgressDialog(QtWidgets.QDialog):
         self.label.setText(f"Upprepar...\n\nSöker {geologer_str} som ska leta efter {resurs_namn}.\n\nNödstopp genom att flytta musen till skärmens hörn.")
         self.label.setWordWrap(True)
         QApplication.processEvents()  # Uppdatera GUI-tråden
-        leta_sten()
+        self.leta_sten()
         self.process_completed()
         
     def process_completed(self, *args):
@@ -348,12 +354,12 @@ class ProgressDialog(QtWidgets.QDialog):
 
     def hitta_resurs(bild_sokvag, faktor):
         for _ in range(3):  # Loopa 3 gånger
-            command_area = ProgressDialog.berakna_command("./src/img/05_image.bmp", faktor)
+           # command_area = ProgressDialog.berakna_command("./src/img/05_image.bmp", faktor)
             bild = Image.open(bild_sokvag)
             skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
             bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
             for _ in range(3):  # Loopa 3 gånger för varje försök
-                hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.85, grayscale=True, region=command_area)     
+                hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.85, grayscale=True)#, region=command_area)     
                 if hittad_position is not None:
                     x, y, width, height = hittad_position  # Klickar i högra hörnet för att kunna ha med texten brevid knappen
                     knappens_plats = x + width - (width // 5), y + (height // 2)
@@ -361,13 +367,13 @@ class ProgressDialog(QtWidgets.QDialog):
                     time.sleep(0.1)
                     pyautogui.mouseDown(knappens_plats)
                     pyautogui.mouseUp()
-                    #pyautogui.moveTo(sovplats)
+                    pyautogui.moveTo(sovplats)
                     return True
                 time.sleep(2)
         return False, command_area
 
     def hitta_check(bild_sokvag, faktor):
-        global command_area
+       # global command_area
         for _ in range(3): # Loopa 3ggr
             hittad_check = None
             time.sleep(0.1)
@@ -409,7 +415,7 @@ class ProgressDialog(QtWidgets.QDialog):
 
     popup_flagga = threading.Event()      
 
-    def hitta_geolog(bild_sokvag, faktor):
+    def hitta_geolog(self, bild_sokvag, faktor):
         global flagga
         flagga = True
         global starmenu_area
@@ -483,7 +489,21 @@ class ProgressDialog(QtWidgets.QDialog):
                         flagga = False # Avbryt och börja leta efter nästa geolog.
                 elif hittad_geolog is None and flagga_funnen is True:
                     flagga = False # Avbryt direkt och gå vidare i listan.
+"""
+if __name__ == "__main__":
+    app = QApplication([])
+    
+    stacked_widget = QStackedWidget()
 
-miniprogram = ProgressDialog()
-miniprogram.returnToDialog.connect(app.quit)  # Close the application when ProgressDialog is closed
-miniprogram.show()
+    start_dialog = StartDialog()
+    miniprogram = ProgressDialog()
+    miniprogram.show()
+    # Connect the ProgressDialog signal to the main program's method to switch back to StartDialog
+    miniprogram.go_to_start_dialog.connect(lambda: stacked_widget.setCurrentIndex(0))
+
+    stacked_widget.addWidget(miniprogram)
+    stacked_widget.addWidget(start_dialog)
+
+    stacked_widget.show()
+
+    sys.exit(app.exec_())"""

@@ -7,11 +7,13 @@ from PyQt5 import QtGui, QtWidgets
 from PyQt5.QtCore import QEvent, QRect, Qt
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import (QAction, QApplication, QDialog, QLabel,
-                             QMessageBox, QPushButton, QVBoxLayout, qApp)
+                             QMessageBox, QPushButton, QStackedWidget,
+                             QVBoxLayout, qApp)
 
 from expl import ExplWindow
 from geo import GeoWindow
 from running import ProgressDialog
+
 
 class StartDialog(QtWidgets.QDialog):
     def __init__(self):
@@ -65,11 +67,16 @@ class StartDialog(QtWidgets.QDialog):
         self.hide()
         self.expl_window.returnToDialog.connect(self.show)  # Lägg till signalhantering för att visa dialogrutan igen
         self.expl_window.show()
+            
+
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     
+
     start_dialog = StartDialog()
+    miniprogram = ProgressDialog()
     start_dialog.show()
+    miniprogram.hide()
 
     sys.exit(app.exec_())

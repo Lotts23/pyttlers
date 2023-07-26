@@ -344,7 +344,9 @@ class GeoWindow(QtWidgets.QMainWindow):
         self.running_window.returnToDialog.connect(self.show) 
         self.running_window.startProgressDialog.connect(self.start_process)  # Connect the signal to start the process
         self.running_window.show()
-        self.running_window.start_process()
+        self.running_window.start_process() # Här startar vi processen i running
+        #miniprogram = ProgressDialog()
+        #miniprogram.show()
 
 if __name__ == "__main__":
     import sys
