@@ -299,7 +299,7 @@ class GeoWindow(QtWidgets.QMainWindow):
             "geologer": self.selected_buttons_left,
             "resurs": self.selected_buttons_right
         }
-        with open(f"{app_data_path}/Geo_nummer.json", "w") as json_file:
+        with open(f"{app_data_path}/geo_nummer.json", "w") as json_file:
             json.dump(json_data, json_file)
 
     def clear_button_click(self):
@@ -345,7 +345,7 @@ class GeoWindow(QtWidgets.QMainWindow):
             "resurs": resurs_value
         }
 
-        with open(f"{self.app_data_path}/Geo_nummer.json", "w") as json_file:
+        with open(f"{self.app_data_path}/geo_nummer.json", "w") as json_file:
             json.dump(data, json_file)
 
         self.close()
