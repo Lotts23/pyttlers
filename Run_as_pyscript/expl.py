@@ -391,7 +391,7 @@ class ExplWindow(QtWidgets.QMainWindow):
             "typ": self.selected_buttons_right,
             "tid": self.selected_buttons_rightest
         }
-        with open(f"{app_data_path}/Expl_nummer.json", "w") as json_file:
+        with open(f"{app_data_path}/expl_nummer.json", "w") as json_file:
             json.dump(json_data, json_file)
 
     def clear_button_click(self):
@@ -450,7 +450,7 @@ class ExplWindow(QtWidgets.QMainWindow):
             "tid": tid_value
         }
 
-        with open(f"{app_data_path}/Expl_nummer.json", "w") as json_file:
+        with open(f"{app_data_path}/expl_nummer.json", "w") as json_file:
             json.dump(data, json_file)
 
         self.close()
