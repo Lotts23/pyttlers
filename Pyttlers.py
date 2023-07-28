@@ -87,7 +87,7 @@ class StartDialog(QtWidgets.QDialog):
         self.hide()
         self.expl_window.returnToDialog.connect(self.show)  # Lägg till signalhantering för att visa dialogrutan igen
         self.expl_window.show()
-        self.miniprogram = ProgressDialog(app_data_path  )
+        self.miniprogram = ProgressDialog(app_data_path)
         self.miniprogram.returnToDialog.connect(self.show)
         self.expl_window.returnToDialog.connect(self.showProgressDialog)
         self.miniprogram.returnToDialog.connect(self.showProgressDialog)
@@ -104,7 +104,7 @@ if __name__ == "__main__":
     from expl import ExplWindow
     from geo import GeoWindow
     from running import ProgressDialog
-    from running2 import ProgressDialog
+    #from running2 import ProgressDialog
     app = QtWidgets.QApplication(sys.argv)
     start_dialog = StartDialog(app_data_path)
     miniprogram = ProgressDialog(app_data_path)

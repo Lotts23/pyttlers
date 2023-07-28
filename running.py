@@ -15,136 +15,11 @@ from PyQt5.QtWidgets import (QAction, QApplication, QDialog, QLabel,
                              QPushButton, QStackedWidget, QVBoxLayout, qApp)
 
 
-faktor = None
-geolog = None
-sovplats = 200, 200 # Bara för att alltid iallf ha nån giltlig sovplats - alltså där inga inforutor stör sökningen
-command_area = 0
-starmenu_area = 0
-
-
-
-def hitta_skalfaktor(skalbild_sokvag):# Här kollar vi skalan och ser till att stjärn-fönstret är öppen och i rätt tab.
-    tillatna_varden = [0.25, 0.375, 0.45, 0.5, 0.55, 0.625, 0.75, 1]
-    global faktor
-    faktor = faktor
-    for faktor in tillatna_varden:
-        skalbild = Image.open(skalbild_sokvag)
-        skalad_bild = skalbild.resize((int(skalbild.width * faktor), int(skalbild.height * faktor)))
-        skalbild_array = np.array(skalad_bild)
-        hittad_skalfaktor = pyautogui.locateOnScreen(skalbild_array, confidence=0.7, grayscale=True)
-        if hittad_skalfaktor is not None:
-            data = {"faktor": faktor}
-            with open(f"{self.app_data_path}/Scale_Data.json", "w") as json_file:
-                json.dump(data, json_file)
-            return faktor
-        time.sleep(0.01)
-    return
-
-def testa_skalfaktor(skalbild_sokvag, faktor):
-    testbild = Image.open(skalbild_sokvag)
-    testad_bild = testbild.resize((int(testbild.width * faktor), int(testbild.height * faktor)))
-    testbild_array = np.array(testad_bild)
-    hittad_testbild = pyautogui.locateOnScreen(testbild_array, confidence=0.8, grayscale=True)
-
-    if hittad_testbild is not None:
-        return faktor
-    else:
-        self.hitta_skalfaktor("./src/img/01_image.bmp")
-        return faktor
-
-def oppna_stjarna(bild_sokvag, faktor):
-    hittad = None
-    bild = Image.open(bild_sokvag)
-    skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
-    bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
-    time.sleep(1)
-    hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True)
-
-    if hittad_position is not None: #klicka
-        hittad = pyautogui.center(hittad_position)
-        time.sleep(0.5)  # minskar fel
-        pyautogui.moveTo(hittad)
-        time.sleep(0.1) 
-        pyautogui.mouseDown(hittad)
-        pyautogui.mouseUp()
-        time.sleep(4)  # minskar fel, starmenu tar ofta lång tid
-
-def hitta_bild_stjarna(bild_sokvag, faktor):    # kolla om stjärnmeny Else öppna stjärna
-    bild = Image.open(bild_sokvag)
-    skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
-    bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
-    hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True)
-
-    if hittad_position is not None:
-        time.sleep(0.1)  # Minskar antalet fel. 0.1 där det görs nya variabler o data, 3-4 mellan långsamma menyklick
-        #print("\nStjärnan öppen")
-    else:
-        oppna_stjarna("./src/img/03_image.bmp", faktor) # Här öppnas stjärnan om stjärnmenyn inte hittats.
-
-def tab_stjarna(bild_sokvag, faktor): 
-    hittad = None
-    bild = Image.open(bild_sokvag)
-    skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
-    bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
-    hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True) #, region=starmenu_area)
-    if hittad_position is not None:
-        hittad = pyautogui.center(hittad_position)
-        time.sleep(0.1)  # minskar fel
-        pyautogui.moveTo(hittad)
-        time.sleep(0.1) 
-        pyautogui.mouseDown(hittad)
-        pyautogui.mouseUp()
-        #print(f"{bild_sokvag} klickad")
-        time.sleep(1)  # minskar fel
-
-def berakna_starmenu(bild_sokvag, faktor):   # Definierar starmenu_area för att söka på begränsad yta 
-    global starmenu_area
-    bild = Image.open(bild_sokvag)
-    skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
-    bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
-    hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.7, grayscale=True)
-
-    if hittad_position is not None: # Om stjärnan hittas
-        x, y, bredd, hojd = hittad_position
-        starmenu_bredd = bredd * 10.1
-        starmenu_höjd = hojd * 8
-
-        #Beräkna det begränsade området
-        starmenu_x = x - int(starmenu_bredd / 2.1)
-        starmenu_y = y + int(y / 8)
-        starmenu_area = (starmenu_x, starmenu_y, round(starmenu_bredd), round(starmenu_höjd))
-        #print(starmenu_x, starmenu_y, round(starmenu_bredd), round(starmenu_höjd))
-        pyautogui.moveTo(starmenu_x + starmenu_bredd, starmenu_y)
-        return starmenu_area
-
-def hitta_starmenu(bild_sokvag, faktor):
-    hittad_starmenu = None
-    global sovplats
-    time.sleep(1)
-    bild = Image.open(bild_sokvag)
-    skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
-    bild_array = np.array(skalad_bild)
-    hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=False)
-
-    if hittad_position is not None:
-        hittad_starmenu = pyautogui.center(hittad_position)
-        time.sleep(0.1)
-        x, y, width, height = starmenu_area
-        sovplats = (x + width, y + (height / 3))
-        time.sleep(0.1)
-        pyautogui.mouseDown(hittad_starmenu)
-        pyautogui.mouseUp()
-        pyautogui.moveTo(sovplats)
-        time.sleep(0.1)
-        return sovplats
-    else:
-        time.sleep(0.1)
-        return None
 
 class ProgressDialog(QtWidgets.QDialog):
     startProgressDialog = QtCore.pyqtSignal()
     returnToDialog = QtCore.pyqtSignal()
-
+    
     def __init__(self, app_data_path):
         super(ProgressDialog, self).__init__()
         self.app_data_path = app_data_path
@@ -160,8 +35,134 @@ class ProgressDialog(QtWidgets.QDialog):
         screen_rect = desktop.availableGeometry()
         self.setGeometry(QRect(screen_rect.width() - self.width(), 0, self.width(), self.height()))
 
-    def initUI(self, app_data_path):
-        self.app_data_path = app_data_path
+    
+    faktor = None
+    geolog = None
+    sovplats = 200, 200 # Bara för att alltid iallf ha nån giltlig sovplats - alltså där inga inforutor stör sökningen
+    command_area = 0
+    starmenu_area = 0
+
+
+
+    def hitta_skalfaktor(self, skalbild_sokvag):# Här kollar vi skalan och ser till att stjärn-fönstret är öppen och i rätt tab.
+        tillatna_varden = [0.25, 0.375, 0.45, 0.5, 0.55, 0.625, 0.75, 1]
+        global faktor
+        faktor = faktor
+        for faktor in tillatna_varden:
+            skalbild = Image.open(skalbild_sokvag)
+            skalad_bild = skalbild.resize((int(skalbild.width * faktor), int(skalbild.height * faktor)))
+            skalbild_array = np.array(skalad_bild)
+            hittad_skalfaktor = pyautogui.locateOnScreen(skalbild_array, confidence=0.7, grayscale=True)
+            if hittad_skalfaktor is not None:
+                data = {"faktor": faktor}
+                with open(f"{self.app_data_path}/Scale_Data.json", "w") as json_file:
+                    json.dump(data, json_file)
+                return faktor
+            time.sleep(0.01)
+        return
+
+    def testa_skalfaktor(self, skalbild_sokvag, faktor):
+        testbild = Image.open(skalbild_sokvag)
+        testad_bild = testbild.resize((int(testbild.width * faktor), int(testbild.height * faktor)))
+        testbild_array = np.array(testad_bild)
+        hittad_testbild = pyautogui.locateOnScreen(testbild_array, confidence=0.8, grayscale=True)
+
+        if hittad_testbild is not None:
+            return faktor
+        else:
+            self.hitta_skalfaktor("./src/img/01_image.bmp")
+            return faktor
+
+    def oppna_stjarna(self, bild_sokvag, faktor):
+        hittad = None
+        bild = Image.open(bild_sokvag)
+        skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
+        bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
+        time.sleep(1)
+        hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True)
+
+        if hittad_position is not None: #klicka
+            hittad = pyautogui.center(hittad_position)
+            time.sleep(0.5)  # minskar fel
+            pyautogui.moveTo(hittad)
+            time.sleep(0.1) 
+            pyautogui.mouseDown(hittad)
+            pyautogui.mouseUp()
+            time.sleep(4)  # minskar fel, starmenu tar ofta lång tid
+
+    def hitta_bild_stjarna(self, bild_sokvag, faktor):    # kolla om stjärnmeny Else öppna stjärna
+        bild = Image.open(bild_sokvag)
+        skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
+        bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
+        hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True)
+
+        if hittad_position is not None:
+            time.sleep(0.1)  # Minskar antalet fel. 0.1 där det görs nya variabler o data, 3-4 mellan långsamma menyklick
+            #print("\nStjärnan öppen")
+        else:
+            self.oppna_stjarna("./src/img/03_image.bmp", faktor) # Här öppnas stjärnan om stjärnmenyn inte hittats.
+
+    def tab_stjarna(self, bild_sokvag, faktor): 
+        hittad = None
+        bild = Image.open(bild_sokvag)
+        skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
+        bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
+        hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True) #, region=starmenu_area)
+        if hittad_position is not None:
+            hittad = pyautogui.center(hittad_position)
+            time.sleep(0.1)  # minskar fel
+            pyautogui.moveTo(hittad)
+            time.sleep(0.1) 
+            pyautogui.mouseDown(hittad)
+            pyautogui.mouseUp()
+            #print(f"{bild_sokvag} klickad")
+            time.sleep(1)  # minskar fel
+
+    def berakna_starmenu(self, bild_sokvag, faktor):   # Definierar starmenu_area för att söka på begränsad yta 
+        global starmenu_area
+        bild = Image.open(bild_sokvag)
+        skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
+        bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
+        hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.7, grayscale=True)
+
+        if hittad_position is not None: # Om stjärnan hittas
+            x, y, bredd, hojd = hittad_position
+            starmenu_bredd = bredd * 10.1
+            starmenu_höjd = hojd * 8
+
+            #Beräkna det begränsade området
+            starmenu_x = x - int(starmenu_bredd / 2.1)
+            starmenu_y = y + int(y / 8)
+            starmenu_area = (starmenu_x, starmenu_y, round(starmenu_bredd), round(starmenu_höjd))
+            #print(starmenu_x, starmenu_y, round(starmenu_bredd), round(starmenu_höjd))
+            pyautogui.moveTo(starmenu_x + starmenu_bredd, starmenu_y)
+            return starmenu_area
+
+    def hitta_starmenu(self, bild_sokvag, faktor):
+        hittad_starmenu = None
+        global sovplats
+        time.sleep(1)
+        bild = Image.open(bild_sokvag)
+        skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
+        bild_array = np.array(skalad_bild)
+        hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=False)
+
+        if hittad_position is not None:
+            hittad_starmenu = pyautogui.center(hittad_position)
+            time.sleep(0.1)
+            x, y, width, height = starmenu_area
+            sovplats = (x + width, y + (height / 3))
+            time.sleep(0.1)
+            pyautogui.mouseDown(hittad_starmenu)
+            pyautogui.mouseUp()
+            pyautogui.moveTo(sovplats)
+            time.sleep(0.1)
+            return sovplats
+        else:
+            time.sleep(0.1)
+            return None
+
+    def initUI(self):
         layout = QtWidgets.QVBoxLayout(self)
         
         try:
@@ -230,6 +231,15 @@ class ProgressDialog(QtWidgets.QDialog):
         self.process_completed()
      
     def start_process_again(self):
+        with open("./src/Geo_namn.json", "r") as geo_file:
+            geo_data = json.load(geo_file)
+            geo_dict = geo_data
+
+        with open("./src/Resurs_namn.json", "r") as resurs_file:
+            resurs_data = json.load(resurs_file)
+            resurs_dict = resurs_data
+        geologer_namn = [geo_dict[str(num)] for num in geologer]
+        resurs_namn = resurs_dict[str(resurs)]
         self.label.clear()
         geologer_str = ", ".join(geologer_namn)
         self.label.setText(f"Upprepar...\n\nSöker {geologer_str} som ska leta efter {resurs_namn}.\n\nNödstopp genom att flytta musen till skärmens hörn.")
@@ -256,24 +266,24 @@ class ProgressDialog(QtWidgets.QDialog):
                 json_data = json.load(json_file)  # och läs datan
                 faktor = json_data.get("faktor")  # Hämta tidigare faktor
             if faktor is not None: # Om faktor-värdet inte är tomt, testa det
-                testa_skalfaktor("./src/img/01_image.bmp", faktor) # Testar om gamla faktorn funkar
+                self.testa_skalfaktor("./src/img/01_image.bmp", faktor) # Testar om gamla faktorn funkar
                 if faktor is None:
-                    hitta_skalfaktor("./src/img/01_image.bmp")
+                    self.hitta_skalfaktor("./src/img/01_image.bmp")
         else:
-            hitta_skalfaktor("./src/img/01_image.bmp")
+            self.hitta_skalfaktor("./src/img/01_image.bmp")
         with open(f"{self.app_data_path}/Scale_Data.json", "r") as json_file:
             data = json.load(json_file)
             faktor = data["faktor"]
-        hitta_bild_stjarna("./src/img/02_image.bmp", faktor) # Kör hitta om stjärnmenyn är öppen, else kör öppna stjärnan.
-        tab_stjarna("./src/img/04_image.bmp", faktor) # Gå till rätt tab så blir det inte så mycket scroll
-        berakna_starmenu("./src/img/02_image.bmp", faktor)
+        self.hitta_bild_stjarna("./src/img/02_image.bmp", faktor) # Kör hitta om stjärnmenyn är öppen, else kör öppna stjärnan.
+        self.tab_stjarna("./src/img/04_image.bmp", faktor) # Gå till rätt tab så blir det inte så mycket scroll
+        self.berakna_starmenu("./src/img/02_image.bmp", faktor)
         with open(f"{self.app_data_path}/Geo_nummer.json", "r") as json_file:
             global geologer
             global resurs
             data = json.load(json_file)
             geologer = data["geologer"]
             resurs = data["resurs"]
-        hitta_starmenu("./src/img/02_image.bmp", faktor)    
+        self.hitta_starmenu("./src/img/02_image.bmp", faktor)    
         return geologer, resurs, faktor
 
 #
@@ -293,7 +303,7 @@ class ProgressDialog(QtWidgets.QDialog):
         else:
             return True # hittad
 
-    def scroll(geolog):
+    def scroll(self, geolog):
         vimpel = False
         riktning = -2
         counting = 0
@@ -303,8 +313,8 @@ class ProgressDialog(QtWidgets.QDialog):
         safestop = 0
         while vimpel is False and geolog is not None: # När en viss geolog saknas
             individ = geolog
-            position_top = ProgressDialog.hitta_scroll(f"./src/img/top.png", faktor)
-            position_bottom = ProgressDialog.hitta_scroll(f"./src/img/bottom.png", faktor)
+            position_top = ProgressDialog.hitta_scroll(f"./src/img/top.bmp", faktor)
+            position_bottom = ProgressDialog.hitta_scroll(f"./src/img/bottom.bmp", faktor)
             hittad_geolog = ProgressDialog.hitta_scroll(f"./src/img/geo_{individ}.bmp", faktor)
             safestop += 1
             if hittad_geolog:
@@ -336,7 +346,7 @@ class ProgressDialog(QtWidgets.QDialog):
             if counting >= 3 or safestop == 20:
                 return None
 
-    def berakna_command(bild_sokvag, faktor): # Hitta sökområdet för resurser och check. # Behöver finslipas
+    def berakna_command(self, bild_sokvag, faktor): # Hitta sökområdet för resurser och check. # Behöver finslipas
         global command_area
         bild = Image.open(bild_sokvag)
         skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
@@ -352,7 +362,7 @@ class ProgressDialog(QtWidgets.QDialog):
             command_area = (command_x, command_y, round(command_bredd), round(command_höjd))
             return command_area
 
-    def hitta_resurs(bild_sokvag, faktor):
+    def hitta_resurs(self, bild_sokvag, faktor):
         for _ in range(3):  # Loopa 3 gånger
            # command_area = ProgressDialog.berakna_command("./src/img/05_image.bmp", faktor)
             bild = Image.open(bild_sokvag)
@@ -372,7 +382,7 @@ class ProgressDialog(QtWidgets.QDialog):
                 time.sleep(2)
         return False#, command_area
 
-    def hitta_check(bild_sokvag, faktor):
+    def hitta_check(self, bild_sokvag, faktor):
         for _ in range(3): # Loopa 3ggr
             hittad_check = None
             time.sleep(0.1)
@@ -394,23 +404,23 @@ class ProgressDialog(QtWidgets.QDialog):
             else:
                 time.sleep(0.1)
 
-    def error_bild(bild_sokvag, faktor):
+    def error_bild(self, bild_sokvag, faktor):
         bild = Image.open(bild_sokvag)
         skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
         bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
         bild_array = cv2.cvtColor(bild_array, cv2.COLOR_RGB2BGR)
         error_found = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=False)
         if error_found is not None:
-            ProgressDialog.popup_flagga.set()
+            self.popup_flagga.set()
             pyautogui.mouseDown(error_found)
             pyautogui.mouseUp()
             pyautogui.press('esc')
             time.sleep(0.1)
-            hitta_bild_stjarna("./src/img/02_image.bmp", faktor)
+            self.hitta_bild_stjarna("./src/img/02_image.bmp", faktor)
 
-    def hantera_popup():
-        while not ProgressDialog.popup_flagga.is_set():
-            ProgressDialog.error_bild("./src/img/error.png", faktor)
+    def hantera_popup(self):
+        while not self.popup_flagga.is_set():
+            self.error_bild("./src/img/error.bmp", faktor)
 
     popup_flagga = threading.Event()
 
@@ -429,8 +439,8 @@ class ProgressDialog(QtWidgets.QDialog):
             if hittad_position is not None:
                 hittad = pyautogui.center(hittad_position)
                 pyautogui.moveTo(hittad)
-                ProgressDialog.popup_flagga.clear()
-                popup_trad = threading.Thread(target=ProgressDialog.hantera_popup)
+                self.popup_flagga.clear()
+                popup_trad = threading.Thread(target=self.hantera_popup)
                 popup_trad.start()
                 pyautogui.moveTo(hittad)
                 time.sleep(0.1) 
@@ -438,9 +448,9 @@ class ProgressDialog(QtWidgets.QDialog):
                 pyautogui.mouseUp()
                 pyautogui.moveTo(sovplats) # För att bli av med popup-bubblan
                 time.sleep(0.1)
-                ProgressDialog.hitta_resurs(f"./src/img/resurs_{resurs}.bmp", faktor)
-                ProgressDialog.popup_flagga.set()
-                ProgressDialog.hitta_check("./src/img/check.bmp", faktor)
+                self.hitta_resurs(f"./src/img/resurs_{resurs}.bmp", faktor)
+                self.popup_flagga.set()
+                self.hitta_check("./src/img/check.bmp", faktor)
                 # Om den hittar en geolog längst bort på en rad, scrolla åt det hållet            
                 h_x, h_y, h_width, h_height = hittad_position
                 lower_corner_x, lower_corner_y = h_x + h_width, h_y + h_height # Av den hittade bilden
@@ -467,7 +477,8 @@ class ProgressDialog(QtWidgets.QDialog):
     def leta_sten(self):
         with open(f"{self.app_data_path}/Scale_Data.json", "r") as json_file:
             data = json.load(json_file)
-            faktor = data["faktor"] 
+            faktor = data["faktor"]
+            self.faktor = data["faktor"]
         global flagga
         global geolog
         global sovplats
@@ -482,7 +493,7 @@ class ProgressDialog(QtWidgets.QDialog):
                     flagga_funnen = True
                     flagga = True
                 elif hittad_geolog is None and flagga_funnen is False: # En tidigare hittad geolog behöver inte sökas efter utöver när-scrollet i hitta_geolog
-                    hitta = ProgressDialog.scroll(geolog)
+                    hitta = self.scroll(geolog)
                     if hitta is not None:
                         flagga = True # Upprepa hitta_geolog
                     else:
