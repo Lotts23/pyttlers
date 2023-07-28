@@ -171,12 +171,12 @@ class ProgressDialog(QtWidgets.QDialog):
         except FileNotFoundError:
             faktor = 0.5
 
-        with open(f"{self.app_data_path}/Geo_nummer.json", "r") as json_file:
+        with open(f"{self.app_data_path}/geo_nummer.json", "r") as json_file:
             data = json.load(json_file)
             geologer = data["geologer"]
             resurs = data["resurs"]
 
-        with open("./src/Geo_namn.json", "r") as geo_file:
+        with open("./src/geo_namn.json", "r") as geo_file:
             geo_data = json.load(geo_file)
             geo_dict = geo_data
 
@@ -230,7 +230,7 @@ class ProgressDialog(QtWidgets.QDialog):
         self.process_completed()
      
     def start_process_again(self):
-        with open("./src/Geo_namn.json", "r") as geo_file:
+        with open("./src/geo_namn.json", "r") as geo_file:
             geo_data = json.load(geo_file)
             geo_dict = geo_data
 
@@ -276,7 +276,7 @@ class ProgressDialog(QtWidgets.QDialog):
         self.hitta_bild_stjarna("./src/img/02_image.bmp", faktor) # Kör hitta om stjärnmenyn är öppen, else kör öppna stjärnan.
         self.tab_stjarna("./src/img/04_image.bmp", faktor) # Gå till rätt tab så blir det inte så mycket scroll
         self.berakna_starmenu("./src/img/02_image.bmp", faktor)
-        with open(f"{self.app_data_path}/Geo_nummer.json", "r") as json_file:
+        with open(f"{self.app_data_path}/geo_nummer.json", "r") as json_file:
             global geologer
             global resurs
             data = json.load(json_file)
