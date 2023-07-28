@@ -176,7 +176,7 @@ class ProgressDialog(QtWidgets.QDialog):
             geologer = data["geologer"]
             resurs = data["resurs"]
 
-        with open("./src/Geo_namn.json", "r") as geo_file:
+        with open("./src/geo_namn.json", "r") as geo_file:
             geo_data = json.load(geo_file)
             geo_dict = geo_data
 
@@ -230,7 +230,7 @@ class ProgressDialog(QtWidgets.QDialog):
         self.process_completed()
      
     def start_process_again(self):
-        with open("./src/Geo_namn.json", "r") as geo_file:
+        with open("./src/geo_namn.json", "r") as geo_file:
             geo_data = json.load(geo_file)
             geo_dict = geo_data
 
