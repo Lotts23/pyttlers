@@ -54,7 +54,7 @@ class ProgressDialog(QtWidgets.QDialog):
             hittad_skalfaktor = pyautogui.locateOnScreen(skalbild_array, confidence=0.7, grayscale=True)
             if hittad_skalfaktor is not None:
                 data = {"faktor": faktor}
-                with open(f"{self.app_data_path}/Scale_Data.json", "w") as json_file:
+                with open(f"{self.app_data_path}/scale_data.json", "w") as json_file:
                     json.dump(data, json_file)
                 return faktor
             time.sleep(0.01)
@@ -165,7 +165,7 @@ class ProgressDialog(QtWidgets.QDialog):
         layout = QtWidgets.QVBoxLayout(self)
 
         try:
-            with open(f"{self.app_data_path}/Scale_Data.json", "r") as json_file:
+            with open(f"{self.app_data_path}/scale_Data.json", "r") as json_file:
                 data = json.load(json_file)
                 faktor = data["faktor"]
         except FileNotFoundError:
@@ -257,7 +257,7 @@ class ProgressDialog(QtWidgets.QDialog):
             super().keyPressEvent(event)
 
     def prepare(self):
-        json_fil = f"{self.app_data_path}/Scale_Data.json"
+        json_fil = f"{self.app_data_path}/scale_data.json"
         global faktor
         faktor = None
         if os.path.isfile(json_fil):  # Om det finns en fil
@@ -270,7 +270,7 @@ class ProgressDialog(QtWidgets.QDialog):
                     self.hitta_skalfaktor("./src/img/01_image.bmp")
         else:
             self.hitta_skalfaktor("./src/img/01_image.bmp")
-        with open(f"{self.app_data_path}/Scale_Data.json", "r") as json_file:
+        with open(f"{self.app_data_path}/scale_data.json", "r") as json_file:
             data = json.load(json_file)
             faktor = data["faktor"]
         self.hitta_bild_stjarna("./src/img/02_image.bmp", faktor) # Kör hitta om stjärnmenyn är öppen, else kör öppna stjärnan.
@@ -474,7 +474,7 @@ class ProgressDialog(QtWidgets.QDialog):
         return hittad # Om den hittats har hittad ett värde, annars none
 
     def leta_sten(self):
-        with open(f"{self.app_data_path}/Scale_Data.json", "r") as json_file:
+        with open(f"{self.app_data_path}/scale_data.json", "r") as json_file:
             data = json.load(json_file)
             faktor = data["faktor"]
             self.faktor = data["faktor"]
