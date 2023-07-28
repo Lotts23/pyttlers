@@ -170,13 +170,13 @@ class ProgressDialog(QtWidgets.QDialog):
         except FileNotFoundError:
             faktor = 0.5
 
-        with open(f"{self.app_data_path}/Expl_nummer.json", "r") as json_file:
+        with open(f"{self.app_data_path}/expl_nummer.json", "r") as json_file:
             data = json.load(json_file)
             explorers = data["explorers"]
             typ = data["typ"]
             tid = data["tid"]
 
-        with open("./src/Expl_namn.json", "r") as expl_file:
+        with open("./src/expl_namn.json", "r") as expl_file:
             expl_data = json.load(expl_file)
             expl_dict = expl_data
 
@@ -235,7 +235,7 @@ class ProgressDialog(QtWidgets.QDialog):
         self.process_completed()
      
     def start_process_again(self):
-        with open("./src/Expl_namn.json", "r") as expl_file:
+        with open("./src/expl_namn.json", "r") as expl_file:
             expl_data = json.load(expl_file)
             expl_dict = expl_data
 
@@ -287,7 +287,7 @@ class ProgressDialog(QtWidgets.QDialog):
         self.hitta_bild_stjarna("./src/img/02_image.bmp", faktor) # Kör hitta om stjärnmenyn är öppen, else kör öppna stjärnan.
         self.tab_stjarna("./src/img/04_image.bmp", faktor) # Gå till rätt tab så blir det inte så mycket scroll
         self.berakna_starmenu("./src/img/02_image.bmp", faktor)
-        with open(f"{self.app_data_path}/Expl_nummer.json", "r") as json_file:
+        with open(f"{self.app_data_path}/expl_nummer.json", "r") as json_file:
             global explorers
             global typ
             global tid
