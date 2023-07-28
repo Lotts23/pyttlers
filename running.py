@@ -12,38 +12,16 @@ from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtCore import QEvent, QRect, Qt, pyqtSignal
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import (QAction, QApplication, QDialog, QLabel,
-                             QPushButton, QVBoxLayout, qApp)
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import QStackedWidget
+                             QPushButton, QStackedWidget, QVBoxLayout, qApp)
 
-
-with open("./src/geo_nummer.json", "r") as json_file:
-    data = json.load(json_file)
-    geologer = data["geologer"]
-    resurs = data["resurs"]  
-
-with open("./src/geo_namn.json", "r") as geo_file:
-    geo_data = json.load(geo_file)
-    geo_dict = geo_data
-
-with open("./src/resurs_namn.json", "r") as resurs_file:
-    resurs_data = json.load(resurs_file)
-    resurs_dict = resurs_data    
 
 faktor = None
-geologer_namn = [geo_dict[str(num)] for num in geologer]    
-resurs_namn = resurs_dict[str(resurs)] 
 geolog = None
 sovplats = 200, 200 # Bara för att alltid iallf ha nån giltlig sovplats - alltså där inga inforutor stör sökningen
 command_area = 0
 starmenu_area = 0
 
-try:
-    with open("./src/scale_data.json", "r") as json_file:
-        data = json.load(json_file)
-        faktor = data["faktor"]
-except FileNotFoundError:
-    faktor = 0.5
+
 
 def hitta_skalfaktor(skalbild_sokvag):# Här kollar vi skalan och ser till att stjärn-fönstret är öppen och i rätt tab.
     tillatna_varden = [0.25, 0.375, 0.45, 0.5, 0.55, 0.625, 0.75, 1]
@@ -56,7 +34,7 @@ def hitta_skalfaktor(skalbild_sokvag):# Här kollar vi skalan och ser till att s
         hittad_skalfaktor = pyautogui.locateOnScreen(skalbild_array, confidence=0.7, grayscale=True)
         if hittad_skalfaktor is not None:
             data = {"faktor": faktor}
-            with open("./src/scale_data.json", "w") as json_file:
+            with open(f"{self.app_data_path}/Scale_Data.json", "w") as json_file:
                 json.dump(data, json_file)
             return faktor
         time.sleep(0.01)
@@ -165,11 +143,11 @@ def hitta_starmenu(bild_sokvag, faktor):
 
 class ProgressDialog(QtWidgets.QDialog):
     startProgressDialog = QtCore.pyqtSignal()
-    go_to_start_dialog_signal = QtCore.pyqtSignal()
-    returnToDialog = pyqtSignal()
+    returnToDialog = QtCore.pyqtSignal()
 
-    def __init__(self):
+    def __init__(self, app_data_path):
         super(ProgressDialog, self).__init__()
+        self.app_data_path = app_data_path
         self.initUI()
         self.setWindowTitle("Pågår...")
 
@@ -182,25 +160,50 @@ class ProgressDialog(QtWidgets.QDialog):
         screen_rect = desktop.availableGeometry()
         self.setGeometry(QRect(screen_rect.width() - self.width(), 0, self.width(), self.height()))
 
-    def initUI(self):
+    def initUI(self, app_data_path):
+        self.app_data_path = app_data_path
+        layout = QtWidgets.QVBoxLayout(self)
+        
+        try:
+            with open(f"{self.app_data_path}/Scale_Data.json", "r") as json_file:
+                data = json.load(json_file)
+                faktor = data["faktor"]
+        except FileNotFoundError:
+            faktor = 0.5
+
+        with open(f"{self.app_data_path}/Geo_nummer.json", "r") as json_file:
+            data = json.load(json_file)
+            geologer = data["geologer"]
+            resurs = data["resurs"]
+
+        with open("./src/Geo_namn.json", "r") as geo_file:
+            geo_data = json.load(geo_file)
+            geo_dict = geo_data
+
+        with open("./src/Resurs_namn.json", "r") as resurs_file:
+            resurs_data = json.load(resurs_file)
+            resurs_dict = resurs_data
+
+        geologer_namn = [geo_dict[str(num)] for num in geologer]
+        resurs_namn = resurs_dict[str(resurs)]
+
         self.label = QLabel(self)
         geologer_str = ", ".join(geologer_namn)
         self.label.setText(f"Process pågår...\n\nSöker {geologer_str} som ska leta efter {resurs_namn}.\n\nNödstopp genom att flytta musen till skärmens hörn.")
         self.label.setWordWrap(True)
-        
-        layout = QtWidgets.QVBoxLayout(self)
-                
+
         self.label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.label)
         
         self.restart_button = QPushButton("Upprepa", self)
         layout.addWidget(self.restart_button)
         self.restart_button.clicked.connect(self.start_process_again)
-        """
-        self.start_button = QtWidgets.QPushButton("Huvudmeny", self)
+
+        self.start_button = QtWidgets.QPushButton("Nytt val", self)
         layout.addWidget(self.start_button)
-        self.start_button.clicked.connect(self.go_to_start_dialog)
-      """
+        self.start_button.clicked.connect(self.on_returnToDialog)
+        self.hide()
+
         self.stop_action = QAction("Avsluta (q)", self)
         self.stop_action.setShortcut(QKeySequence("q"))
         self.stop_action.triggered.connect(self.stop_process)
@@ -210,17 +213,19 @@ class ProgressDialog(QtWidgets.QDialog):
         layout.addWidget(self.stop_button)
         self.stop_button.clicked.connect(self.stop_process)
 
-    def go_to_start_dialog(self):
-        self.go_to_start_dialog_signal.emit()
+    def on_returnToDialog(self):
+        self.returnToDialog.emit()
+        self.close()
 
     def stop_process(self):
         self.close()  # Stäng minifönstret och avbryt processen
         qApp.quit()  # Avsluta programmet
 
     def start_process(self):
-        self.show()
         QApplication.processEvents()
+        self.show()
         self.prepare()
+        QApplication.processEvents()
         self.leta_sten()  # Starta leta_sten-funktionen
         self.process_completed()
      
@@ -243,7 +248,7 @@ class ProgressDialog(QtWidgets.QDialog):
             super().keyPressEvent(event)
 
     def prepare(self):
-        json_fil = "./src/scale_data.json"
+        json_fil = f"{self.app_data_path}/Scale_Data.json"
         global faktor
         faktor = None
         if os.path.isfile(json_fil):  # Om det finns en fil
@@ -256,13 +261,13 @@ class ProgressDialog(QtWidgets.QDialog):
                     hitta_skalfaktor("./src/img/01_image.bmp")
         else:
             hitta_skalfaktor("./src/img/01_image.bmp")
-        with open("./src/scale_data.json", "r") as json_file:
+        with open(f"{self.app_data_path}/Scale_Data.json", "r") as json_file:
             data = json.load(json_file)
             faktor = data["faktor"]
         hitta_bild_stjarna("./src/img/02_image.bmp", faktor) # Kör hitta om stjärnmenyn är öppen, else kör öppna stjärnan.
         tab_stjarna("./src/img/04_image.bmp", faktor) # Gå till rätt tab så blir det inte så mycket scroll
         berakna_starmenu("./src/img/02_image.bmp", faktor)
-        with open("./src/geo_nummer.json", "r") as json_file:
+        with open(f"{self.app_data_path}/Geo_nummer.json", "r") as json_file:
             global geologer
             global resurs
             data = json.load(json_file)
@@ -271,9 +276,9 @@ class ProgressDialog(QtWidgets.QDialog):
         hitta_starmenu("./src/img/02_image.bmp", faktor)    
         return geologer, resurs, faktor
 
-    #
-    #   Nu börjar sökningen på riktigt
-    #
+#
+#   Nu börjar sökningen på riktigt
+#
 
     def hitta_scroll(bild_sokvag, faktor):
         hittad_position = None
@@ -289,7 +294,6 @@ class ProgressDialog(QtWidgets.QDialog):
             return True # hittad
 
     def scroll(geolog):
-        #global geologer
         vimpel = False
         riktning = -2
         counting = 0
@@ -369,7 +373,6 @@ class ProgressDialog(QtWidgets.QDialog):
         return False#, command_area
 
     def hitta_check(bild_sokvag, faktor):
-       # global command_area
         for _ in range(3): # Loopa 3ggr
             hittad_check = None
             time.sleep(0.1)
@@ -429,6 +432,7 @@ class ProgressDialog(QtWidgets.QDialog):
                 ProgressDialog.popup_flagga.clear()
                 popup_trad = threading.Thread(target=ProgressDialog.hantera_popup)
                 popup_trad.start()
+                pyautogui.moveTo(hittad)
                 time.sleep(0.1) 
                 pyautogui.mouseDown(hittad)
                 pyautogui.mouseUp()
@@ -461,7 +465,7 @@ class ProgressDialog(QtWidgets.QDialog):
         return hittad # Om den hittats har hittad ett värde, annars none
 
     def leta_sten(self):
-        with open("./src/scale_data.json", "r") as json_file:
+        with open(f"{self.app_data_path}/Scale_Data.json", "r") as json_file:
             data = json.load(json_file)
             faktor = data["faktor"] 
         global flagga
@@ -485,21 +489,3 @@ class ProgressDialog(QtWidgets.QDialog):
                         flagga = False # Avbryt och börja leta efter nästa geolog.
                 elif hittad_geolog is None and flagga_funnen is True:
                     flagga = False # Avbryt direkt och gå vidare i listan.
-"""
-if __name__ == "__main__":
-    app = QApplication([])
-    
-    stacked_widget = QStackedWidget()
-
-    start_dialog = StartDialog()
-    miniprogram = ProgressDialog()
-    miniprogram.show()
-    # Connect the ProgressDialog signal to the main program's method to switch back to StartDialog
-    miniprogram.go_to_start_dialog.connect(lambda: stacked_widget.setCurrentIndex(0))
-
-    stacked_widget.addWidget(miniprogram)
-    stacked_widget.addWidget(start_dialog)
-
-    stacked_widget.show()
-
-    sys.exit(app.exec_())"""

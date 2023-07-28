@@ -5,9 +5,18 @@ import subprocess
 import sys
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QApplication, QMessageBox
+from PyQt5.QtCore import QEvent, QRect, Qt
+from PyQt5.QtGui import QKeySequence
+from PyQt5.QtWidgets import (QAction, QApplication, QDialog, QLabel,
+                             QMessageBox, QPushButton, QStackedWidget,
+                             QVBoxLayout, qApp)
 
 from running2 import ProgressDialog
+
+app_data_dir = os.path.join(os.getenv('APPDATA'), 'Pyttlers') if os.name == 'nt' else os.path.expanduser("~/.config/Pyttlers")
+
+app_data_path = os.path.join(app_data_dir, 'Pyttlers')
+os.makedirs(app_data_path, exist_ok=True)    
 
 class ExplWindow(QtWidgets.QMainWindow):
     returnToDialog = QtCore.pyqtSignal()
@@ -15,6 +24,7 @@ class ExplWindow(QtWidgets.QMainWindow):
 
     def __init__(self):
         super(ExplWindow, self).__init__()
+        self.app_data_path = app_data_path
         self.setWindowTitle("Välj explorers att sända")
         self.setGeometry(500, 100, 640, 790)
 
@@ -67,6 +77,7 @@ class ExplWindow(QtWidgets.QMainWindow):
         # Lägg till höger och högerhöger i högerareaboxen        
         self.rightareaLayout.addStretch()
         self.rightareaLayout.addWidget(self.rightBox)
+        self.rightBox.setFixedHeight(88)
         self.rightareaLayout.addWidget(self.rightestBox)
                 
         # Skapa textrutan för infotexten
@@ -138,7 +149,7 @@ class ExplWindow(QtWidgets.QMainWindow):
             self.button_images.append(image)
             button.setIcon(QtGui.QIcon(image))
             button.setIconSize(image.rect().size())
-            button.setIconSize(QtCore.QSize(57, 68))  
+            button.setIconSize(QtCore.QSize(57, 68))
             button.setStyleSheet("QPushButton::icon {"
                                 "    position: absolute;"
                                 "    bottom: 0;"
@@ -201,9 +212,8 @@ class ExplWindow(QtWidgets.QMainWindow):
         self.gridLayoutRightest = QtWidgets.QGridLayout(self.scrollContentRightest)
 
         # Skapa knapparna för söklängd ### Lägg till 4, 5, 6 OM treasure är valt
-        for i in range(1000, 1004):
+        for i in range(1000, 1007):
             value = str(i)
-
             button = QtWidgets.QPushButton(self.scrollContentRightest)
             button.setFixedSize(42, 30)
             button.setCheckable(True)
@@ -231,8 +241,9 @@ class ExplWindow(QtWidgets.QMainWindow):
                                 "    border-radius: 5px;"
                                 "}")
 
-            # Endast en knapp åt gången kan väljas i den högrahögra boxen
-            button.setAutoExclusive(True)
+
+        # Endast en knapp åt gången kan väljas i den högrahögra boxen
+        button.setAutoExclusive(True)    
 
         # Skapa knapparna för bottom-innehållet
         back_button = QtWidgets.QPushButton()
@@ -304,9 +315,21 @@ class ExplWindow(QtWidgets.QMainWindow):
                                 "    border-radius: 5px;"
                                 "}")     
 
-        back_button.clicked.connect(self.return_to_dialog)
+        back_button.clicked.connect(self.on_returnToDialog)
 
-    def return_to_dialog(self):
+    def choose_treasure(self):
+        self.mode = True
+        self.update_length_buttons()
+
+    def choose_adventure(self):
+        self.mode = False
+        self.update_length_buttons()
+
+    def update_length_buttons(self):
+        for button in self.buttonsRightest:
+            button.setEnabled(self.mode)
+
+    def on_returnToDialog(self):
         self.close()
         self.returnToDialog.emit()
 
@@ -368,7 +391,7 @@ class ExplWindow(QtWidgets.QMainWindow):
             "typ": self.selected_buttons_right,
             "tid": self.selected_buttons_rightest
         }
-        with open("./src/expl_nummer.json", "w") as json_file:
+        with open(f"{app_data_path}/Expl_nummer.json", "w") as json_file:
             json.dump(json_data, json_file)
 
     def clear_button_click(self):
@@ -391,17 +414,17 @@ class ExplWindow(QtWidgets.QMainWindow):
                                 "    border-radius: 5px;"
                                 "}")
 
-    def open_running_window(self):
+    def open_miniprogram(self):
         # Close the ExplWindow and open the ProgressDialog
         self.close()
-        self.running_window = ProgressDialog()
-        self.running_window.returnToExplWindow.connect(self.show)  # Show ExplWindow again after ProgressDialog closes
-        self.running_window.show()     
-        self.running_window.startProgressDialog.emit()
+        self.miniprogram = ProgressDialog()
+        self.miniprogram.returnToDialog.connect(self.show)  # Show ExplWindow again after ProgressDialog closes
+        self.miniprogram.show()     
+        self.miniprogram.startProgressDialog.emit()
 
     def start_process(self):
         self.update_json()  # Update the JSON data before starting the process
-        self.open_running_window()  # Open the ProgressDialog
+        self.open_miniprogram(app_data_path)  # Open the ProgressDialog
 
     def send_button_click(self):
         if not self.selected_buttons_left or not self.selected_buttons_right:
@@ -427,15 +450,15 @@ class ExplWindow(QtWidgets.QMainWindow):
             "tid": tid_value
         }
 
-        with open("./src/expl_nummer.json", "w") as json_file:
+        with open(f"{app_data_path}/Expl_nummer.json", "w") as json_file:
             json.dump(data, json_file)
 
         self.close()
-        self.running_window = ProgressDialog()
-        self.running_window.returnToDialog.connect(self.show) 
-        self.running_window.startProgressDialog.connect(self.start_process)  # Connect the signal to start the process
-        self.running_window.show()
-        self.running_window.start_process() # Här startar vi processen i running
+        self.miniprogram = ProgressDialog(app_data_path)
+        self.miniprogram.startProgressDialog.connect(self.start_process)  # Connect the signal to start the process
+        self.miniprogram.show()
+        self.miniprogram.start_process() # Här startar vi processen i running
+        self.miniprogram.returnToDialog.connect(self.show)
 
 if __name__ == "__main__":
     import sys

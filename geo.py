@@ -1,12 +1,22 @@
+import importlib
 import json
 import os
 import subprocess
 import sys
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QMessageBox
+from PyQt5.QtCore import QEvent, QRect, Qt
+from PyQt5.QtGui import QKeySequence
+from PyQt5.QtWidgets import (QAction, QApplication, QDialog, QLabel,
+                             QMessageBox, QPushButton, QStackedWidget,
+                             QVBoxLayout, qApp)
 
 from running import ProgressDialog
+
+app_data_dir = os.path.join(os.getenv('APPDATA'), 'Pyttlers') if os.name == 'nt' else os.path.expanduser("~/.config/Pyttlers")
+
+app_data_path = os.path.join(app_data_dir, 'Pyttlers')
+os.makedirs(app_data_path, exist_ok=True)    
 
 class GeoWindow(QtWidgets.QMainWindow):
     returnToDialog = QtCore.pyqtSignal()
@@ -14,6 +24,7 @@ class GeoWindow(QtWidgets.QMainWindow):
 
     def __init__(self):
         super(GeoWindow, self).__init__()
+        self.app_data_path = app_data_path
         self.setWindowTitle("Välj geologer att sända")
         self.setGeometry(500, 100, 600, 590)
 
@@ -242,9 +253,9 @@ class GeoWindow(QtWidgets.QMainWindow):
                                 "    border-radius: 5px;"
                                 "}")     
 
-        back_button.clicked.connect(self.return_to_dialog)
+        back_button.clicked.connect(self.on_returnToDialog)
 
-    def return_to_dialog(self):
+    def on_returnToDialog(self):
         self.close()
         self.returnToDialog.emit()
 
@@ -288,7 +299,7 @@ class GeoWindow(QtWidgets.QMainWindow):
             "geologer": self.selected_buttons_left,
             "resurs": self.selected_buttons_right
         }
-        with open("./src/geo_nummer.json", "w") as json_file:
+        with open(f"{app_data_path}/Geo_nummer.json", "w") as json_file:
             json.dump(json_data, json_file)
 
     def clear_button_click(self):
@@ -304,17 +315,17 @@ class GeoWindow(QtWidgets.QMainWindow):
                                 "    border-radius: 5px;"
                                 "}")
 
-    def open_running_window(self):
+    def open_miniprogram(self):
         # Close the GeoWindow and open the ProgressDialog
         self.close()
-        self.running_window = ProgressDialog()
-        self.running_window.returnToGeoWindow.connect(self.show)  # Show GeoWindow again after ProgressDialog closes
-        self.running_window.show()     
-        self.running_window.startProgressDialog.emit()
+        self.miniprogram = ProgressDialog()
+        self.miniprogram.returnToDialog.connect(self.show)  # Show start again after ProgressDialog closes
+        self.miniprogram.show()     
+        self.miniprogram.startProgressDialog.emit()
 
     def start_process(self):
         self.update_json()  # Update the JSON data before starting the process
-        self.open_running_window()  # Open the ProgressDialog
+        self.open_miniprogram()  # Open the ProgressDialog
 
     def send_button_click(self):
         if not self.selected_buttons_left or not self.selected_buttons_right:
@@ -334,15 +345,15 @@ class GeoWindow(QtWidgets.QMainWindow):
             "resurs": resurs_value
         }
 
-        with open("./src/geo_nummer.json", "w") as json_file:
+        with open(f"{self.app_data_path}/Geo_nummer.json", "w") as json_file:
             json.dump(data, json_file)
-        
+
         self.close()
-        self.running_window = ProgressDialog()
-        self.running_window.returnToDialog.connect(self.show) 
-        self.running_window.startProgressDialog.connect(self.start_process)  # Connect the signal to start the process
-        self.running_window.show()
-        self.running_window.start_process() # Här startar vi processen i running
+        self.miniprogram = ProgressDialog(self.app_data_path)
+        self.miniprogram.startProgressDialog.connect(self.start_process)  # Connect the signal to start the process
+        self.miniprogram.show()
+        self.miniprogram.start_process() # Här startar vi processen i running
+        self.miniprogram.returnToDialog.connect(self.show)
 
 if __name__ == "__main__":
     import sys

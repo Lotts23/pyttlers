@@ -14,35 +14,36 @@ from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import (QAction, QApplication, QDialog, QLabel,
                              QPushButton, QStackedWidget, QVBoxLayout, qApp)
 
-with open("./src/expl_nummer.json", "r") as json_file:
+"""
+with open(f"{app_data_path}/Expl_nummer.json", "r") as json_file:
     data = json.load(json_file)
     explorers = data["explorers"]
-    typ = data["typ"]  
+    typ = data["typ"]
     tid = data["tid"]
 
-with open("./src/expl_namn.json", "r") as expl_file:
+with open("./src/Expl_namn.json", "r") as expl_file:
     expl_data = json.load(expl_file)
     expl_dict = expl_data
 
-with open("./src/typ_namn.json", "r") as typ_file:
+with open("./src/Typ_namn.json", "r") as typ_file:
     typ_data = json.load(typ_file)
     typ_dict = typ_data    
 
-with open("./src/tid_namn.json", "r") as tid_file:
+with open("./src/Tid_namn.json", "r") as tid_file:
     tid_data = json.load(tid_file)
     tid_dict = tid_data       
 
 faktor = None
 explorers_namn = [expl_dict[str(num)] for num in explorers]    
-typ_namn = typ_dict[str(typ)] 
-tid_namn = tid_dict[str(tid)] 
+typ_namn = typ_dict.get(str(typ), "Okänd typ")
+tid_namn = tid_dict.get(str(tid), "Okänd tid")"""
 explorer = None
 sovplats = 200, 200 # Bara för att alltid iallf ha nån giltlig sovplats - alltså där inga inforutor stör sökningen
 command_area = 0
 starmenu_area = 0
 
 try:
-    with open("./src/scale_data.json", "r") as json_file:
+    with open("./src/Scale_Data.json", "r") as json_file:
         data = json.load(json_file)
         faktor = data["faktor"]
 except FileNotFoundError:
@@ -59,7 +60,7 @@ def hitta_skalfaktor(skalbild_sokvag):# Här kollar vi skalan och ser till att s
         hittad_skalfaktor = pyautogui.locateOnScreen(skalbild_array, confidence=0.7, grayscale=True)
         if hittad_skalfaktor is not None:
             data = {"faktor": faktor}
-            with open("./src/scale_data.json", "w") as json_file:
+            with open(f"{app_data_path}/Scale_Data.json", "w") as json_file:
                 json.dump(data, json_file)
             return faktor
         time.sleep(0.01)
@@ -168,12 +169,12 @@ def hitta_starmenu(bild_sokvag, faktor):
 
 class ProgressDialog(QtWidgets.QDialog):
     startProgressDialog = QtCore.pyqtSignal()
-    go_to_start_dialog_signal = QtCore.pyqtSignal()
-    returnToDialog = pyqtSignal()
+    returnToDialog = QtCore.pyqtSignal()
 
-    def __init__(self):
+    def __init__(self, app_data_path):
         super(ProgressDialog, self).__init__()
-        self.initUI()
+        self.app_data_path = app_data_path
+        self.initUI(app_data_path)
         self.setWindowTitle("Pågår...")
 
         self.setFixedSize(350, 220)
@@ -185,20 +186,47 @@ class ProgressDialog(QtWidgets.QDialog):
         screen_rect = desktop.availableGeometry()
         self.setGeometry(QRect(screen_rect.width() - self.width(), 0, self.width(), self.height()))
 
-    def initUI(self):
+    def initUI(self, app_data_path):
         layout = QtWidgets.QVBoxLayout(self)
+
+        with open(f"{app_data_path}/Expl_nummer.json", "r") as json_file:
+            data = json.load(json_file)
+            explorers = data["explorers"]
+            typ = data["typ"]
+            tid = data["tid"]
+
+        with open("./src/Expl_namn.json", "r") as expl_file:
+            expl_data = json.load(expl_file)
+            expl_dict = expl_data
+
+        with open("./src/Typ_namn.json", "r") as typ_file:
+            typ_data = json.load(typ_file)
+            typ_dict = typ_data
+
+        with open("./src/Tid_namn.json", "r") as tid_file:
+            tid_data = json.load(tid_file)
+            tid_dict = tid_data
+
+        explorers_namn = [expl_dict[str(num)] for num in explorers]    
+        typ_namn = typ_dict[str(typ)]
+        tid_namn = tid_dict[str(tid)]
 
         self.label = QLabel(self)
         explorers_str = ", ".join(explorers_namn)
         self.label.setText(f"Process pågår...\n\nSöker {explorers_str} som ska leta efter {typ_namn} under {tid_namn} tid.\n\nNödstopp genom att flytta musen till skärmens hörn.")
         self.label.setWordWrap(True)
-        
+
         self.label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.label)
         
         self.restart_button = QPushButton("Upprepa", self)
         layout.addWidget(self.restart_button)
         self.restart_button.clicked.connect(self.start_process_again)
+
+        self.start_button = QtWidgets.QPushButton("Nytt val", self)
+        layout.addWidget(self.start_button)
+        self.start_button.clicked.connect(self.on_returnToDialog)
+        self.hide()
 
         self.stop_action = QAction("Avsluta (q)", self)
         self.stop_action.setShortcut(QKeySequence("q"))
@@ -209,18 +237,20 @@ class ProgressDialog(QtWidgets.QDialog):
         layout.addWidget(self.stop_button)
         self.stop_button.clicked.connect(self.stop_process)
 
-    def go_to_start_dialog(self):
-        self.go_to_start_dialog_signal.emit()
+    def on_returnToDialog(self):
+        self.returnToDialog.emit()
+        self.close()
 
     def stop_process(self):
         self.close()  # Stäng minifönstret och avbryt processen
         qApp.quit()  # Avsluta programmet
 
     def start_process(self):
-        self.show()
         QApplication.processEvents()
+        self.show()
         self.prepare()
-        leta_skatt()  # Starta leta_skatt-funktionen
+        QApplication.processEvents()
+        self.leta_skatt()  # Starta leta_skatt-funktionen
         self.process_completed()
      
     def start_process_again(self):
@@ -241,8 +271,8 @@ class ProgressDialog(QtWidgets.QDialog):
         else:
             super().keyPressEvent(event)
 
-    def prepare(self):
-        json_fil = "./src/scale_data.json"
+    def prepare(self, app_data_path):
+        json_fil = f"{app_data_path}/Scale_Data.json"
         global faktor
         faktor = None
         if os.path.isfile(json_fil):  # Om det finns en fil
@@ -255,13 +285,13 @@ class ProgressDialog(QtWidgets.QDialog):
                     hitta_skalfaktor("./src/img/01_image.bmp")
         else:
             hitta_skalfaktor("./src/img/01_image.bmp")
-        with open("./src/scale_data.json", "r") as json_file:
+        with open(f"{app_data_path}/Scale_Data.json", "r") as json_file:
             data = json.load(json_file)
             faktor = data["faktor"]
         hitta_bild_stjarna("./src/img/02_image.bmp", faktor) # Kör hitta om stjärnmenyn är öppen, else kör öppna stjärnan.
         tab_stjarna("./src/img/04_image.bmp", faktor) # Gå till rätt tab så blir det inte så mycket scroll
         berakna_starmenu("./src/img/02_image.bmp", faktor)
-        with open("./src/expl_nummer.json", "r") as json_file:
+        with open(f"{app_data_path}/Expl_nummer.json", "r") as json_file:
             global explorers
             global typ
             global tid
@@ -273,17 +303,16 @@ class ProgressDialog(QtWidgets.QDialog):
         return explorers, typ, tid, faktor
 
 #
-#   Nu börjar sökningen på riktigt, först läser vi in alla json
+#   Nu börjar sökningen på riktigt
 #
 
-    def hitta_scroll(bild_sokvag, faktor): # Self?
+    def hitta_scroll(bild_sokvag, faktor):
         hittad_position = None
         bild = Image.open(bild_sokvag)
         skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
         bild_array = np.array(skalad_bild)
         scroll_region = (starmenu_area[0], round(starmenu_area[1] * 0.6), round(starmenu_area[2] * 1.5), round(starmenu_area[3] * 1.5))
         hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True, region=scroll_region)
-        
         if hittad_position is None:
             time.sleep(0.01)
             return False # inte hittad
@@ -291,7 +320,6 @@ class ProgressDialog(QtWidgets.QDialog):
             return True # hittad
 
     def scroll(explorer):
-        #global explorers
         vimpel = False
         riktning = -2
         counting = 0
@@ -392,7 +420,6 @@ class ProgressDialog(QtWidgets.QDialog):
         return False#, command_area
 
     def hitta_check(bild_sokvag, faktor):
-        # global command_area
         for _ in range(3): # Loopa 3ggr
             hittad_check = None
             time.sleep(0.1)
@@ -409,7 +436,7 @@ class ProgressDialog(QtWidgets.QDialog):
                 pyautogui.moveTo(sovplats)
                 pyautogui.mouseDown(sovplats)
                 pyautogui.mouseUp()
-                time.sleep(4)  # minskar fel ### Här vill jag istället använda en koll att den klickade specialisten ger sig iväg.
+                time.sleep(4)  # minskar fel
                 break
             else:
                 time.sleep(0.1)
@@ -434,10 +461,11 @@ class ProgressDialog(QtWidgets.QDialog):
 
     popup_flagga = threading.Event()
 
-    def hitta_explorer(bild_sokvag, faktor):
+    def hitta_explorer(self, bild_sokvag, faktor):
         global flagga
         flagga = True
         global starmenu_area
+        hittad = None
         global sort
         if typ == 100:
             sort = "t"
@@ -486,11 +514,11 @@ class ProgressDialog(QtWidgets.QDialog):
                 flagga = True # Vi har hittat den
                 return hittad
             else:
-                time.sleep(0.1) ### Else hitta command-bilden, hittas den så tryck esc, kontrollera att stjärnan är öppen och fortsätt.
+                time.sleep(0.1)
         return hittad # Om den hittats har hittad ett värde, annars none
 
-    def leta_skatt():
-        with open("./src/scale_data.json", "r") as json_file:
+    def leta_skatt(self):
+        with open(f"{app_data_path}/Scale_Data.json", "r") as json_file:
             data = json.load(json_file)
             faktor = data["faktor"] 
         global flagga
@@ -514,18 +542,3 @@ class ProgressDialog(QtWidgets.QDialog):
                         flagga = False # Avbryt och börja leta efter nästa explorer.
                 elif hittad_explorer is None and flagga_funnen is True:
                     flagga = False # Avbryt direkt och gå vidare i listan.
-"""
-def stop_program():
-    app.quit()
-
-def process_completed():
-    miniprogram.process_completed()
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    miniprogram = ProgressDialog()
-    miniprogram.show()
-    leta_skatt()
-    miniprogram.process_completed()
-    sys.exit(app.exec_())
-"""

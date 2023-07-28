@@ -17,3 +17,4 @@ dist
 popup.json
 *.pyc
 src/__pycache__
+Working_py/*
