@@ -19,7 +19,7 @@ from PyQt5.QtWidgets import (QAction, QApplication, QDialog, QLabel,
 class ProgressDialog(QtWidgets.QDialog):
     startProgressDialog = QtCore.pyqtSignal()
     returnToDialog = QtCore.pyqtSignal()
-    
+
     def __init__(self, app_data_path):
         super(ProgressDialog, self).__init__()
         self.app_data_path = app_data_path
@@ -35,13 +35,12 @@ class ProgressDialog(QtWidgets.QDialog):
         screen_rect = desktop.availableGeometry()
         self.setGeometry(QRect(screen_rect.width() - self.width(), 0, self.width(), self.height()))
 
-    
+
     faktor = None
     geolog = None
     sovplats = 200, 200 # Bara för att alltid iallf ha nån giltlig sovplats - alltså där inga inforutor stör sökningen
     command_area = 0
     starmenu_area = 0
-
 
 
     def hitta_skalfaktor(self, skalbild_sokvag):# Här kollar vi skalan och ser till att stjärn-fönstret är öppen och i rätt tab.
@@ -164,7 +163,7 @@ class ProgressDialog(QtWidgets.QDialog):
 
     def initUI(self):
         layout = QtWidgets.QVBoxLayout(self)
-        
+
         try:
             with open(f"{self.app_data_path}/Scale_Data.json", "r") as json_file:
                 data = json.load(json_file)
@@ -290,7 +289,7 @@ class ProgressDialog(QtWidgets.QDialog):
 #   Nu börjar sökningen på riktigt
 #
 
-    def hitta_scroll(bild_sokvag, faktor):
+    def hitta_scroll(self, bild_sokvag, faktor):
         hittad_position = None
         bild = Image.open(bild_sokvag)
         skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
@@ -313,9 +312,9 @@ class ProgressDialog(QtWidgets.QDialog):
         safestop = 0
         while vimpel is False and geolog is not None: # När en viss geolog saknas
             individ = geolog
-            position_top = ProgressDialog.hitta_scroll(f"./src/img/top.bmp", faktor)
-            position_bottom = ProgressDialog.hitta_scroll(f"./src/img/bottom.bmp", faktor)
-            hittad_geolog = ProgressDialog.hitta_scroll(f"./src/img/geo_{individ}.bmp", faktor)
+            position_top = self.hitta_scroll(f"./src/img/top.bmp", faktor)
+            position_bottom = self.hitta_scroll("./src/img/bottom.bmp", faktor)
+            hittad_geolog = self.hitta_scroll(f"./src/img/geo_{individ}.bmp", faktor)
             safestop += 1
             if hittad_geolog:
                 vimpel = True

@@ -424,7 +424,7 @@ class ExplWindow(QtWidgets.QMainWindow):
 
     def start_process(self):
         self.update_json()  # Update the JSON data before starting the process
-        self.open_miniprogram(app_data_path)  # Open the ProgressDialog
+        self.open_miniprogram()  # Open the ProgressDialog
 
     def send_button_click(self):
         if not self.selected_buttons_left or not self.selected_buttons_right:
@@ -454,7 +454,7 @@ class ExplWindow(QtWidgets.QMainWindow):
             json.dump(data, json_file)
 
         self.close()
-        self.miniprogram = ProgressDialog(app_data_path)
+        self.miniprogram = ProgressDialog(self.app_data_path)
         self.miniprogram.startProgressDialog.connect(self.start_process)  # Connect the signal to start the process
         self.miniprogram.show()
         self.miniprogram.start_process() # Här startar vi processen i running

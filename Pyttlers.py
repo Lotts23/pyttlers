@@ -15,10 +15,11 @@ from PyQt5.QtWidgets import (QAction, QApplication, QDialog, QLabel,
 
 def move_json_files_to_app_data():
     global app_data_path
+    exe_path = sys.argv[0]
     app_data_dir = os.getenv('APPDATA') if os.name == 'nt' else os.path.expanduser("~/.config")
     app_data_path = os.path.join(app_data_dir, 'Pyttlers')
     os.makedirs(app_data_path, exist_ok=True)
-
+    exe_dir = os.path.dirname(os.path.abspath(exe_path))
     src_json_files = ["expl_nummer.json", "geo_nummer.json", "scale_data.json"]
     for json_file in src_json_files:
         src_path = os.path.join("src", json_file)
