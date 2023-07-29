@@ -11,7 +11,9 @@ from PyQt5.QtWidgets import (QAction, QApplication, QDialog, QLabel,
                              QMessageBox, QPushButton, QStackedWidget,
                              QVBoxLayout, qApp)
 
-
+from geo import GeoWindow
+from expl import ExplWindow
+from running import ProgressDialog
 
 def move_json_files_to_app_data():
     global app_data_path
@@ -31,12 +33,12 @@ def move_json_files_to_app_data():
     os.makedirs(app_data_path, exist_ok=True)
 
     exe_dir = os.path.dirname(os.path.abspath(exe_path))
-    src_json_files = ["expl_nummer.json", "geo_nummer.json", "scale_data.json"]
+    data_json_files = ["expl_nummer.json", "geo_nummer.json", "scale_data.json"]
 
-    for json_file in src_json_files:
-        src_path = os.path.join(exe_dir, "src", json_file)
+    for json_file in data_json_files:
+        data_path = os.path.join(exe_dir, "data", json_file)
         dest_path = os.path.join(app_data_path, json_file)
-        shutil.copy(src_path, dest_path)
+        shutil.copy(data_path, dest_path)
 
     return app_data_path
 
@@ -52,22 +54,22 @@ class StartDialog(QtWidgets.QDialog):
         # Skapa en layout för dialogrutan
         layout = QtWidgets.QHBoxLayout(self)
 
-        with open("./src/stil.css", "r") as file:
+        with open("./data/stil.css", "r") as file:
             self.setStyleSheet(file.read())
             
         # Kontrollera om json-filen med varning finns, dvs om användaren fått en varning tidigare
-        if not os.path.exists("./src/Popup.json"):
+        if not os.path.exists("./data/Popup.json"):
             # Visa popup-rutan för första gången
             QMessageBox.information(None, "Viktig information", "När du har valt specialister och klickar ''check'' så tar programmet kontroll över din mus. Den är lärd att hantera vanligare felklick som om den råkar klicka på en specialist som redan är ute, men skulle problem uppstå så för du muspekaren längst ut i ett av skärmens hörn och håller den där. Det är en generell nödbroms som stoppar programmet.\nSläpp musen när programmet börjar jobba.\n\nDet här programmet är en demonstration av GUI-styrkod med Pyautogui och inte avsett att användas för att bryta mot TSO-regler.")
             
             # Skapa json-filen och markera användaren som informerad
-            with open("./src/Popup.json", "w") as json_file:
+            with open("./data/Popup.json", "w") as json_file:
                 json.dump({"informed": True}, json_file)     
                 
         # Skapa knappen för geolog-läget
         geo_button = QtWidgets.QPushButton()
         geo_button.setFixedSize(57, 68)
-        geo_button.setIcon(QtGui.QIcon("./src/img/knapp/geo_knapp.png"))
+        geo_button.setIcon(QtGui.QIcon("./data/img/knapp/geo_knapp.png"))
         geo_button.setIconSize(geo_button.rect().size())
         geo_button.clicked.connect(self.open_geo_window)
         layout.addWidget(geo_button)
@@ -75,7 +77,7 @@ class StartDialog(QtWidgets.QDialog):
         # Skapa knappen för explorer-läget
         expl_button = QtWidgets.QPushButton()
         expl_button.setFixedSize(57, 68)
-        expl_button.setIcon(QtGui.QIcon("./src/img/knapp/expl_knapp.png"))
+        expl_button.setIcon(QtGui.QIcon("./data/img/knapp/expl_knapp.png"))
         expl_button.setIconSize(expl_button.rect().size())
         expl_button.clicked.connect(self.open_expl_window)
         layout.addWidget(expl_button)

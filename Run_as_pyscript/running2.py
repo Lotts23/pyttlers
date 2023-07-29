@@ -29,7 +29,7 @@ class ProgressDialog(QtWidgets.QDialog):
         self.setFixedSize(350, 220)
         self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)  # Fönstret alltid överst
 
-        self.setStyleSheet(open("./src/stil.css").read())  # Länk till stil.css
+        self.setStyleSheet(open("./data/stil.css").read())  # Länk till stil.css
 
         desktop = QApplication.desktop()
         screen_rect = desktop.availableGeometry()
@@ -69,7 +69,7 @@ class ProgressDialog(QtWidgets.QDialog):
         if hittad_testbild is not None:
             return faktor
         else:
-            self.hitta_skalfaktor("./src/img/01_image.bmp")
+            self.hitta_skalfaktor("./data/img/01_image.bmp")
             return faktor
 
     def oppna_stjarna(self, bild_sokvag, faktor):
@@ -99,7 +99,7 @@ class ProgressDialog(QtWidgets.QDialog):
             time.sleep(0.1)  # Minskar antalet fel. 0.1 där det görs nya variabler o data, 3-4 mellan långsamma menyklick
             #print("\nStjärnan öppen")
         else:
-            self.oppna_stjarna("./src/img/03_image.bmp", faktor) # Här öppnas stjärnan om stjärnmenyn inte hittats.
+            self.oppna_stjarna("./data/img/03_image.bmp", faktor) # Här öppnas stjärnan om stjärnmenyn inte hittats.
 
     def tab_stjarna(self, bild_sokvag, faktor): 
         hittad = None
@@ -176,15 +176,15 @@ class ProgressDialog(QtWidgets.QDialog):
             typ = data["typ"]
             tid = data["tid"]
 
-        with open("./src/expl_namn.json", "r") as expl_file:
+        with open("./data/expl_namn.json", "r") as expl_file:
             expl_data = json.load(expl_file)
             expl_dict = expl_data
 
-        with open("./src/Typ_namn.json", "r") as typ_file:
+        with open("./data/Typ_namn.json", "r") as typ_file:
             typ_data = json.load(typ_file)
             typ_dict = typ_data
 
-        with open("./src/Tid_namn.json", "r") as tid_file:
+        with open("./data/Tid_namn.json", "r") as tid_file:
             tid_data = json.load(tid_file)
             tid_dict = tid_data
 
@@ -235,21 +235,21 @@ class ProgressDialog(QtWidgets.QDialog):
         self.process_completed()
      
     def start_process_again(self):
-        with open("./src/expl_namn.json", "r") as expl_file:
+        with open("./data/expl_namn.json", "r") as expl_file:
             expl_data = json.load(expl_file)
             expl_dict = expl_data
 
-        with open("./src/Typ_namn.json", "r") as typ_file:
+        with open("./data/Typ_namn.json", "r") as typ_file:
             typ_data = json.load(typ_file)
             typ_dict = typ_data
 
-        with open("./src/Tid_namn.json", "r") as tid_file:
+        with open("./data/Tid_namn.json", "r") as tid_file:
             tid_data = json.load(tid_file)
             tid_dict = tid_data
-
         explorers_namn = [expl_dict[str(num)] for num in explorers]
         typ_namn = typ_dict[str(typ)]
         tid_namn = tid_dict[str(tid)]
+
         self.label.clear()
         explorers_str = ", ".join(explorers_namn)
         self.label.setText(f"Upprepar...\n\nSöker {explorers_str} som ska leta efter {typ_namn} under {tid_namn}.\n\nNödstopp genom att flytta musen till skärmens hörn.")
@@ -276,17 +276,17 @@ class ProgressDialog(QtWidgets.QDialog):
                 json_data = json.load(json_file)  # och läs datan
                 faktor = json_data.get("faktor")  # Hämta tidigare faktor
             if faktor is not None: # Om faktor-värdet inte är tomt, testa det
-                self.testa_skalfaktor("./src/img/01_image.bmp", faktor) # Testar om gamla faktorn funkar
+                self.testa_skalfaktor("./data/img/01_image.bmp", faktor) # Testar om gamla faktorn funkar
                 if faktor is None:
-                    self.hitta_skalfaktor("./src/img/01_image.bmp")
+                    self.hitta_skalfaktor("./data/img/01_image.bmp")
         else:
-            self.hitta_skalfaktor("./src/img/01_image.bmp")
+            self.hitta_skalfaktor("./data/img/01_image.bmp")
         with open(f"{self.app_data_path}/scale_data.json", "r") as json_file:
             data = json.load(json_file)
             faktor = data["faktor"]
-        self.hitta_bild_stjarna("./src/img/02_image.bmp", faktor) # Kör hitta om stjärnmenyn är öppen, else kör öppna stjärnan.
-        self.tab_stjarna("./src/img/04_image.bmp", faktor) # Gå till rätt tab så blir det inte så mycket scroll
-        self.berakna_starmenu("./src/img/02_image.bmp", faktor)
+        self.hitta_bild_stjarna("./data/img/02_image.bmp", faktor) # Kör hitta om stjärnmenyn är öppen, else kör öppna stjärnan.
+        self.tab_stjarna("./data/img/04_image.bmp", faktor) # Gå till rätt tab så blir det inte så mycket scroll
+        self.berakna_starmenu("./data/img/02_image.bmp", faktor)
         with open(f"{self.app_data_path}/expl_nummer.json", "r") as json_file:
             global explorers
             global typ
@@ -295,8 +295,8 @@ class ProgressDialog(QtWidgets.QDialog):
             explorers = data["explorers"]
             typ = data["typ"]  
             tid = data["tid"]
-        self.hitta_starmenu("./src/img/02_image.bmp", faktor)    
-        return explorers, typ, tid, faktor
+        self.hitta_starmenu("./data/img/02_image.bmp", faktor)    
+        return sovplats, starmenu_area, explorers, typ, tid, faktor
 
 #
 #   Nu börjar sökningen på riktigt
@@ -308,7 +308,7 @@ class ProgressDialog(QtWidgets.QDialog):
         skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
         bild_array = np.array(skalad_bild)
         scroll_region = (starmenu_area[0], round(starmenu_area[1] * 0.6), round(starmenu_area[2] * 1.5), round(starmenu_area[3] * 1.5))
-        hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True, region=scroll_region)
+        hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True)#, region=scroll_region)
         if hittad_position is None:
             time.sleep(0.01)
             return False # inte hittad
@@ -325,9 +325,9 @@ class ProgressDialog(QtWidgets.QDialog):
         safestop = 0
         while vimpel is False and explorer is not None: # När en viss explorer saknas
             individ = explorer
-            position_top = self.hitta_scroll(f"./src/img/top.bmp", faktor)
-            position_bottom = self.hitta_scroll("./src/img/bottom.bmp", faktor)
-            hittad_explorer = self.hitta_scroll(f"./src/img/expl_{individ}.bmp", faktor)
+            position_top = self.hitta_scroll(f"./data/img/top.bmp", faktor)
+            position_bottom = self.hitta_scroll("./data/img/bottom.bmp", faktor)
+            hittad_explorer = self.hitta_scroll(f"./data/img/expl_{individ}.bmp", faktor)
             safestop += 1
             if hittad_explorer:
                 vimpel = True
@@ -376,7 +376,7 @@ class ProgressDialog(QtWidgets.QDialog):
 
     def hitta_typ(self, bild_sokvag, faktor):
         for _ in range(3):  # Loopa 3 gånger
-            #command_area = ProgressDialog.berakna_command("./src/img/05_image.bmp", faktor)
+            #command_area = ProgressDialog.berakna_command("./data/img/05_image.bmp", faktor)
             bild = Image.open(bild_sokvag)
             skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
             bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
@@ -397,7 +397,7 @@ class ProgressDialog(QtWidgets.QDialog):
     def hitta_tid(self, bild_sokvag, faktor):
         #for _ in range(3):  # Loopa 3 gånger
         #global command_area
-        #command_area = berakna_command("./src/img/05_image.bmp", faktor)
+        #command_area = berakna_command("./data/img/05_image.bmp", faktor)
         bild = Image.open(bild_sokvag)
         skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
         bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
@@ -449,11 +449,11 @@ class ProgressDialog(QtWidgets.QDialog):
             pyautogui.mouseUp()
             pyautogui.press('esc')
             time.sleep(0.1)
-            self.hitta_bild_stjarna("./src/img/02_image.bmp", faktor)
+            self.hitta_bild_stjarna("./data/img/02_image.bmp", faktor)
 
     def hantera_popup(self):
         while not self.popup_flagga.is_set():
-            self.error_bild("./src/img/error.bmp", faktor)
+            self.error_bild("./data/img/error.bmp", faktor)
 
     popup_flagga = threading.Event()
 
@@ -486,10 +486,10 @@ class ProgressDialog(QtWidgets.QDialog):
                 pyautogui.mouseUp()
                 pyautogui.moveTo(sovplats) # För att bli av med popup-bubblan
                 time.sleep(0.1)
-                self.hitta_typ(f"./src/img/typ_{typ}.bmp", faktor)
-                self.hitta_tid(f"./src/img/tid_{sort}_{tid}.bmp", faktor)
+                self.hitta_typ(f"./data/img/typ_{typ}.bmp", faktor)
+                self.hitta_tid(f"./data/img/tid_{sort}_{tid}.bmp", faktor)
                 self.popup_flagga.set()
-                self.hitta_check("./src/img/check.bmp", faktor)
+                self.hitta_check("./data/img/check.bmp", faktor)
                 # Om den hittar en explorer längst bort på en rad, scrolla åt det hållet            
                 h_x, h_y, h_width, h_height = hittad_position
                 lower_corner_x, lower_corner_y = h_x + h_width, h_y + h_height # Av den hittade bilden
@@ -527,7 +527,7 @@ class ProgressDialog(QtWidgets.QDialog):
             flagga = True
             pyautogui.moveTo(sovplats)
             while flagga:
-                hittad_explorer = self.hitta_explorer(f"./src/img/expl_{explorer}.bmp", faktor) # Returnerar hittad/none
+                hittad_explorer = self.hitta_explorer(f"./data/img/expl_{explorer}.bmp", faktor) # Returnerar hittad/none
                 if hittad_explorer is not None:
                     flagga_funnen = True
                     flagga = True

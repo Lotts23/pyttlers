@@ -16,5 +16,5 @@ build
 dist
 popup.json
 *.pyc
-src/__pycache__
+data/__pycache__
 Working_py/*

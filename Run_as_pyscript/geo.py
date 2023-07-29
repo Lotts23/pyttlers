@@ -91,7 +91,7 @@ class GeoWindow(QtWidgets.QMainWindow):
         self.centralLayout.addWidget(self.bottomBox)
 
         # Hänvisning till en extern CSS-fil
-        with open("./src/stil.css", "r") as file:
+        with open("./data/stil.css", "r") as file:
             self.setStyleSheet(file.read())
 
         # Skapa id för de två områdena
@@ -127,7 +127,7 @@ class GeoWindow(QtWidgets.QMainWindow):
             self.gridLayout.addWidget(button, (i-10) // 4, (i-10) % 4)  # Uppdatera layout för vänsterknapparna
             self.buttonsLeft.append(button)  # Uppdaterad namn på listan
 
-            image = QtGui.QPixmap(f"./src/img/knapp/gknapp_{value}.png")
+            image = QtGui.QPixmap(f"./data/img/knapp/gknapp_{value}.png")
             self.button_images.append(image)
             button.setIcon(QtGui.QIcon(image))
             button.setIconSize(image.rect().size())
@@ -160,7 +160,7 @@ class GeoWindow(QtWidgets.QMainWindow):
             self.gridLayoutRight.addWidget(button, (i-100) // 2, (i-100) % 2)
             self.buttonsRight.append(button)  # Uppdaterad namn på listan
 
-            image = QtGui.QPixmap(f"./src/img/knapp/rknapp_{value}.jpg")
+            image = QtGui.QPixmap(f"./data/img/knapp/rknapp_{value}.jpg")
             self.button_images.append(image)
             button.setIcon(QtGui.QIcon(image))
             button.setIconSize(image.rect().size())
@@ -187,7 +187,7 @@ class GeoWindow(QtWidgets.QMainWindow):
         back_button = QtWidgets.QPushButton()
         back_button.setFixedSize(42, 30)
         self.bottomLayout.addWidget(back_button)
-        image = QtGui.QPixmap(f"./src/img/knapp/back.jpg")
+        image = QtGui.QPixmap(f"./data/img/knapp/back.jpg")
         self.button_images.append(image)
         back_button.setIcon(QtGui.QIcon(image))
         back_button.setIconSize(QtCore.QSize(38, 30))  # Justera storleken på ikonen vid behov
@@ -210,7 +210,7 @@ class GeoWindow(QtWidgets.QMainWindow):
         clear_button.setFixedSize(42, 30)
         clear_button.clicked.connect(self.clear_button_click)
         self.bottomLayout.addWidget(clear_button)
-        image = QtGui.QPixmap(f"./src/img/knapp/clear.jpg")
+        image = QtGui.QPixmap(f"./data/img/knapp/clear.jpg")
         self.button_images.append(image)
         clear_button.setIcon(QtGui.QIcon(image))
         clear_button.setIconSize(QtCore.QSize(38, 30))  # Justera storleken på ikonen vid behov
@@ -234,7 +234,7 @@ class GeoWindow(QtWidgets.QMainWindow):
         send_button.clicked.connect(self.send_button_click)
         self.bottomLayout.addStretch()
         self.bottomLayout.addWidget(send_button)
-        image = QtGui.QPixmap(f"./src/img/knapp/check.jpg")
+        image = QtGui.QPixmap(f"./data/img/knapp/check.jpg")
         self.button_images.append(image)
         send_button.setIcon(QtGui.QIcon(image))
         send_button.setIconSize(QtCore.QSize(38, 30))  # Justera storleken på ikonen vid behov

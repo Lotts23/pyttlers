@@ -31,8 +31,8 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Files]
 Source: "Pyttlers.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "src\ikon.ico"; DestDir: "{app}\src"; Flags: ignoreversion
-Source: "src\*"; DestDir: "{app}\src"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "data\ikon.ico"; DestDir: "{app}\data"; Flags: ignoreversion
+Source: "data\*"; DestDir: "{app}\data"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
