@@ -4,6 +4,7 @@ __pycache__/*
 nummer.json
 prov*
 test*
+test/*
 /bin/*
 bin/
 bin/*

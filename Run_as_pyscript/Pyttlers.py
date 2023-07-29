@@ -53,7 +53,7 @@ class StartDialog(QtWidgets.QDialog):
 
         # Skapa en layout för dialogrutan
         layout = QtWidgets.QHBoxLayout(self)
-
+ 
         with open("./data/stil.css", "r") as file:
             self.setStyleSheet(file.read())
             

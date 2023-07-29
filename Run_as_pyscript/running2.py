@@ -41,6 +41,7 @@ class ProgressDialog(QtWidgets.QDialog):
     sovplats = 200, 200 # Bara för att alltid iallf ha nån giltlig sovplats - alltså där inga inforutor stör sökningen
     command_area = 0
     starmenu_area = 0
+    noscroll = False
 
 
     def hitta_skalfaktor(self, skalbild_sokvag):# Här kollar vi skalan och ser till att stjärn-fönstret är öppen och i rätt tab.
@@ -115,8 +116,49 @@ class ProgressDialog(QtWidgets.QDialog):
             pyautogui.mouseDown(hittad)
             pyautogui.mouseUp()
             #print(f"{bild_sokvag} klickad")
-            time.sleep(1)  # minskar fel
+            time.sleep(0.1)  # minskar fel
 
+    def check_if_scrollbar(self, bild_sokvag, faktor):
+        bild = Image.open(bild_sokvag)
+        skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
+        bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
+        hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True) #, region=starmenu_area)
+        if hittad_position is not None:
+            return True
+        return False
+    
+    def sortera_klick(self, bild_sokvag, faktor, hittad_position):
+        reset_point = hittad_position
+        for _ in range(3):  # Loopa 3 gånger
+            bild = Image.open(bild_sokvag)
+            skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
+            bild_array = np.array(skalad_bild)  
+            check_box = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True)
+            if check_box is not None:     
+                x, y, width, height = check_box 
+                check_box = x + width - (width // 7), y + (height // 2)
+                pyautogui.moveTo(check_box)
+                time.sleep(0.1)
+                pyautogui.mouseDown(check_box)
+                pyautogui.mouseUp()
+                return True
+            time.sleep(0.1)
+        pyautogui.mouseDown(reset_point)
+        pyautogui.mouseUp()
+                
+    def sortera(self, bild_sokvag, faktor):
+        for _ in range(1):
+            bild = Image.open(bild_sokvag)
+            skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
+            bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
+            hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.85, grayscale=False)
+            if hittad_position is not None:
+                pyautogui.mouseDown(hittad_position)
+                pyautogui.mouseUp()
+                time.sleep(0.1)
+                self.sortera_klick("./data/img/06_image.bmp", faktor, hittad_position)
+        return False
+    
     def berakna_starmenu(self, bild_sokvag, faktor):   # Definierar starmenu_area för att söka på begränsad yta 
         global starmenu_area
         bild = Image.open(bild_sokvag)
@@ -270,6 +312,8 @@ class ProgressDialog(QtWidgets.QDialog):
     def prepare(self):
         json_fil = f"{self.app_data_path}/scale_data.json"
         global faktor
+        global noscroll
+        noscroll = False
         faktor = None
         if os.path.isfile(json_fil):  # Om det finns en fil
             with open(json_fil, "r") as json_file:  # öppna den
@@ -287,6 +331,12 @@ class ProgressDialog(QtWidgets.QDialog):
         self.hitta_bild_stjarna("./data/img/02_image.bmp", faktor) # Kör hitta om stjärnmenyn är öppen, else kör öppna stjärnan.
         self.tab_stjarna("./data/img/04_image.bmp", faktor) # Gå till rätt tab så blir det inte så mycket scroll
         self.berakna_starmenu("./data/img/02_image.bmp", faktor)
+        self.sortera("./data/img/07_image.bmp", faktor)
+        scrollbar = self.check_if_scrollbar("./data/img/08_image.bmp", faktor)
+        if scrollbar is False:
+            scrollbar = self.check_if_scrollbar("./data/img/09_image.bmp", faktor)
+            if scrollbar is False:
+                noscroll = True
         with open(f"{self.app_data_path}/expl_nummer.json", "r") as json_file:
             global explorers
             global typ
@@ -296,7 +346,7 @@ class ProgressDialog(QtWidgets.QDialog):
             typ = data["typ"]  
             tid = data["tid"]
         self.hitta_starmenu("./data/img/02_image.bmp", faktor)    
-        return sovplats, starmenu_area, explorers, typ, tid, faktor
+        return sovplats, starmenu_area, explorers, typ, tid, faktor, noscroll
 
 #
 #   Nu börjar sökningen på riktigt
@@ -307,7 +357,7 @@ class ProgressDialog(QtWidgets.QDialog):
         bild = Image.open(bild_sokvag)
         skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
         bild_array = np.array(skalad_bild)
-        scroll_region = (starmenu_area[0], round(starmenu_area[1] * 0.6), round(starmenu_area[2] * 1.5), round(starmenu_area[3] * 1.5))
+        #scroll_region = (starmenu_area[0], round(starmenu_area[1] * 0.6), round(starmenu_area[2] * 1.5), round(starmenu_area[3] * 1.5))
         hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True)#, region=scroll_region)
         if hittad_position is None:
             time.sleep(0.01)

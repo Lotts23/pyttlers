@@ -41,6 +41,7 @@ class ProgressDialog(QtWidgets.QDialog):
     sovplats = 200, 200 # Bara för att alltid iallf ha nån giltlig sovplats - alltså där inga inforutor stör sökningen
     command_area = 0
     starmenu_area = 0
+    noscroll = False
 
 
     def hitta_skalfaktor(self, skalbild_sokvag):# Här kollar vi skalan och ser till att stjärn-fönstret är öppen och i rätt tab.
@@ -115,7 +116,16 @@ class ProgressDialog(QtWidgets.QDialog):
             pyautogui.mouseDown(hittad)
             pyautogui.mouseUp()
             #print(f"{bild_sokvag} klickad")
-            time.sleep(1)  # minskar fel
+            time.sleep(0.1)  # minskar fel
+
+    def check_if_scrollbar(self, bild_sokvag, faktor):
+        bild = Image.open(bild_sokvag)
+        skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
+        bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
+        hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True) #, region=starmenu_area)
+        if hittad_position is not None:
+            return True
+        return False
     
     def sortera_klick(self, bild_sokvag, faktor, hittad_position):
         reset_point = hittad_position
@@ -141,7 +151,7 @@ class ProgressDialog(QtWidgets.QDialog):
             bild = Image.open(bild_sokvag)
             skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
             bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
-            hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.85, grayscale=True)
+            hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.85, grayscale=False)
             if hittad_position is not None:
                 pyautogui.mouseDown(hittad_position)
                 pyautogui.mouseUp()
@@ -290,6 +300,8 @@ class ProgressDialog(QtWidgets.QDialog):
     def prepare(self):
         json_fil = f"{self.app_data_path}/scale_data.json"
         global faktor
+        global noscroll
+        noscroll = False
         faktor = None
         if os.path.isfile(json_fil):  # Om det finns en fil
             with open(json_fil, "r") as json_file:  # öppna den
@@ -308,6 +320,11 @@ class ProgressDialog(QtWidgets.QDialog):
         self.tab_stjarna("./data/img/04_image.bmp", faktor) # Gå till rätt tab så blir det inte så mycket scroll
         self.berakna_starmenu("./data/img/02_image.bmp", faktor)
         self.sortera("./data/img/07_image.bmp", faktor)
+        scrollbar = self.check_if_scrollbar("./data/img/08_image.bmp", faktor)
+        if scrollbar is False:
+            scrollbar = self.check_if_scrollbar("./data/img/09_image.bmp", faktor)
+            if scrollbar is False:
+                noscroll = True
         with open(f"{self.app_data_path}/geo_nummer.json", "r") as json_file:
             global geologer
             global resurs
@@ -315,7 +332,7 @@ class ProgressDialog(QtWidgets.QDialog):
             geologer = data["geologer"]
             resurs = data["resurs"]
         self.hitta_starmenu("./data/img/02_image.bmp", faktor)    
-        return sovplats, starmenu_area, geologer, resurs, faktor
+        return sovplats, starmenu_area, geologer, resurs, faktor, noscroll
 
 #
 #   Nu börjar sökningen på riktigt
@@ -326,7 +343,7 @@ class ProgressDialog(QtWidgets.QDialog):
         bild = Image.open(bild_sokvag)
         skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
         bild_array = np.array(skalad_bild)
-        scroll_region = (starmenu_area[0], round(starmenu_area[1] * 0.6), round(starmenu_area[2] * 1.5), round(starmenu_area[3] * 1.5))
+        #scroll_region = (starmenu_area[0], round(starmenu_area[1] * 0.6), round(starmenu_area[2] * 1.5), round(starmenu_area[3] * 1.5))
         hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True)#, region=scroll_region)
         if hittad_position is None:
             time.sleep(0.01)
@@ -348,7 +365,7 @@ class ProgressDialog(QtWidgets.QDialog):
             position_bottom = self.hitta_scroll("./data/img/bottom.bmp", faktor)
             hittad_geolog = self.hitta_scroll(f"./data/img/geo_{individ}.bmp", faktor)
             safestop += 1
-            if hittad_geolog:
+            if hittad_geolog or noscroll is True:
                 vimpel = True
                 return vimpel
             pyautogui.moveTo(sovplats)
@@ -374,8 +391,7 @@ class ProgressDialog(QtWidgets.QDialog):
                 vimpel = False
                 return None
             # Håll reda på hur många scroll-sök så det inte spårar ut
-            if counting >= 3 or safestop == 30:
-                print(safestop)
+            if counting >= 3 and safestop == 30:
                 return None
 
     def berakna_command(self, bild_sokvag, faktor): # Hitta sökområdet för resurser och check. # Behöver finslipas
