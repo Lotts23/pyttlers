@@ -15,7 +15,6 @@ from PyQt5.QtWidgets import (QAction, QApplication, QDialog, QLabel,
                              QPushButton, QStackedWidget, QVBoxLayout, qApp)
 
 
-
 class ProgressDialog(QtWidgets.QDialog):
     startProgressDialog = QtCore.pyqtSignal()
     returnToDialog = QtCore.pyqtSignal()
@@ -222,11 +221,11 @@ class ProgressDialog(QtWidgets.QDialog):
             expl_data = json.load(expl_file)
             expl_dict = expl_data
 
-        with open("./data/Typ_namn.json", "r") as typ_file:
+        with open("./data/typ_namn.json", "r") as typ_file:
             typ_data = json.load(typ_file)
             typ_dict = typ_data
 
-        with open("./data/Tid_namn.json", "r") as tid_file:
+        with open("./data/tid_namn.json", "r") as tid_file:
             tid_data = json.load(tid_file)
             tid_dict = tid_data
 
@@ -245,11 +244,12 @@ class ProgressDialog(QtWidgets.QDialog):
         self.restart_button = QPushButton("Upprepa", self)
         layout.addWidget(self.restart_button)
         self.restart_button.clicked.connect(self.start_process_again)
+        self.restart_button.setVisible(False) 
 
         self.start_button = QtWidgets.QPushButton("Nytt val", self)
         layout.addWidget(self.start_button)
         self.start_button.clicked.connect(self.on_returnToDialog)
-        self.hide()
+        self.start_button.setVisible(False)
 
         self.stop_action = QAction("Avsluta (q)", self)
         self.stop_action.setShortcut(QKeySequence("q"))
@@ -281,11 +281,11 @@ class ProgressDialog(QtWidgets.QDialog):
             expl_data = json.load(expl_file)
             expl_dict = expl_data
 
-        with open("./data/Typ_namn.json", "r") as typ_file:
+        with open("./data/typ_namn.json", "r") as typ_file:
             typ_data = json.load(typ_file)
             typ_dict = typ_data
 
-        with open("./data/Tid_namn.json", "r") as tid_file:
+        with open("./data/tid_namn.json", "r") as tid_file:
             tid_data = json.load(tid_file)
             tid_dict = tid_data
         explorers_namn = [expl_dict[str(num)] for num in explorers]
@@ -296,12 +296,16 @@ class ProgressDialog(QtWidgets.QDialog):
         explorers_str = ", ".join(explorers_namn)
         self.label.setText(f"Upprepar...\n\nSöker {explorers_str} som ska leta efter {typ_namn} under {tid_namn}.\n\nNödstopp genom att flytta musen till skärmens hörn.")
         self.label.setWordWrap(True)
+        self.restart_button.setVisible(False)
+        self.start_button.setVisible(False)
         QApplication.processEvents()  # Uppdatera GUI-tråden
         self.leta_skatt()
         self.process_completed()
 
     def process_completed(self, *args):
         self.label.setText("Processen är klar.\nAlla möjliga klick är genomförda.")
+        self.restart_button.setVisible(True)
+        self.start_button.setVisible(True)
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Q:
@@ -379,7 +383,7 @@ class ProgressDialog(QtWidgets.QDialog):
             position_bottom = self.hitta_scroll("./data/img/bottom.bmp", faktor)
             hittad_explorer = self.hitta_scroll(f"./data/img/expl_{individ}.bmp", faktor)
             safestop += 1
-            if hittad_explorer:
+            if hittad_explorer or noscroll is True:
                 vimpel = True
                 return vimpel
             pyautogui.moveTo(sovplats)
@@ -405,7 +409,7 @@ class ProgressDialog(QtWidgets.QDialog):
                 vimpel = False
                 return None
             # Håll reda på hur många scroll-sök så det inte spårar ut
-            if counting >= 3 or safestop == 20:
+            if counting >= 3 or safestop == 30:
                 return None
 
     def berakna_command(self, bild_sokvag, faktor): # Hitta sökområdet för typer och check. # Behöver finslipas
@@ -473,7 +477,6 @@ class ProgressDialog(QtWidgets.QDialog):
             skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
             bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
             hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=False)#, region=command_area)
-
             if hittad_position is not None:
                 hittad_check = pyautogui.center(hittad_position)
                 pyautogui.moveTo(hittad_check)
@@ -484,8 +487,8 @@ class ProgressDialog(QtWidgets.QDialog):
                 pyautogui.mouseUp()
                 time.sleep(4)  # minskar fel
                 break
-            else:
-                time.sleep(0.1)
+        time.sleep(0.1)
+        pyautogui.press('esc')
 
     def error_bild(self, bild_sokvag, faktor):
         bild = Image.open(bild_sokvag)
@@ -517,12 +520,13 @@ class ProgressDialog(QtWidgets.QDialog):
             sort = "t"
         else:
             sort = "a"
+        pyautogui.moveTo(sovplats)
+        hittad_position = None
         for _ in range(3): # Loopa 3ggr om den INTE hittar
             hittad = None
             bild = Image.open(bild_sokvag)
             skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
             bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
-            pyautogui.moveTo(sovplats)
             hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.77, grayscale=True, region=starmenu_area)
             if hittad_position is not None:
                 hittad = pyautogui.center(hittad_position)
@@ -545,13 +549,13 @@ class ProgressDialog(QtWidgets.QDialog):
                 lower_corner_x, lower_corner_y = h_x + h_width, h_y + h_height # Av den hittade bilden
                 upper_corner_x, upper_corner_y = h_x, h_y
                 x, y, bredd, hojd = starmenu_area
-                if lower_corner_x <= (x + (h_width * 1.9)) and lower_corner_y <= (y + (h_height * 1.9)):
+                if lower_corner_x <= (x + (h_width * 1.9)) and lower_corner_y <= (y + (h_height * 1.9)) and noscroll is False:
                     pyautogui.moveTo(sovplats)
                     pyautogui.mouseDown(sovplats)
                     pyautogui.mouseUp()
                     pyautogui.scroll(2)
                     time.sleep(0.1)
-                if upper_corner_x >= (x + bredd - (h_width * 1.9)) and upper_corner_y >= (y + hojd - (h_height * 1.9)):
+                if upper_corner_x >= (x + bredd - (h_width * 1.9)) and upper_corner_y >= (y + hojd - (h_height * 1.9)) and noscroll is False:
                     pyautogui.moveTo(sovplats)
                     pyautogui.mouseDown(sovplats)
                     pyautogui.mouseUp()

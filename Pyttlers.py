@@ -1,8 +1,8 @@
 import importlib
 import json
 import os
-import sys
 import shutil
+import sys
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QEvent, QRect, Qt
@@ -11,9 +11,10 @@ from PyQt5.QtWidgets import (QAction, QApplication, QDialog, QLabel,
                              QMessageBox, QPushButton, QStackedWidget,
                              QVBoxLayout, qApp)
 
-from geo import GeoWindow
 from expl import ExplWindow
+from geo import GeoWindow
 from running import ProgressDialog
+
 
 def move_json_files_to_app_data():
     global app_data_path
@@ -120,6 +121,7 @@ if __name__ == "__main__":
     from expl import ExplWindow
     from geo import GeoWindow
     from running import ProgressDialog
+
     #from running2 import ProgressDialog
     app = QtWidgets.QApplication(sys.argv)
     start_dialog = StartDialog(app_data_path)

@@ -15,7 +15,6 @@ from PyQt5.QtWidgets import (QAction, QApplication, QDialog, QLabel,
                              QPushButton, QStackedWidget, QVBoxLayout, qApp)
 
 
-
 class ProgressDialog(QtWidgets.QDialog):
     startProgressDialog = QtCore.pyqtSignal()
     returnToDialog = QtCore.pyqtSignal()
@@ -221,7 +220,7 @@ class ProgressDialog(QtWidgets.QDialog):
             geo_data = json.load(geo_file)
             geo_dict = geo_data
 
-        with open("./data/Resurs_namn.json", "r") as resurs_file:
+        with open("./data/resurs_namn.json", "r") as resurs_file:
             resurs_data = json.load(resurs_file)
             resurs_dict = resurs_data
 
@@ -239,11 +238,12 @@ class ProgressDialog(QtWidgets.QDialog):
         self.restart_button = QPushButton("Upprepa", self)
         layout.addWidget(self.restart_button)
         self.restart_button.clicked.connect(self.start_process_again)
+        self.restart_button.setVisible(False) 
 
         self.start_button = QtWidgets.QPushButton("Nytt val", self)
         layout.addWidget(self.start_button)
         self.start_button.clicked.connect(self.on_returnToDialog)
-        self.hide()
+        self.start_button.setVisible(False)
 
         self.stop_action = QAction("Avsluta (q)", self)
         self.stop_action.setShortcut(QKeySequence("q"))
@@ -275,7 +275,7 @@ class ProgressDialog(QtWidgets.QDialog):
             geo_data = json.load(geo_file)
             geo_dict = geo_data
 
-        with open("./data/Resurs_namn.json", "r") as resurs_file:
+        with open("./data/resurs_namn.json", "r") as resurs_file:
             resurs_data = json.load(resurs_file)
             resurs_dict = resurs_data
         geologer_namn = [geo_dict[str(num)] for num in geologer]
@@ -284,12 +284,16 @@ class ProgressDialog(QtWidgets.QDialog):
         geologer_str = ", ".join(geologer_namn)
         self.label.setText(f"Upprepar...\n\nSöker {geologer_str} som ska leta efter {resurs_namn}.\n\nNödstopp genom att flytta musen till skärmens hörn.")
         self.label.setWordWrap(True)
+        self.restart_button.setVisible(False)
+        self.start_button.setVisible(False)
         QApplication.processEvents()  # Uppdatera GUI-tråden
         self.leta_sten()
         self.process_completed()
 
     def process_completed(self, *args):
         self.label.setText("Processen är klar.\nAlla möjliga klick är genomförda.")
+        self.restart_button.setVisible(True)
+        self.start_button.setVisible(True)
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Q:
@@ -438,7 +442,6 @@ class ProgressDialog(QtWidgets.QDialog):
             skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
             bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
             hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=False)#, region=command_area)
-
             if hittad_position is not None:
                 hittad_check = pyautogui.center(hittad_position)
                 pyautogui.moveTo(hittad_check)
@@ -449,8 +452,8 @@ class ProgressDialog(QtWidgets.QDialog):
                 pyautogui.mouseUp()
                 time.sleep(4)  # minskar fel
                 break
-            else:
-                time.sleep(0.1)
+        time.sleep(0.1)
+        pyautogui.press('esc')
 
     def error_bild(self, bild_sokvag, faktor):
         bild = Image.open(bild_sokvag)
