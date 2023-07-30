@@ -16,7 +16,7 @@ from running import ProgressDialog
 app_data_dir = os.path.join(os.getenv('APPDATA'), 'Pyttlers') if os.name == 'nt' else os.path.expanduser("~/.config/Pyttlers")
 
 app_data_path = os.path.join(app_data_dir, 'Pyttlers')
-os.makedirs(app_data_path, exist_ok=True)    
+os.makedirs(app_data_path, exist_ok=True)
 
 class GeoWindow(QtWidgets.QMainWindow):
     returnToDialog = QtCore.pyqtSignal()
@@ -32,10 +32,10 @@ class GeoWindow(QtWidgets.QMainWindow):
         self.centralWidget = QtWidgets.QWidget(self)
         self.setCentralWidget(self.centralWidget)
         self.centralLayout = QtWidgets.QVBoxLayout(self.centralWidget)
-        
+
         font = QtGui.QFont()
         font.setPointSize(10)  # Ange den önskade storleken på texten
-               
+
         palette = QtGui.QPalette()
         palette.setColor(QtGui.QPalette.WindowText, QtGui.QColor(QtCore.Qt.white))
         QtWidgets.QApplication.setPalette(palette)
@@ -64,7 +64,7 @@ class GeoWindow(QtWidgets.QMainWindow):
         # Lägg till vänster- och högerboxen i den övre layouten
         self.upperLayout.addWidget(self.leftBox)
         self.upperLayout.addWidget(self.rightBox)
-                
+
         # Skapa textrutan för infotexten
         self.infoText = QtWidgets.QLabel()
         self.infoText.setFixedHeight(88)  # Höjden på textrutan
@@ -72,7 +72,7 @@ class GeoWindow(QtWidgets.QMainWindow):
         self.infoText.setText("När du klickar på check så kommer programmet ta kontroll över musen och genomföra alla klick för sökningen. \nDra musen till skärmens hörn i några sekunder för att avbryta akut.\n\nEndast den sist klickade resursen kommer sökas, grafikfel.")
         self.infoText.setWordWrap(True)
         self.infoText.setStyleSheet("background-color: #4b453a; padding-left: 10px; padding-right: 10px; border: 2px ridge #363229")
-        
+
         # Skapa en layout för att centrera infoText-rutan
         centerLayout = QtWidgets.QHBoxLayout()
         centerLayout.addStretch()
@@ -84,14 +84,14 @@ class GeoWindow(QtWidgets.QMainWindow):
         outerLayout.addStretch()
         outerLayout.addLayout(centerLayout)
         outerLayout.addStretch()
-        
+
         # Lägg till den övre boxen, text- och bottom-boxen i huvudlayouten
         self.centralLayout.addWidget(self.upperBox)
         self.centralLayout.addLayout(outerLayout)
         self.centralLayout.addWidget(self.bottomBox)
 
         # Hänvisning till en extern CSS-fil
-        with open("./data/stil.css", "r") as file:
+        with open("./data/stil.css", "r", encoding="utf-8") as file:
             self.setStyleSheet(file.read())
 
         # Skapa id för de två områdena
@@ -137,7 +137,7 @@ class GeoWindow(QtWidgets.QMainWindow):
                                 "    bottom: 0;"
                                 "    right: 0;"
                                 "    border-radius: 5px;"
-                                "}")            
+                                "}")
 
         # Skapa scrollområdet för resursknapparna
         self.scrollAreaRight = QtWidgets.QScrollArea(self.rightBox)
@@ -251,7 +251,7 @@ class GeoWindow(QtWidgets.QMainWindow):
                                 "QPushButton:hover {"
                                 "    border: 2px ridge #756d5b;"
                                 "    border-radius: 5px;"
-                                "}")     
+                                "}")
 
         back_button.clicked.connect(self.on_returnToDialog)
 
@@ -320,7 +320,7 @@ class GeoWindow(QtWidgets.QMainWindow):
         self.close()
         self.miniprogram = ProgressDialog()
         self.miniprogram.returnToDialog.connect(self.show)  # Show start again after ProgressDialog closes
-        self.miniprogram.show()     
+        self.miniprogram.show()
         self.miniprogram.startProgressDialog.emit()
 
     def start_process(self):

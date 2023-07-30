@@ -16,7 +16,7 @@ from running2 import ProgressDialog
 app_data_dir = os.path.join(os.getenv('APPDATA'), 'Pyttlers') if os.name == 'nt' else os.path.expanduser("~/.config/Pyttlers")
 
 app_data_path = os.path.join(app_data_dir, 'Pyttlers')
-os.makedirs(app_data_path, exist_ok=True)    
+os.makedirs(app_data_path, exist_ok=True)
 
 class ExplWindow(QtWidgets.QMainWindow):
     returnToDialog = QtCore.pyqtSignal()
@@ -32,10 +32,10 @@ class ExplWindow(QtWidgets.QMainWindow):
         self.centralWidget = QtWidgets.QWidget(self)
         self.setCentralWidget(self.centralWidget)
         self.centralLayout = QtWidgets.QVBoxLayout(self.centralWidget)
-        
+
         font = QtGui.QFont()
         font.setPointSize(10)  # Ange den önskade storleken på texten
-               
+
         palette = QtGui.QPalette()
         palette.setColor(QtGui.QPalette.WindowText, QtGui.QColor(QtCore.Qt.white))
         QtWidgets.QApplication.setPalette(palette)
@@ -48,17 +48,17 @@ class ExplWindow(QtWidgets.QMainWindow):
 
         # Skapa en box för vänsterinnehållet (explorerknapparna)
         self.leftBox = QtWidgets.QGroupBox("    Explorers")
-        self.leftLayout = QtWidgets.QGridLayout(self.leftBox)  
+        self.leftLayout = QtWidgets.QGridLayout(self.leftBox)
         self.leftBox.setStyleSheet("QGroupBox {border-top: 1px solid rgb(230, 153, 10); border-bottom: 1px solid rgb(230, 153, 10); padding: 5px;}")
 
         # Skapa en box för högerinnehållet (typ)
         self.rightBox = QtWidgets.QGroupBox("   Söktyp")
-        self.rightLayout = QtWidgets.QGridLayout(self.rightBox)  
+        self.rightLayout = QtWidgets.QGridLayout(self.rightBox)
         self.rightBox.setStyleSheet("QGroupBox {border-top: 1px solid rgb(230, 153, 10); border-bottom: 1px solid rgb(230, 153, 10); padding: 5px;}")
 
         # Skapa en box för höger-höger-innehållet (längden)
         self.rightestBox = QtWidgets.QGroupBox("   Längd")
-        self.rightestLayout = QtWidgets.QGridLayout(self.rightestBox) 
+        self.rightestLayout = QtWidgets.QGridLayout(self.rightestBox)
         self.rightestBox.setStyleSheet("QGroupBox {border-top: 1px solid rgb(230, 153, 10); border-bottom: 1px solid rgb(230, 153, 10); padding: 5px;}")
 
         # Skapa en box för bottom-innehållet (check-knappen och de två knapparna)
@@ -73,13 +73,13 @@ class ExplWindow(QtWidgets.QMainWindow):
         # Lägg till vänster- och högerarea i den övre layouten
         self.upperLayout.addWidget(self.leftBox)
         self.upperLayout.addWidget(self.rightareaBox)
-        
-        # Lägg till höger och högerhöger i högerareaboxen        
+
+        # Lägg till höger och högerhöger i högerareaboxen
         self.rightareaLayout.addStretch()
         self.rightareaLayout.addWidget(self.rightBox)
         self.rightBox.setFixedHeight(88)
         self.rightareaLayout.addWidget(self.rightestBox)
-                
+
         # Skapa textrutan för infotexten
         self.infoText = QtWidgets.QLabel()
         self.infoText.setFixedHeight(88)  # Höjden på textrutan
@@ -87,7 +87,7 @@ class ExplWindow(QtWidgets.QMainWindow):
         self.infoText.setText("När du klickar på check så kommer programmet ta kontroll över musen och genomföra alla klick för sökningen. \nDra musen till skärmens hörn i några sekunder för att avbryta akut.\n\nEndast den sist klickade söktyp/längd kommer sökas, grafikfel.")
         self.infoText.setWordWrap(True)
         self.infoText.setStyleSheet("background-color: #4b453a; padding-left: 10px; padding-right: 10px; border: 2px ridge #363229")
-        
+
         # Skapa en layout för att centrera infoText-rutan
         centerLayout = QtWidgets.QHBoxLayout()
         centerLayout.addStretch()
@@ -99,14 +99,14 @@ class ExplWindow(QtWidgets.QMainWindow):
         outerLayout.addStretch()
         outerLayout.addLayout(centerLayout)
         outerLayout.addStretch()
-        
+
         # Lägg till den övre boxen, text- och bottom-boxen i huvudlayouten
         self.centralLayout.addWidget(self.upperBox)
         self.centralLayout.addLayout(outerLayout)
         self.centralLayout.addWidget(self.bottomBox)
 
         # Hänvisning till en extern CSS-fil
-        with open("./data/stil.css", "r") as file:
+        with open("./data/stil.css", "r", encoding="utf-8") as file:
             self.setStyleSheet(file.read())
 
         # Skapa id för de två områdena
@@ -136,7 +136,7 @@ class ExplWindow(QtWidgets.QMainWindow):
 
         # Skapa knapparna för explorerna
         for i in range(10, 33):
-            value = str(i)  
+            value = str(i)
 
             button = QtWidgets.QPushButton(self.scrollContent)
             button.setFixedSize(57, 68)
@@ -155,7 +155,7 @@ class ExplWindow(QtWidgets.QMainWindow):
                                 "    bottom: 0;"
                                 "    right: 0;"
                                 "    border-radius: 5px;"
-                                "}")            
+                                "}")
 
         # Skapa scrollområdet för typ-knappar
         self.scrollAreaRight = QtWidgets.QScrollArea(self.rightBox)
@@ -243,7 +243,7 @@ class ExplWindow(QtWidgets.QMainWindow):
 
 
         # Endast en knapp åt gången kan väljas i den högrahögra boxen
-        button.setAutoExclusive(True)    
+        button.setAutoExclusive(True)
 
         # Skapa knapparna för bottom-innehållet
         back_button = QtWidgets.QPushButton()
@@ -313,7 +313,7 @@ class ExplWindow(QtWidgets.QMainWindow):
                                 "QPushButton:hover {"
                                 "    border: 2px ridge #756d5b;"
                                 "    border-radius: 5px;"
-                                "}")     
+                                "}")
 
         back_button.clicked.connect(self.on_returnToDialog)
 
@@ -419,7 +419,7 @@ class ExplWindow(QtWidgets.QMainWindow):
         self.close()
         self.miniprogram = ProgressDialog()
         self.miniprogram.returnToDialog.connect(self.show)  # Show ExplWindow again after ProgressDialog closes
-        self.miniprogram.show()     
+        self.miniprogram.show()
         self.miniprogram.startProgressDialog.emit()
 
     def start_process(self):

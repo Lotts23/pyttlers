@@ -54,19 +54,19 @@ class StartDialog(QtWidgets.QDialog):
 
         # Skapa en layout för dialogrutan
         layout = QtWidgets.QHBoxLayout(self)
- 
-        with open("./data/stil.css", "r") as file:
+
+        with open("./data/stil.css", "r", encoding="utf-8") as file:
             self.setStyleSheet(file.read())
-            
+
         # Kontrollera om json-filen med varning finns, dvs om användaren fått en varning tidigare
-        if not os.path.exists("./data/Popup.json"):
+        if not os.path.exists("./data/popup.json"):
             # Visa popup-rutan för första gången
             QMessageBox.information(None, "Viktig information", "När du har valt specialister och klickar ''check'' så tar programmet kontroll över din mus. Den är lärd att hantera vanligare felklick som om den råkar klicka på en specialist som redan är ute, men skulle problem uppstå så för du muspekaren längst ut i ett av skärmens hörn och håller den där. Det är en generell nödbroms som stoppar programmet.\nSläpp musen när programmet börjar jobba.\n\nDet här programmet är en demonstration av GUI-styrkod med Pyautogui och inte avsett att användas för att bryta mot TSO-regler.")
-            
+
             # Skapa json-filen och markera användaren som informerad
-            with open("./data/Popup.json", "w") as json_file:
-                json.dump({"informed": True}, json_file)     
-                
+            with open("./data/popup.json", "w", encoding="utf-8") as json_file:
+                json.dump({"informed": True}, json_file)
+
         # Skapa knappen för geolog-läget
         geo_button = QtWidgets.QPushButton()
         geo_button.setFixedSize(57, 68)
@@ -112,7 +112,7 @@ class StartDialog(QtWidgets.QDialog):
     def showProgressDialog(self):
         self.show()
         self.miniprogram.hide()
-        
+
     def on_returnToDialog(self):
         self.show()
 
