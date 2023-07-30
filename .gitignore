@@ -19,3 +19,5 @@ popup.json
 *.pyc
 data/__pycache__
 Working_py/*
+Exe/*
+Installer/*
