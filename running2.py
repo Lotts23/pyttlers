@@ -45,10 +45,6 @@ class ProgressDialog(QtWidgets.QDialog):
         screen_rect = desktop.availableGeometry()
         self.setGeometry(QRect(screen_rect.width() - self.width(), 0, self.width(), self.height()))
 
-
-
-
-
     def hitta_skalfaktor(self, skalbild_sokvag):# Här kollar vi skalan och ser till att stjärn-fönstret är öppen och i rätt tab.
         tillatna_varden = [0.25, 0.375, 0.45, 0.5, 0.55, 0.625, 0.75, 1]
         global faktor
@@ -494,7 +490,7 @@ class ProgressDialog(QtWidgets.QDialog):
                 time.sleep(4)  # minskar fel
                 break
         time.sleep(0.1)
-        pyautogui.press('esc')
+        #pyautogui.press('esc')
 
     def error_bild(self, bild_sokvag, faktor):
         bild = Image.open(bild_sokvag)

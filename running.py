@@ -453,7 +453,7 @@ class ProgressDialog(QtWidgets.QDialog):
                 time.sleep(4)  # minskar fel
                 break
         time.sleep(0.1)
-        pyautogui.press('esc')
+        #pyautogui.press('esc')
 
     def error_bild(self, bild_sokvag, faktor):
         bild = Image.open(bild_sokvag)
