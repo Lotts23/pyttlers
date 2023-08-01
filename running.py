@@ -166,16 +166,16 @@ class ProgressDialog(QtWidgets.QDialog):
         hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.7, grayscale=True)
 
         if hittad_position is not None: # Om stjärnan hittas
-            x, y, bredd, hojd = hittad_position
-            starmenu_bredd = bredd * 10.1
-            starmenu_höjd = hojd * 8
+            x, y, width, height = hittad_position
+            starmenu_width = width * 10.1
+            starmenu_height = height * 8
 
             #Beräkna det begränsade området
-            starmenu_x = x - int(starmenu_bredd / 2.1)
+            starmenu_x = x - int(starmenu_width / 2.1)
             starmenu_y = y + int(y / 8)
-            starmenu_area = (starmenu_x, starmenu_y, round(starmenu_bredd), round(starmenu_höjd))
-            #print(starmenu_x, starmenu_y, round(starmenu_bredd), round(starmenu_höjd))
-            pyautogui.moveTo(starmenu_x + starmenu_bredd, starmenu_y)
+            starmenu_area = (starmenu_x, starmenu_y, round(starmenu_width), round(starmenu_height))
+            #print(starmenu_x, starmenu_y, round(starmenu_width), round(starmenu_height))
+            pyautogui.moveTo(starmenu_x + starmenu_width, starmenu_y)
             return starmenu_area
 
     def hitta_starmenu(self, bild_sokvag, faktor):
@@ -405,13 +405,13 @@ class ProgressDialog(QtWidgets.QDialog):
         bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
         hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True)
         if hittad_position is not None:
-            x, y, bredd, hojd = hittad_position
-            command_bredd = bredd * 5
-            command_höjd = hojd * 15
+            x, y, width, height = hittad_position
+            command_width = width * 5
+            command_height = height * 15
             #Beräkna det begränsade området
-            command_x = x + int(bredd / 2) - int(command_bredd / 2)
+            command_x = x + int(width / 2) - int(command_width / 2)
             command_y = y
-            command_area = (command_x, command_y, round(command_bredd), round(command_höjd))
+            command_area = (command_x, command_y, round(command_width), round(command_height))
             return command_area
 
     def hitta_resurs(self, bild_sokvag, faktor):
@@ -479,31 +479,29 @@ class ProgressDialog(QtWidgets.QDialog):
         hittad = None
         pyautogui.moveTo(sovplats)
         hittad_position = None
-        print(search_area)
         for _ in range(3): # Loopa 3ggr om den INTE hittar
             hittad = None
             bild = Image.open(bild_sokvag)
             skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
             bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
-            print("search_area:", search_area)
             hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.77, grayscale=True, region=search_area)
             if hittad_position is not None:
                 hittad = pyautogui.center(hittad_position)
                 # Hämtar alla värden för hittad_position och starmenu_area så att vi kan scrolla senare
                 found_x, found_y, found_width, found_height = hittad_position
-                lower_corner_x, lower_corner_y = found_x + found_width, found_y + found_height # Av den hittade bilden
+                lower_corner_x, lower_corner_y = int(found_x + (found_width * faktor)), found_y + found_height # Av den hittade bilden
                 upper_corner_x, upper_corner_y = found_x, found_y
-                x, y, bredd, hojd = starmenu_area
-                pyautogui.moveTo(hittad)
+                x, y, width, height = starmenu_area
+                right_limit = starmenu_area[0] + starmenu_area[2] - (found_width / 2)
+                left_limit = starmenu_area[0]
+                #pyautogui.moveTo(hittad)
                 # Jämför hittad position + X med starmenu_area så att denna aldrig är större
-                next_x = min(found_x + found_width + (found_width / 5), starmenu_area[0] + starmenu_area[2] - (found_width / 2))
-                #next_y = min(hittad[1], starmenu_area[1] + starmenu_area[3])
-                print(next_x)
+                next_x = min(hittad_position[0] + (found_width * faktor * 0.3), right_limit)
+                next_x = max(next_x, left_limit)
                 self.popup_flagga.clear()
                 popup_trad = threading.Thread(target=self.hantera_popup)
                 popup_trad.start()
-                pyautogui.moveTo(hittad)
-                time.sleep(0.1)
+                #pyautogui.moveTo(hittad)
                 pyautogui.mouseDown(hittad)
                 pyautogui.mouseUp()
                 pyautogui.moveTo(sovplats) # För att bli av med popup-bubblan
@@ -517,20 +515,25 @@ class ProgressDialog(QtWidgets.QDialog):
                     pyautogui.mouseDown(sovplats)
                     pyautogui.mouseUp()
                     pyautogui.scroll(2)
-                    time.sleep(0.1)
-                if upper_corner_x >= (x + bredd - (found_width * 1.9)) and upper_corner_y >= (y + hojd - (found_height * 1.9)) and noscroll is False:
+                    search_area = starmenu_area
+                    time.sleep(0.05)
+                if upper_corner_x >= (x + width - (found_width * 1.9)) and upper_corner_y >= (y + height - (found_height * 1.9)) and noscroll is False:
                     pyautogui.moveTo(sovplats)
                     pyautogui.mouseDown(sovplats)
                     pyautogui.mouseUp()
                     pyautogui.scroll(-2)
-                    time.sleep(0.1)
+                    time.sleep(0.05)
+                    search_area = starmenu_area
                 flagga = True # Vi har hittat den
-                search_area = (int(next_x), int(starmenu_area[1]), int(starmenu_area[2] - next_x), int(starmenu_area[3]))
-                print(search_area)
+                if found_x + found_width >= x + width - found_width:
+                    search_area = starmenu_area
+                else:
+                    search_area = (int(next_x), int(starmenu_area[1]), int(starmenu_area[2] - found_width), int(starmenu_area[3]))
                 return hittad, search_area # Om den hittas lämnar vi loopen, itereringen sköts i leta_sten
             else:
                 time.sleep(0.1)
-        return hittad # Om den inte hittats har hittad inget värde
+                search_area = starmenu_area
+        return hittad, search_area # Om den inte hittats har hittad inget värde
 
     def leta_sten(self):
         with open(f"{self.app_data_path}/scale_data.json", "r") as json_file:
@@ -541,8 +544,8 @@ class ProgressDialog(QtWidgets.QDialog):
         global geolog
         global sovplats
         hitta = None
-        flagga_funnen = False
         for geolog in geologer:
+            flagga_funnen = False
             search_area = starmenu_area
             flagga = True
             pyautogui.moveTo(sovplats)
