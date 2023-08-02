@@ -59,7 +59,7 @@ def find_image(image_path, **kwargs):
             region=search_region
             )
         if found_position is not None:
-            break
+            return found_position
 
     time.sleep(sleep_time)
     return found_position

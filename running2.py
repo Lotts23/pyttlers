@@ -3,7 +3,6 @@ import os
 import sys
 import threading
 import time
-import image_utils
 
 import cv2
 import numpy as np
@@ -13,8 +12,19 @@ from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtCore import QEvent, QRect, Qt, pyqtSignal
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import (QAction, QApplication, QDialog, QLabel,
-                             QPushButton, QStackedWidget, QVBoxLayout, qApp)
+                             QMainWindow, QMessageBox, QPushButton,
+                             QStackedWidget, QVBoxLayout, qApp)
 
+import image_utils
+
+typ = 100
+tid = 1000
+faktor = None
+explorer = None
+resting_place = 200, 200 # Bara för att alltid iallf ha nån giltlig resting_place - alltså där inga inforutor stör sökningen
+command_area = 0
+starmenu_area = 0
+noscroll = False
 
 class ProgressDialog(QtWidgets.QDialog):
     startProgressDialog = QtCore.pyqtSignal()
@@ -39,7 +49,7 @@ class ProgressDialog(QtWidgets.QDialog):
     tid = 1000
     faktor = None
     explorer = None
-    sovplats = 200, 200 # Bara för att alltid iallf ha nån giltlig sovplats - alltså där inga inforutor stör sökningen
+    resting_place = 200, 200 # Bara för att alltid iallf ha nån giltlig resting_place - alltså där inga inforutor stör sökningen
     command_area = 0
     starmenu_area = 0
     noscroll = False
@@ -78,41 +88,36 @@ class ProgressDialog(QtWidgets.QDialog):
         bild = Image.open(bild_sokvag)
         skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
         bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
-        time.sleep(0.1)
         hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True)
         time_limit = 0
         meny_bild_sokvag = "./data/img/02_image.bmp"
         meny_opened = None
         if hittad_position is not None: #klicka
             hittad = pyautogui.center(hittad_position)
+            pyautogui.moveTo(hittad)
+            pyautogui.mouseDown(hittad)
+            pyautogui.mouseUp()
             time.sleep(0.1)  # minskar fel
-            #pyautogui.moveTo(hittad)
-            #pyautogui.mouseDown(hittad)
-            #pyautogui.mouseUp()
-            while meny_opened is None:
-                meny_opened = image_utils.find_image(meny_bild_sokvag, confidence=0.75, sleep_time=0.5)
-                time_limit = time_limit + 1
-                if time_limit >= 20:
-                    return
-        return
+            return hittad
+        while meny_opened is None:
+            meny_opened = image_utils.find_image(meny_bild_sokvag, confidence=0.75, sleep_time=0.5, scale_factor=faktor)
+            time_limit = time_limit + 1
+            if meny_opened is not None:
+                break
+            if time_limit >= 20:
+                break
 
     def hitta_bild_stjarna(self, bild_sokvag, faktor):    # kolla om stjärnmeny Else öppna stjärna
-        bild = Image.open(bild_sokvag)
-        skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
-        bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
-        hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True)
+        hittad_position = image_utils.find_image(bild_sokvag, scale_factor=faktor, confidence=0.8, grayscale=True)
         if hittad_position is not None:
-            pass
-            #time.sleep(0.1)
+            print("stjärnan är öppen")
         else:
+            print("stjärnan är inte öppen")
             self.oppna_stjarna("./data/img/03_image.bmp", faktor) # Här öppnas stjärnan om stjärnmenyn inte hittats.
 
     def tab_stjarna(self, bild_sokvag, faktor):
         hittad = None
-        bild = Image.open(bild_sokvag)
-        skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
-        bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
-        hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True) #, region=starmenu_area)
+        hittad_position = image_utils.find_image(bild_sokvag, scale_factor=faktor, confidence=0.8, grayscale=True) #, region=starmenu_area)
         if hittad_position is not None:
             hittad = pyautogui.center(hittad_position)
             time.sleep(0.1)  # minskar fel
@@ -121,10 +126,7 @@ class ProgressDialog(QtWidgets.QDialog):
             pyautogui.mouseUp()
 
     def check_if_scrollbar(self, bild_sokvag, faktor):
-        bild = Image.open(bild_sokvag)
-        skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
-        bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
-        hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True) #, region=starmenu_area)
+        hittad_position = image_utils.find_image(bild_sokvag, scale_factor=faktor, confidence=0.8, grayscale=True) #, region=starmenu_area)
         if hittad_position is not None:
             return True
         return False
@@ -132,10 +134,7 @@ class ProgressDialog(QtWidgets.QDialog):
     def sortera_klick(self, bild_sokvag, faktor, hittad_position):
         reset_point = hittad_position
         for _ in range(3):  # Loopa 3 gånger
-            bild = Image.open(bild_sokvag)
-            skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
-            bild_array = np.array(skalad_bild)
-            check_box = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True)
+            check_box = image_utils.find_image(bild_sokvag, scale_factor=faktor, confidence=0.8, grayscale=True)
             if check_box is not None:
                 x, y, width, height = check_box
                 check_box = x + width - (width // 7), y + (height // 2)
@@ -163,10 +162,7 @@ class ProgressDialog(QtWidgets.QDialog):
 
     def berakna_starmenu(self, bild_sokvag, faktor):   # Definierar starmenu_area för att söka på begränsad yta
         global starmenu_area
-        bild = Image.open(bild_sokvag)
-        skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
-        bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
-        hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.7, grayscale=True)
+        hittad_position = image_utils.find_image(bild_sokvag, scale_factor=faktor, confidence=0.7, grayscale=True)
 
         if hittad_position is not None: # Om stjärnan hittas
             x, y, width, height = hittad_position
@@ -179,25 +175,20 @@ class ProgressDialog(QtWidgets.QDialog):
             starmenu_area = (starmenu_x, starmenu_y, round(starmenu_width), round(starmenu_height))
             return starmenu_area
 
-    def hitta_starmenu(self, bild_sokvag, faktor):
-        hittad_starmenu = None
-        global sovplats
-        time.sleep(1)
-        bild = Image.open(bild_sokvag)
-        skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
-        bild_array = np.array(skalad_bild)
-        hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=False)
-
+    def find_resting_place(self, bild_sokvag, faktor):
+        found_starmenu = None
+        global resting_place
+        time.sleep(0.1)
+        hittad_position = image_utils.find_image(bild_sokvag, scale_factor=faktor, confidence=0.8, grayscale=False)
         if hittad_position is not None:
-            hittad_starmenu = pyautogui.center(hittad_position)
+            found_starmenu = pyautogui.center(hittad_position)
             x, y, width, height = starmenu_area
-            sovplats = (x + width, y + (height / 3))
-            time.sleep(0.1)
-            pyautogui.mouseDown(hittad_starmenu)
+            resting_place = (x + width, y + (height / 3))
+            pyautogui.mouseDown(found_starmenu)
             pyautogui.mouseUp()
-            pyautogui.moveTo(sovplats)
+            pyautogui.moveTo(resting_place)
             time.sleep(0.1)
-            return sovplats
+            return resting_place
         else:
             time.sleep(0.1)
             return None
@@ -317,6 +308,8 @@ class ProgressDialog(QtWidgets.QDialog):
         json_fil = f"{self.app_data_path}/scale_data.json"
         global faktor
         global noscroll
+        global resting_place
+        global starmenu_area
         noscroll = False
         faktor = None
         if os.path.isfile(json_fil):  # Om det finns en fil
@@ -328,13 +321,13 @@ class ProgressDialog(QtWidgets.QDialog):
                 if faktor is None:
                     self.hitta_skalfaktor("./data/img/01_image.bmp")
         else:
-            self.hitta_skalfaktor("./data/img/01_image.bmp")
+            faktor = self.hitta_skalfaktor("./data/img/01_image.bmp")
         with open(f"{self.app_data_path}/scale_data.json", "r", encoding="utf-8") as json_file:
             data = json.load(json_file)
             faktor = data["faktor"]
         self.hitta_bild_stjarna("./data/img/02_image.bmp", faktor) # Kör hitta om stjärnmenyn är öppen, else kör öppna stjärnan.
         self.tab_stjarna("./data/img/04_image.bmp", faktor) # Gå till rätt tab så blir det inte så mycket scroll
-        self.berakna_starmenu("./data/img/02_image.bmp", faktor)
+        starmenu_area = self.berakna_starmenu("./data/img/02_image.bmp", faktor)
         self.sortera("./data/img/07_image.bmp", faktor)
         scrollbar = self.check_if_scrollbar("./data/img/08_image.bmp", faktor)
         if scrollbar is False:
@@ -349,8 +342,8 @@ class ProgressDialog(QtWidgets.QDialog):
             explorers = data["explorers"]
             typ = data["typ"]
             tid = data["tid"]
-        self.hitta_starmenu("./data/img/02_image.bmp", faktor)
-        return sovplats, starmenu_area, explorers, typ, tid, faktor, noscroll
+        resting_place = self.find_resting_place("./data/img/02_image.bmp", faktor)
+        return resting_place, starmenu_area, explorers, typ, tid, faktor, noscroll
 
 #
 #   Nu börjar sökningen på riktigt
@@ -358,11 +351,7 @@ class ProgressDialog(QtWidgets.QDialog):
 
     def hitta_scroll(self, bild_sokvag, faktor):
         hittad_position = None
-        bild = Image.open(bild_sokvag)
-        skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
-        bild_array = np.array(skalad_bild)
-        #scroll_region = (starmenu_area[0], round(starmenu_area[1] * 0.6), round(starmenu_area[2] * 1.5), round(starmenu_area[3] * 1.5))
-        hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True)#, region=scroll_region)
+        hittad_position = image_utils.find_image(bild_sokvag, scale_factor=faktor, confidence=0.8, grayscale=True)
         if hittad_position is None:
             time.sleep(0.01)
             return False # inte hittad
@@ -386,8 +375,8 @@ class ProgressDialog(QtWidgets.QDialog):
             if hittad_explorer or noscroll is True:
                 vimpel = True
                 return vimpel
-            pyautogui.moveTo(sovplats)
-            pyautogui.mouseDown(sovplats)
+            pyautogui.moveTo(resting_place)
+            pyautogui.mouseDown(resting_place)
             pyautogui.mouseUp()
             pyautogui.scroll(riktning)
             if position_bottom is True:
@@ -414,10 +403,7 @@ class ProgressDialog(QtWidgets.QDialog):
 
     def berakna_command(self, bild_sokvag, faktor): # Hitta sökområdet för typer och check. # Behöver finslipas
         global command_area
-        bild = Image.open(bild_sokvag)
-        skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
-        bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
-        hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True)
+        hittad_position = image_utils.find_image(bild_sokvag, scale_factor=faktor, confidence=0.8, grayscale=True)
         if hittad_position is not None:
             x, y, width, height = hittad_position
             command_width = width * 5
@@ -442,7 +428,7 @@ class ProgressDialog(QtWidgets.QDialog):
                     pyautogui.moveTo(knappens_plats)
                     pyautogui.mouseDown(knappens_plats)
                     pyautogui.mouseUp()
-                    pyautogui.moveTo(sovplats)
+                    pyautogui.moveTo(resting_place)
                     return True
                 time.sleep(0.1)
         return False
@@ -462,7 +448,7 @@ class ProgressDialog(QtWidgets.QDialog):
                 pyautogui.moveTo(knappens_plats)
                 pyautogui.mouseDown(knappens_plats)
                 pyautogui.mouseUp()
-                pyautogui.moveTo(sovplats)
+                pyautogui.moveTo(resting_place)
                 return True
             time.sleep(0.1)
         return False#, command_area
@@ -480,8 +466,8 @@ class ProgressDialog(QtWidgets.QDialog):
                 pyautogui.moveTo(hittad_check)
                 pyautogui.mouseDown(hittad_check)
                 pyautogui.mouseUp()
-                pyautogui.moveTo(sovplats)
-                pyautogui.mouseDown(sovplats)
+                pyautogui.moveTo(resting_place)
+                pyautogui.mouseDown(resting_place)
                 pyautogui.mouseUp()
                 time.sleep(0.5)  # minskar fel
                 break
@@ -516,7 +502,7 @@ class ProgressDialog(QtWidgets.QDialog):
             sort = "t"
         else:
             sort = "a"
-        pyautogui.moveTo(sovplats)
+        pyautogui.moveTo(resting_place)
         hittad_position = None
         for _ in range(3): # Loopa 3ggr om den INTE hittar
             hittad = None
@@ -543,7 +529,7 @@ class ProgressDialog(QtWidgets.QDialog):
                 #pyautogui.moveTo(hittad)
                 pyautogui.mouseDown(hittad)
                 pyautogui.mouseUp()
-                pyautogui.moveTo(sovplats) # För att bli av med popup-bubblan
+                pyautogui.moveTo(resting_place) # För att bli av med popup-bubblan
                 time.sleep(0.1)
                 self.hitta_typ(f"./data/img/typ_{typ}.bmp", faktor)
                 self.hitta_tid(f"./data/img/tid_{sort}_{tid}.bmp", faktor)
@@ -551,28 +537,43 @@ class ProgressDialog(QtWidgets.QDialog):
                 self.hitta_check("./data/img/check.bmp", faktor)
                 # Om den hittar en explorer längst bort på en rad, scrolla åt det hållet
                 if lower_corner_x <= (x + (found_width * 1.9)) and lower_corner_y <= (y + (found_height * 1.9)) and noscroll is False:
-                    pyautogui.moveTo(sovplats)
-                    pyautogui.mouseDown(sovplats)
+                    pyautogui.moveTo(resting_place)
+                    pyautogui.mouseDown(resting_place)
                     pyautogui.mouseUp()
                     pyautogui.scroll(2)
-                    search_area = starmenu_area
                     time.sleep(0.1)
+                    search_area = starmenu_area
                 if upper_corner_x >= (x + width - (found_width * 1.9)) and upper_corner_y >= (y + height - (found_height * 1.9)) and noscroll is False:
-                    pyautogui.moveTo(sovplats)
-                    pyautogui.mouseDown(sovplats)
+                    pyautogui.moveTo(resting_place)
+                    pyautogui.mouseDown(resting_place)
                     pyautogui.mouseUp()
                     pyautogui.scroll(-2)
                     time.sleep(0.1)
                     search_area = starmenu_area
                 flagga = True # Vi har hittat den
                 if found_x + found_width >= x + width - found_width:
+                    # If we find it furthest to the right, start to the very left again
                     search_area = starmenu_area
+                    time.sleep(0.1)
                 else:
+                    # When an image have been found we move the search to the right of that
                     search_area = (int(next_x), int(starmenu_area[1]), int(starmenu_area[2] - found_width), int(starmenu_area[3]))
                 return hittad, search_area # Om den hittas lämnar vi loopen, itereringen sköts i leta_sten
             else:
                 time.sleep(0.1)
                 search_area = starmenu_area
+                if hittad is None and noscroll is False:
+                    pyautogui.scroll(-2)
+                    pyautogui.scroll(-2)
+                    look_again = image_utils.find_image(bild_sokvag, scale_factor=faktor, time_sleep=0.2)
+                    if look_again is not None:
+                        continue
+                    else:
+                        pyautogui.scroll(2)
+                        pyautogui.scroll(2)
+                        look_again = image_utils.find_image(bild_sokvag)
+                        if look_again is not None:
+                            continue
         return hittad, search_area # Om den inte hittats har hittad inget värde
 
     def leta_skatt(self):
@@ -582,13 +583,13 @@ class ProgressDialog(QtWidgets.QDialog):
             self.faktor = data["faktor"]
         global flagga
         global explorer
-        global sovplats
+        global resting_place
         hitta = None
         for explorer in explorers:
             flagga_funnen = False
             search_area = starmenu_area
             flagga = True
-            pyautogui.moveTo(sovplats)
+            pyautogui.moveTo(resting_place)
             while flagga:
                 hittad_explorer, search_area = self.hitta_explorer(f"./data/img/expl_{explorer}.bmp", faktor, search_area) # Returnerar hittad/none
                 if hittad_explorer is not None:
