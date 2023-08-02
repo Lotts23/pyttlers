@@ -79,25 +79,27 @@ class ProgressDialog(QtWidgets.QDialog):
         bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
         time.sleep(1)
         hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True)
-
+        tidsgrans = 10
+        meny_bild_sokvag = "./data/img/02_image.bmp"
         if hittad_position is not None: #klicka
             hittad = pyautogui.center(hittad_position)
-            time.sleep(0.5)  # minskar fel
+            time.sleep(0.1)  # minskar fel
             pyautogui.moveTo(hittad)
-            time.sleep(0.1)
             pyautogui.mouseDown(hittad)
             pyautogui.mouseUp()
-            time.sleep(4)  # minskar fel, starmenu tar ofta lång tid
+            meny_position = pyautogui.waitFor(meny_bild_sokvag, timeout=tidsgrans)
+            if meny_position is not None:
+                return
+
+
 
     def hitta_bild_stjarna(self, bild_sokvag, faktor):    # kolla om stjärnmeny Else öppna stjärna
         bild = Image.open(bild_sokvag)
         skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
         bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
         hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True)
-
         if hittad_position is not None:
-            time.sleep(0.1)  # Minskar antalet fel. 0.1 där det görs nya variabler o data, 3-4 mellan långsamma menyklick
-            #print("\nStjärnan öppen")
+            time.sleep(0.1)
         else:
             self.oppna_stjarna("./data/img/03_image.bmp", faktor) # Här öppnas stjärnan om stjärnmenyn inte hittats.
 
@@ -111,11 +113,8 @@ class ProgressDialog(QtWidgets.QDialog):
             hittad = pyautogui.center(hittad_position)
             time.sleep(0.1)  # minskar fel
             pyautogui.moveTo(hittad)
-            time.sleep(0.1)
             pyautogui.mouseDown(hittad)
             pyautogui.mouseUp()
-            #print(f"{bild_sokvag} klickad")
-            time.sleep(0.1)  # minskar fel
 
     def check_if_scrollbar(self, bild_sokvag, faktor):
         bild = Image.open(bild_sokvag)
@@ -175,7 +174,7 @@ class ProgressDialog(QtWidgets.QDialog):
             starmenu_y = y + int(y / 8)
             starmenu_area = (starmenu_x, starmenu_y, round(starmenu_width), round(starmenu_height))
             #print(starmenu_x, starmenu_y, round(starmenu_width), round(starmenu_height))
-            pyautogui.moveTo(starmenu_x + starmenu_width, starmenu_y)
+            #pyautogui.moveTo(starmenu_x + starmenu_width, starmenu_y)
             return starmenu_area
 
     def hitta_starmenu(self, bild_sokvag, faktor):
@@ -189,7 +188,6 @@ class ProgressDialog(QtWidgets.QDialog):
 
         if hittad_position is not None:
             hittad_starmenu = pyautogui.center(hittad_position)
-            time.sleep(0.1)
             x, y, width, height = starmenu_area
             sovplats = (x + width, y + (height / 3))
             time.sleep(0.1)
@@ -449,7 +447,7 @@ class ProgressDialog(QtWidgets.QDialog):
                 pyautogui.moveTo(sovplats)
                 pyautogui.mouseDown(sovplats)
                 pyautogui.mouseUp()
-                time.sleep(0.01)  # minskar fel
+                time.sleep(0.5)  # minskar fel
                 break
         time.sleep(0.1)
 
@@ -516,13 +514,13 @@ class ProgressDialog(QtWidgets.QDialog):
                     pyautogui.mouseUp()
                     pyautogui.scroll(2)
                     search_area = starmenu_area
-                    time.sleep(0.05)
+                    time.sleep(0.1)
                 if upper_corner_x >= (x + width - (found_width * 1.9)) and upper_corner_y >= (y + height - (found_height * 1.9)) and noscroll is False:
                     pyautogui.moveTo(sovplats)
                     pyautogui.mouseDown(sovplats)
                     pyautogui.mouseUp()
                     pyautogui.scroll(-2)
-                    time.sleep(0.05)
+                    time.sleep(0.1)
                     search_area = starmenu_area
                 flagga = True # Vi har hittat den
                 if found_x + found_width >= x + width - found_width:
