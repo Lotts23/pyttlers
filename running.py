@@ -3,6 +3,7 @@ import os
 import sys
 import threading
 import time
+import image_utils
 
 import cv2
 import numpy as np
@@ -34,14 +35,12 @@ class ProgressDialog(QtWidgets.QDialog):
         screen_rect = desktop.availableGeometry()
         self.setGeometry(QRect(screen_rect.width() - self.width(), 0, self.width(), self.height()))
 
-
     faktor = None
     geolog = None
     sovplats = 200, 200 # Bara för att alltid iallf ha nån giltlig sovplats - alltså där inga inforutor stör sökningen
     command_area = 0
     starmenu_area = 0
     noscroll = False
-
 
     def hitta_skalfaktor(self, skalbild_sokvag):# Här kollar vi skalan och ser till att stjärn-fönstret är öppen och i rätt tab.
         tillatna_varden = [0.25, 0.375, 0.45, 0.5, 0.55, 0.625, 0.75, 1]
@@ -77,21 +76,23 @@ class ProgressDialog(QtWidgets.QDialog):
         bild = Image.open(bild_sokvag)
         skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
         bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
-        time.sleep(1)
+        time.sleep(0.1)
         hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True)
-        tidsgrans = 10
+        time_limit = 0
         meny_bild_sokvag = "./data/img/02_image.bmp"
+        meny_opened = None
         if hittad_position is not None: #klicka
             hittad = pyautogui.center(hittad_position)
             time.sleep(0.1)  # minskar fel
-            pyautogui.moveTo(hittad)
-            pyautogui.mouseDown(hittad)
-            pyautogui.mouseUp()
-            meny_position = pyautogui.waitFor(meny_bild_sokvag, timeout=tidsgrans)
-            if meny_position is not None:
-                return
-
-
+            #pyautogui.moveTo(hittad)
+            #pyautogui.mouseDown(hittad)
+            #pyautogui.mouseUp()
+            while meny_opened is None:
+                meny_opened = image_utils.find_image(meny_bild_sokvag, confidence=0.75, sleep_time=0.5)
+                time_limit = time_limit + 1
+                if time_limit >= 20:
+                    return
+        return
 
     def hitta_bild_stjarna(self, bild_sokvag, faktor):    # kolla om stjärnmeny Else öppna stjärna
         bild = Image.open(bild_sokvag)
@@ -99,7 +100,8 @@ class ProgressDialog(QtWidgets.QDialog):
         bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
         hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True)
         if hittad_position is not None:
-            time.sleep(0.1)
+            pass
+            #time.sleep(0.1)
         else:
             self.oppna_stjarna("./data/img/03_image.bmp", faktor) # Här öppnas stjärnan om stjärnmenyn inte hittats.
 
@@ -173,8 +175,6 @@ class ProgressDialog(QtWidgets.QDialog):
             starmenu_x = x - int(starmenu_width / 2.1)
             starmenu_y = y + int(y / 8)
             starmenu_area = (starmenu_x, starmenu_y, round(starmenu_width), round(starmenu_height))
-            #print(starmenu_x, starmenu_y, round(starmenu_width), round(starmenu_height))
-            #pyautogui.moveTo(starmenu_x + starmenu_width, starmenu_y)
             return starmenu_area
 
     def hitta_starmenu(self, bild_sokvag, faktor):
@@ -203,13 +203,13 @@ class ProgressDialog(QtWidgets.QDialog):
     def initUI(self):
         layout = QtWidgets.QVBoxLayout(self)
         try:
-            with open(f"{self.app_data_path}/scale_data.json", "r") as json_file:
+            with open(f"{self.app_data_path}/scale_data.json", "r", encoding="utf-8") as json_file:
                 data = json.load(json_file)
                 faktor = data["faktor"]
         except FileNotFoundError:
             faktor = 0.5
 
-        with open(f"{self.app_data_path}/geo_nummer.json", "r") as json_file:
+        with open(f"{self.app_data_path}/geo_nummer.json", "r", encoding="utf-8") as json_file:
             data = json.load(json_file)
             geologer = data["geologer"]
             resurs = data["resurs"]
@@ -355,7 +355,7 @@ class ProgressDialog(QtWidgets.QDialog):
 
     def scroll(self, geolog):
         vimpel = False
-        riktning = -2
+        riktning = -4
         counting = 0
         been = None
         position_top = False
@@ -375,13 +375,13 @@ class ProgressDialog(QtWidgets.QDialog):
             pyautogui.mouseUp()
             pyautogui.scroll(riktning)
             if position_bottom is True:
-                riktning = 2 # Om vi är längst ner börja skrolla upp
+                riktning = 4 # Om vi är längst ner börja skrolla upp
                 counting += 1
                 if been is None:
                     been = "bottom"
                 #position_bottom = False
             if position_top is True:
-                riktning = -2
+                riktning = -4
                 counting += 1
                 if been is None:
                     been = "top"
