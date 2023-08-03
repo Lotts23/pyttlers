@@ -110,9 +110,8 @@ class ProgressDialog(QtWidgets.QDialog):
     def hitta_bild_stjarna(self, bild_sokvag, faktor):    # kolla om stjärnmeny Else öppna stjärna
         hittad_position = image_utils.find_image(bild_sokvag, scale_factor=faktor, confidence=0.8, grayscale=True)
         if hittad_position is not None:
-            print("stjärnan är öppen")
+            pass
         else:
-            print("stjärnan är inte öppen")
             self.oppna_stjarna("./data/img/03_image.bmp", faktor) # Här öppnas stjärnan om stjärnmenyn inte hittats.
 
     def tab_stjarna(self, bild_sokvag, faktor):
@@ -360,7 +359,7 @@ class ProgressDialog(QtWidgets.QDialog):
 
     def scroll(self, explorer):
         vimpel = False
-        riktning = -4
+        riktning = -2
         counting = 0
         been = None
         position_top = False
@@ -380,13 +379,13 @@ class ProgressDialog(QtWidgets.QDialog):
             pyautogui.mouseUp()
             pyautogui.scroll(riktning)
             if position_bottom is True:
-                riktning = 4 # Om vi är längst ner börja skrolla upp
+                riktning = 2 # Om vi är längst ner börja skrolla upp
                 counting += 1
                 if been is None:
                     been = "bottom"
                 #position_bottom = False
             if position_top is True:
-                riktning = -4
+                riktning = -2
                 counting += 1
                 if been is None:
                     been = "top"
@@ -504,6 +503,7 @@ class ProgressDialog(QtWidgets.QDialog):
             sort = "a"
         pyautogui.moveTo(resting_place)
         hittad_position = None
+        window_open = False
         for _ in range(3): # Loopa 3ggr om den INTE hittar
             hittad = None
             bild = Image.open(bild_sokvag)
@@ -512,6 +512,20 @@ class ProgressDialog(QtWidgets.QDialog):
             hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.77, grayscale=True, region=search_area)
             if hittad_position is not None:
                 hittad = pyautogui.center(hittad_position)
+                self.popup_flagga.clear()
+                popup_trad = threading.Thread(target=self.hantera_popup)
+                popup_trad.start()
+                #pyautogui.moveTo(hittad)
+                pyautogui.mouseDown(hittad)
+                pyautogui.mouseUp()
+                pyautogui.moveTo(resting_place) # För att bli av med popup-bubblan
+                time.sleep(0.1)
+                window_open = self.hitta_typ(f"./data/img/typ_{typ}.bmp", faktor)
+                if window_open is False:
+                    continue
+                self.hitta_tid(f"./data/img/tid_{sort}_{tid}.bmp", faktor)
+                self.popup_flagga.set()
+                self.hitta_check("./data/img/check.bmp", faktor)
                 # Hämtar alla värden för hittad_position och starmenu_area så att vi kan scrolla senare
                 found_x, found_y, found_width, found_height = hittad_position
                 lower_corner_x, lower_corner_y = int(found_x + (found_width * faktor)), found_y + found_height # Av den hittade bilden
@@ -523,18 +537,6 @@ class ProgressDialog(QtWidgets.QDialog):
                 # Jämför hittad position + X med starmenu_area så att denna aldrig är större
                 next_x = min(hittad_position[0] + (found_width * faktor * 0.3), right_limit)
                 next_x = max(next_x, left_limit)
-                self.popup_flagga.clear()
-                popup_trad = threading.Thread(target=self.hantera_popup)
-                popup_trad.start()
-                #pyautogui.moveTo(hittad)
-                pyautogui.mouseDown(hittad)
-                pyautogui.mouseUp()
-                pyautogui.moveTo(resting_place) # För att bli av med popup-bubblan
-                time.sleep(0.1)
-                self.hitta_typ(f"./data/img/typ_{typ}.bmp", faktor)
-                self.hitta_tid(f"./data/img/tid_{sort}_{tid}.bmp", faktor)
-                self.popup_flagga.set()
-                self.hitta_check("./data/img/check.bmp", faktor)
                 # Om den hittar en explorer längst bort på en rad, scrolla åt det hållet
                 if lower_corner_x <= (x + (found_width * 1.9)) and lower_corner_y <= (y + (found_height * 1.9)) and noscroll is False:
                     pyautogui.moveTo(resting_place)
@@ -562,18 +564,6 @@ class ProgressDialog(QtWidgets.QDialog):
             else:
                 time.sleep(0.1)
                 search_area = starmenu_area
-                if hittad is None and noscroll is False:
-                    pyautogui.scroll(-2)
-                    pyautogui.scroll(-2)
-                    look_again = image_utils.find_image(bild_sokvag, scale_factor=faktor, time_sleep=0.2)
-                    if look_again is not None:
-                        continue
-                    else:
-                        pyautogui.scroll(2)
-                        pyautogui.scroll(2)
-                        look_again = image_utils.find_image(bild_sokvag)
-                        if look_again is not None:
-                            continue
         return hittad, search_area # Om den inte hittats har hittad inget värde
 
     def leta_skatt(self):

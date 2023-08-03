@@ -62,13 +62,10 @@ def find_image(image_path, **kwargs):
             return found_position
 
     time.sleep(sleep_time)
-    return found_position
+    return None
 
-def click_center(
-    image_position,
-    button="left",
-    sleep_time=0.1
-):
+def click_center(image_position, **kwargs):
+
     """
     Click on the center of the specified image position.
 
@@ -79,6 +76,9 @@ def click_center(
     Returns:
         None
     """
+    button = kwargs.get("button", "left")
+    sleep_time = kwargs.get("sleep_time", 0.1)
+
     if image_position is not None:
         center = pyautogui.center(image_position)
         pyautogui.moveTo(center)
