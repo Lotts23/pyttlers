@@ -53,21 +53,30 @@ class ProgressDialog(QtWidgets.QDialog):
     starmenu_area = 0
     noscroll = False
 
+    def get_all_screens_regions():
+        screens = get_monitors()
+        screen_regions = [(screen.x, screen.y, screen.width, screen.height) for screen in screens]
+        return screen_regions
+
+
     def hitta_skalfaktor(self, skalbild_sokvag):# Här kollar vi skalan och ser till att stjärn-fönstret är öppen och i rätt tab.
-        tillatna_varden = [0.25, 0.375, 0.45, 0.5, 0.55, 0.625, 0.75, 1]
+        tillatna_varden = [1, 0.75, 0.625, 0.55, 0.5, 0.45, 0.375, 0.25]
         global faktor
         faktor = faktor #ghost
         for faktor in tillatna_varden:
+            print(faktor * 2 * 100, "%")
             skalbild = Image.open(skalbild_sokvag)
             skalad_bild = skalbild.resize((int(skalbild.width * faktor), int(skalbild.height * faktor)))
             skalbild_array = np.array(skalad_bild)
-            hittad_skalfaktor = pyautogui.locateOnScreen(skalbild_array, confidence=0.7, grayscale=True)
+
+            hittad_skalfaktor = pyautogui.locateOnScreen(skalbild_array, confidence=0.63, grayscale=True)
             if hittad_skalfaktor is not None:
                 data = {"faktor": faktor}
                 with open(f"{self.app_data_path}/scale_data.json", "w") as json_file:
                     json.dump(data, json_file)
                 return faktor
             time.sleep(0.01)
+        print("fail")
         return
 
     def testa_skalfaktor(self, skalbild_sokvag, faktor):
@@ -77,10 +86,11 @@ class ProgressDialog(QtWidgets.QDialog):
         hittad_testbild = pyautogui.locateOnScreen(testbild_array, confidence=0.8, grayscale=True)
 
         if hittad_testbild is not None:
-            print(faktor)
+            print("Lyckats på: ", faktor * 2 * 100, "%")
             return faktor
         else:
             self.hitta_skalfaktor("./data/img/01_image.bmp")
+            print("Lyckats på: ", faktor * 2 * 100, "%")
             return faktor
 
     def oppna_stjarna(self, bild_sokvag, faktor):
@@ -403,7 +413,7 @@ class ProgressDialog(QtWidgets.QDialog):
     def hitta_resurs(self, bild_sokvag, faktor):
         for _ in range(3):  # Loopa 3 gånger
             #command_area = self.berakna_command("./data/img/05_image.bmp", faktor)
-            disturbed = 0
+            #disturbed = 0
             for _ in range(3):  # Loopa 3 gånger för varje försök
                 hittad_position = image_utils.find_image(bild_sokvag, scale_factor=faktor, confidence=0.85, grayscale=True, region=command_area)
                 if hittad_position is not None:

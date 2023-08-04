@@ -55,20 +55,23 @@ class ProgressDialog(QtWidgets.QDialog):
     noscroll = False
 
     def hitta_skalfaktor(self, skalbild_sokvag):# Här kollar vi skalan och ser till att stjärn-fönstret är öppen och i rätt tab.
-        tillatna_varden = [0.25, 0.375, 0.45, 0.5, 0.55, 0.625, 0.75, 1]
+        tillatna_varden = [1, 0.75, 0.625, 0.55, 0.5, 0.45, 0.375, 0.25]
         global faktor
         faktor = faktor
         for faktor in tillatna_varden:
+            print(faktor * 2 * 100, "%")
             skalbild = Image.open(skalbild_sokvag)
             skalad_bild = skalbild.resize((int(skalbild.width * faktor), int(skalbild.height * faktor)))
             skalbild_array = np.array(skalad_bild)
-            hittad_skalfaktor = pyautogui.locateOnScreen(skalbild_array, confidence=0.7, grayscale=True)
+            hittad_skalfaktor = pyautogui.locateOnScreen(skalbild_array, confidence=0.6, grayscale=True)
             if hittad_skalfaktor is not None:
                 data = {"faktor": faktor}
                 with open(f"{self.app_data_path}/scale_data.json", "w") as json_file:
                     json.dump(data, json_file)
                 return faktor
             time.sleep(0.01)
+        print("fail")
+        ### Skriv en felhantering för när skalan inte hittas
         return
 
     def testa_skalfaktor(self, skalbild_sokvag, faktor):
