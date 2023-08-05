@@ -3,6 +3,8 @@ import json
 import os
 import shutil
 import sys
+import time
+from typing import Dict
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QEvent, QRect, Qt
@@ -11,10 +13,10 @@ from PyQt5.QtWidgets import (QAction, QApplication, QDialog, QLabel,
                              QMessageBox, QPushButton, QStackedWidget,
                              QVBoxLayout, qApp)
 
+import image_utils
 from expl import ExplWindow
 from geo import GeoWindow
 from running import ProgressDialog
-
 
 def move_json_files_to_app_data():
     global app_data_path
@@ -59,12 +61,12 @@ class StartDialog(QtWidgets.QDialog):
             self.setStyleSheet(file.read())
 
         # Kontrollera om json-filen med varning finns, dvs om användaren fått en varning tidigare
-        if not os.path.exists("./data/popup.json"):
+        if not os.path.exists(f"{app_data_path}/popup.json"):
             # Visa popup-rutan för första gången
             QMessageBox.information(None, "Viktig information", "När du har valt specialister och klickar ''check'' så tar programmet kontroll över din mus. Den är lärd att hantera vanligare felklick som om den råkar klicka på en specialist som redan är ute, men skulle problem uppstå så för du muspekaren längst ut i ett av skärmens hörn och håller den där. Det är en generell nödbroms som stoppar programmet.\nSläpp musen när programmet börjar jobba.\n\nDet här programmet är en demonstration av GUI-styrkod med Pyautogui och inte avsett att användas för att bryta mot TSO-regler.")
 
             # Skapa json-filen och markera användaren som informerad
-            with open("./data/popup.json", "w", encoding="utf-8") as json_file:
+            with open(f"{app_data_path}/popup.json", "w", encoding="utf-8") as json_file:
                 json.dump({"informed": True}, json_file)
 
         # Skapa knappen för geolog-läget
@@ -82,6 +84,25 @@ class StartDialog(QtWidgets.QDialog):
         expl_button.setIconSize(expl_button.rect().size())
         expl_button.clicked.connect(self.open_expl_window)
         layout.addWidget(expl_button)
+
+    def scale_handling(self):
+        test_factor = faktor
+        json_fil = f"{app_data_path}/scale_data.json"
+        if os.path.isfile(json_fil):  # Om det finns en fil
+            with open(json_fil, "r", encoding="utf-8") as json_file:  # öppna den
+                json_data = json.load(json_file)  # och läs datan
+                test_factor = json_data.get("faktor")  # Hämta tidigare faktor
+            if test_factor is not None: # Om faktor-värdet inte är tomt, testa det
+                testad_faktor = start_dialog.testa_skalfaktor("./data/img/01_image.bmp", faktor) # Testar om gamla faktorn funkar
+                if testad_faktor is None:
+                    test_factor = self.hitta_skalfaktor("./data/img/01_image.bmp")
+                    return test_factor
+                else:
+                    test_factor = testad_faktor
+                    return test_factor
+        else:
+            test_factor = self.hitta_skalfaktor("./data/img/01_image.bmp")
+            return test_factor
 
     def open_geo_window(self):
         # Stäng dialogrutan och öppna geo-fönstret
@@ -116,17 +137,46 @@ class StartDialog(QtWidgets.QDialog):
     def on_returnToDialog(self):
         self.show()
 
+
+    def hitta_skalfaktor(self, skalbild_sokvag):# Här kollar vi skalan och ser till att stjärn-fönstret är öppen och i rätt tab.
+        tillatna_varden = [1, 0.75, 0.625, 0.55, 0.5, 0.45, 0.375, 0.25]
+        global faktor
+        for faktor in tillatna_varden:
+            hittad_skalfaktor = image_utils.find_image(skalbild_sokvag, confidence=0.63, scale_factor=faktor)
+            if hittad_skalfaktor is not None:
+                data = {"faktor": faktor}
+                with open(f"{self.app_data_path}/scale_data.json", "w", encoding="utf-8") as json_file:
+                    json.dump(data, json_file)
+                return faktor
+            time.sleep(0.01)
+            app.exit(0)
+        ### Skriv en felhantering för när skalan inte hittas
+        return
+
+    def testa_skalfaktor(self, skalbild_sokvag, faktor):
+        hittad_testbild = image_utils.find_image(skalbild_sokvag, confidence=0.8, scale_faktor=faktor)
+
+        if hittad_testbild is not None:
+            return faktor
+        else:
+            self.hitta_skalfaktor("./data/img/01_image.bmp")
+            return faktor
+
+
 if __name__ == "__main__":
     app_data_path = move_json_files_to_app_data()
     from expl import ExplWindow
     from geo import GeoWindow
     from running import ProgressDialog
-
+    global faktor
+    faktor = None
     #from running2 import ProgressDialog
     app = QtWidgets.QApplication(sys.argv)
     start_dialog = StartDialog(app_data_path)
+
     miniprogram = ProgressDialog(app_data_path)
     start_dialog.show()
+    faktor = StartDialog.scale_handling(app_data_path)
     miniprogram.hide()
 
     sys.exit(app.exec_())

@@ -63,7 +63,7 @@ class ProgressDialog(QtWidgets.QDialog):
             skalbild = Image.open(skalbild_sokvag)
             skalad_bild = skalbild.resize((int(skalbild.width * faktor), int(skalbild.height * faktor)))
             skalbild_array = np.array(skalad_bild)
-            hittad_skalfaktor = pyautogui.locateOnScreen(skalbild_array, confidence=0.6, grayscale=True)
+            hittad_skalfaktor = pyautogui.locateOnScreen(skalbild_array, confidence=0.63, grayscale=True)
             if hittad_skalfaktor is not None:
                 data = {"faktor": faktor}
                 with open(f"{self.app_data_path}/scale_data.json", "w") as json_file:
@@ -88,10 +88,7 @@ class ProgressDialog(QtWidgets.QDialog):
 
     def oppna_stjarna(self, bild_sokvag, faktor):
         hittad = None
-        bild = Image.open(bild_sokvag)
-        skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
-        bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
-        hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=True)
+        hittad_position = image_utils.find_image(bild_sokvag, confidence=0.8, scale_factor=faktor)
         time_limit = 0
         meny_bild_sokvag = "./data/img/02_image.bmp"
         meny_opened = None
@@ -103,7 +100,7 @@ class ProgressDialog(QtWidgets.QDialog):
             time.sleep(0.1)  # minskar fel
             return hittad
         while meny_opened is None:
-            meny_opened = image_utils.find_image(meny_bild_sokvag, confidence=0.75, sleep_time=0.5, scale_factor=faktor)
+            meny_opened = image_utils.find_image(meny_bild_sokvag, confidence=0.75, scale_factor=faktor)
             time_limit = time_limit + 1
             if meny_opened is not None:
                 break
@@ -380,19 +377,17 @@ class ProgressDialog(QtWidgets.QDialog):
             pyautogui.moveTo(resting_place)
             pyautogui.mouseDown(resting_place)
             pyautogui.mouseUp()
-            pyautogui.scroll(riktning)
+            pyautogui.scroll(clicks=riktning)
             if position_bottom is True:
                 riktning = 2 # Om vi är längst ner börja skrolla upp
                 counting += 1
                 if been is None:
                     been = "bottom"
-                #position_bottom = False
             if position_top is True:
                 riktning = -2
                 counting += 1
                 if been is None:
                     been = "top"
-                #position_top = False
             if counting >= 2 and position_top is True and been == "bottom":
                 vimpel = False
                 return None
@@ -423,7 +418,7 @@ class ProgressDialog(QtWidgets.QDialog):
             skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
             bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
             for _ in range(3):  # Loopa 3 gånger för varje försök
-                hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.85, grayscale=True)#, region=command_area)
+                hittad_position = image_utils.find_image(bild_sokvag, scale_factor=faktor, confidence=0.85, grayscale=True)#, region=command_area)
                 if hittad_position is not None:
                     x, y, width, height = hittad_position  # Klickar i högra hörnet för att kunna ha med texten brevid knappen
                     knappens_plats = x + width - (width // 5), y + (height // 2)
@@ -443,7 +438,7 @@ class ProgressDialog(QtWidgets.QDialog):
         skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
         bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
         for _ in range(3):  # Loopa 3 gånger för varje försök
-            hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.85, grayscale=True)#, region=command_area)
+            hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.83, grayscale=True)#, region=command_area)
             if hittad_position is not None:
                 x, y, width, height = hittad_position  # Klickar i högra hörnet för att kunna ha med texten brevid knappen
                 knappens_plats = x + width - (width // 6), y + (height // 2)
@@ -457,12 +452,7 @@ class ProgressDialog(QtWidgets.QDialog):
 
     def hitta_check(self, bild_sokvag, faktor):
         for _ in range(3): # Loopa 3ggr
-            hittad_check = None
-            time.sleep(0.1)
-            bild = Image.open(bild_sokvag)
-            skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
-            bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
-            hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.8, grayscale=False)#, region=command_area)
+            hittad_position = image_utils.find_image(bild_sokvag, confidence=0.8, grayscale=False, region=command_area, scale_factor=faktor, sleep_time=0.1)
             if hittad_position is not None:
                 hittad_check = pyautogui.center(hittad_position)
                 pyautogui.moveTo(hittad_check)
@@ -545,14 +535,14 @@ class ProgressDialog(QtWidgets.QDialog):
                     pyautogui.moveTo(resting_place)
                     pyautogui.mouseDown(resting_place)
                     pyautogui.mouseUp()
-                    pyautogui.scroll(2)
+                    pyautogui.scroll(clicks=2)
                     time.sleep(0.1)
                     search_area = starmenu_area
                 if upper_corner_x >= (x + width - (found_width * 1.9)) and upper_corner_y >= (y + height - (found_height * 1.9)) and noscroll is False:
                     pyautogui.moveTo(resting_place)
                     pyautogui.mouseDown(resting_place)
                     pyautogui.mouseUp()
-                    pyautogui.scroll(-2)
+                    pyautogui.scroll(clicks=-2)
                     time.sleep(0.1)
                     search_area = starmenu_area
                 flagga = True # Vi har hittat den
@@ -588,7 +578,7 @@ class ProgressDialog(QtWidgets.QDialog):
                 if hittad_explorer is not None:
                     flagga_funnen = True
                     flagga = True
-                elif hittad_explorer is None and flagga_funnen is False: # En tidigare hittad explorer behöver inte sökas efter utöver när-scrollet i hitta_explorer
+                elif hittad_explorer is None and flagga_funnen is False and noscroll is False: # En tidigare hittad explorer behöver inte sökas efter utöver när-scrollet i hitta_explorer
                     hitta = self.scroll(explorer)
                     if hitta is not None:
                         flagga = True # Upprepa hitta_explorer

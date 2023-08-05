@@ -43,7 +43,7 @@ def find_image(image_path, **kwargs):
     search_region = kwargs.get("search_region", None)
     sleep_time = kwargs.get("sleep_time", 0.1)
 
-    for _ in range(3): # Loop 3 times unless found
+    for _ in range(2): # Loop 3 times unless found
         found_position = None
         image = Image.open(image_path)
         scaled_image = image.resize(

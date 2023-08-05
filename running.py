@@ -68,7 +68,6 @@ class ProgressDialog(QtWidgets.QDialog):
             skalbild = Image.open(skalbild_sokvag)
             skalad_bild = skalbild.resize((int(skalbild.width * faktor), int(skalbild.height * faktor)))
             skalbild_array = np.array(skalad_bild)
-
             hittad_skalfaktor = pyautogui.locateOnScreen(skalbild_array, confidence=0.63, grayscale=True)
             if hittad_skalfaktor is not None:
                 data = {"faktor": faktor}
@@ -76,7 +75,7 @@ class ProgressDialog(QtWidgets.QDialog):
                     json.dump(data, json_file)
                 return faktor
             time.sleep(0.01)
-        print("fail")
+        ### Skriv en felhantering för när skalan inte hittas
         return
 
     def testa_skalfaktor(self, skalbild_sokvag, faktor):
@@ -100,6 +99,11 @@ class ProgressDialog(QtWidgets.QDialog):
         meny_bild_sokvag = "./data/img/02_image.bmp"
         meny_opened = None
         if hittad_position is not None: #klicka
+            hittad = pyautogui.center(hittad_position)
+            pyautogui.moveTo(hittad)
+            pyautogui.mouseDown(hittad)
+            pyautogui.mouseUp()
+            time.sleep(0.1)  # minskar fel
             return hittad
         while meny_opened is None:
             meny_opened = image_utils.find_image(meny_bild_sokvag, confidence=0.75, scale_factor=faktor)
@@ -117,9 +121,14 @@ class ProgressDialog(QtWidgets.QDialog):
             self.oppna_stjarna("./data/img/03_image.bmp", faktor) # Här öppnas stjärnan om stjärnmenyn inte hittats.
 
     def tab_stjarna(self, bild_sokvag, faktor):
+        hittad = None
         hittad_position = image_utils.find_image(bild_sokvag, scale_factor=faktor, confidence=0.8, grayscale=True) #, region=starmenu_area)
         if hittad_position is not None:
-            image_utils.click_center(hittad_position, sleep_time=0.1)
+            hittad = pyautogui.center(hittad_position)
+            time.sleep(0.1)  # minskar fel
+            pyautogui.moveTo(hittad)
+            pyautogui.mouseDown(hittad)
+            pyautogui.mouseUp()
 
     def check_if_scrollbar(self, bild_sokvag, faktor):
         hittad_position = image_utils.find_image(bild_sokvag, scale_factor=faktor, confidence=0.8, grayscale=True) #, region=starmenu_area)
@@ -189,26 +198,9 @@ class ProgressDialog(QtWidgets.QDialog):
             time.sleep(0.1)
             return None
 
-    def point_out(self, location):
-        # Ovalens dimensioner
-        oval_width = 200
-        oval_height = 75
-
-        # Antal steg i ovalens rörelse
-        num_steps = 20
-
-        for i in range(num_steps):
-            # Beräkna x- och y-koordinaterna för ovalens position
-            angle = (i / num_steps) * 4 * math.pi  # Vinkel mellan 0 och 2*pi
-            x = location[0] - oval_width * math.cos(angle)
-            y = location[1] - oval_height * math.sin(angle)
-
-            # Flytta muspekaren till den beräknade positionen
-            pyautogui.moveTo(x, y, duration=0.01)  # Justera duration för önskad rörelsehastighet
-            time.sleep(0.01)  # Vänta en kort stund mellan varje steg för att skapa en mjuk rörelse
-
     def initUI(self):
         layout = QtWidgets.QVBoxLayout(self)
+
         try:
             with open(f"{self.app_data_path}/scale_data.json", "r", encoding="utf-8") as json_file:
                 data = json.load(json_file)
@@ -231,12 +223,10 @@ class ProgressDialog(QtWidgets.QDialog):
 
         geologer_namn = [geo_dict[str(num)] for num in geologer]
         resurs_namn = resurs_dict[str(resurs)]
-
         self.label = QLabel(self)
         geologer_str = ", ".join(geologer_namn)
         self.label.setText(f"Process pågår...\n\nSöker {geologer_str} som ska leta efter {resurs_namn}.\n\nNödstopp genom att flytta musen till skärmens hörn.")
         self.label.setWordWrap(True)
-
         self.label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.label)
 
@@ -258,6 +248,12 @@ class ProgressDialog(QtWidgets.QDialog):
         self.stop_button = QPushButton("Avsluta", self)
         layout.addWidget(self.stop_button)
         self.stop_button.clicked.connect(self.stop_process)
+        self.stop_button.setVisible(False)
+
+        self.handbrake_button = QPushButton("Nödstopp", self)
+        layout.addWidget(self.handbrake_button)
+        self.handbrake_button.clicked.connect(self.handbrake)
+        self.handbrake_button.setVisible(True)
 
     def on_returnToDialog(self):
         self.returnToDialog.emit()
@@ -266,6 +262,11 @@ class ProgressDialog(QtWidgets.QDialog):
     def stop_process(self):
         self.close()  # Stäng minifönstret och avbryt processen
         qApp.quit()  # Avsluta programmet
+
+    def handbrake(self):
+        self.close()  # Stäng minifönstret och avbryt processen
+        os._exit(0)
+        #sys.exit(0)   # Avsluta programmet med utkod 0 (kan ändras om det behövs)
 
     def start_process(self):
         QApplication.processEvents()
@@ -286,23 +287,29 @@ class ProgressDialog(QtWidgets.QDialog):
         geologer_namn = [geo_dict[str(num)] for num in geologer]
         resurs_namn = resurs_dict[str(resurs)]
         self.label.clear()
+        QApplication.processEvents()  # Uppdatera GUI-tråden
         geologer_str = ", ".join(geologer_namn)
         self.label.setText(f"Upprepar...\n\nSöker {geologer_str} som ska leta efter {resurs_namn}.\n\nNödstopp genom att flytta musen till skärmens hörn.")
         self.label.setWordWrap(True)
         self.restart_button.setVisible(False)
         self.start_button.setVisible(False)
+        self.stop_button.setVisible(False)
+        self.handbrake_button.setVisible(True)
         QApplication.processEvents()  # Uppdatera GUI-tråden
         self.leta_sten()
         self.process_completed()
 
     def process_completed(self, *args):
+        QApplication.processEvents()  # Uppdatera GUI-tråden
         self.label.setText("Processen är klar.\nAlla möjliga klick är genomförda.")
         self.restart_button.setVisible(True)
         self.start_button.setVisible(True)
+        self.stop_button.setVisible(True)
+        self.handbrake_button.setVisible(False)
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Q:
-            self.stop_process()
+            self.handbrake()
         else:
             super().keyPressEvent(event)
 
@@ -375,15 +382,17 @@ class ProgressDialog(QtWidgets.QDialog):
             if hittad_geolog or noscroll is True:
                 vimpel = True
                 return vimpel
-            image_utils.click_center(resting_place)
+            pyautogui.moveTo(resting_place)
+            pyautogui.mouseDown(resting_place)
+            pyautogui.mouseUp()
             pyautogui.scroll(clicks=riktning)
             if position_bottom is True:
-                riktning = 4 # Om vi är längst ner börja skrolla upp
+                riktning = 2 # Om vi är längst ner börja skrolla upp
                 counting += 1
                 if been is None:
                     been = "bottom"
             if position_top is True:
-                riktning = -4
+                riktning = -2
                 counting += 1
                 if been is None:
                     been = "top"
@@ -412,10 +421,9 @@ class ProgressDialog(QtWidgets.QDialog):
 
     def hitta_resurs(self, bild_sokvag, faktor):
         for _ in range(3):  # Loopa 3 gånger
-            #command_area = self.berakna_command("./data/img/05_image.bmp", faktor)
-            #disturbed = 0
+            #command_area = self.berakna_command("./data/img/05_image.bmp", faktor) # This makes the program to slow
             for _ in range(3):  # Loopa 3 gånger för varje försök
-                hittad_position = image_utils.find_image(bild_sokvag, scale_factor=faktor, confidence=0.85, grayscale=True, region=command_area)
+                hittad_position = image_utils.find_image(bild_sokvag, scale_factor=faktor, confidence=0.85, grayscale=True)#, region=command_area)
                 if hittad_position is not None:
                     x, y, width, height = hittad_position  # Klickar i högra hörnet för att kunna ha med texten brevid knappen
                     knappens_plats = x + width - (width // 5), y + (height // 2)
@@ -425,24 +433,14 @@ class ProgressDialog(QtWidgets.QDialog):
                     pyautogui.moveTo(resting_place)
                     return True
                 time.sleep(0.1)
-                """if hittad_position is None:
-                    distracting_popup = image_utils.find_image(bild_sokvag, scale_factor=faktor, confidence=0.7, grayscale=False, region=command_area)
-                    if distracting_popup is not None and disturbed <= 1:
-                        time.sleep(0.1)
-                        disturbed = disturbed + 1
-                    if distracting_popup is not None and disturbed >= 2:
-                        #self.point_out(distracting_popup)
-                        self.label.setText(self.label.text() + "\n\n" + "Hoppsan, lite trångt här.\nMåste sänka hastigheten.")
-                        time.sleep(0.1)
-                        pyautogui.moveTo(resting_place)"""
         return False
 
     def hitta_check(self, bild_sokvag, faktor):
         for _ in range(3): # Loopa 3ggr
             hittad_position = image_utils.find_image(bild_sokvag, confidence=0.8, grayscale=False, region=command_area, scale_factor=faktor, sleep_time=0.1)
             if hittad_position is not None:
-                image_utils.click_center(hittad_position)
-                image_utils.click_center(resting_place, sleep_time=0.5)
+                image_utils.click_center(hittad_position, sleep_time=0.5)
+                #image_utils.click_center(resting_place)
                 break
         time.sleep(0.1)
 
@@ -510,14 +508,14 @@ class ProgressDialog(QtWidgets.QDialog):
                     pyautogui.moveTo(resting_place)
                     pyautogui.mouseDown(resting_place)
                     pyautogui.mouseUp()
-                    pyautogui.scroll(2)
+                    pyautogui.scroll(clicks=2)
                     time.sleep(0.1)
                     search_area = starmenu_area
                 if upper_corner_x >= (x + width - (found_width * 1.9)) and upper_corner_y >= (y + height - (found_height * 1.9)) and noscroll is False:
                     pyautogui.moveTo(resting_place)
                     pyautogui.mouseDown(resting_place)
                     pyautogui.mouseUp()
-                    pyautogui.scroll(-2)
+                    pyautogui.scroll(clicks=-2)
                     time.sleep(0.1)
                     search_area = starmenu_area
                 flagga = True # Vi har hittat den
@@ -530,17 +528,17 @@ class ProgressDialog(QtWidgets.QDialog):
                     search_area = (int(next_x), int(starmenu_area[1]), int(starmenu_area[2] - found_width), int(starmenu_area[3]))
                 return hittad, search_area # Om den hittas lämnar vi loopen, itereringen sköts i leta_sten
             else:
-                time.sleep(0.2)
+                time.sleep(0.1)
                 search_area = starmenu_area
                 """if hittad is None and noscroll is False:
-                    pyautogui.scroll(-2)
-                    pyautogui.scroll(-2)
+                    pyautogui.scroll(clicks=-2)
+                    pyautogui.scroll(clicks=-2)
                     look_again = image_utils.find_image(bild_sokvag, scale_factor=faktor, time_sleep=0.2)
                     if look_again is not None:
                         continue
                     else:
-                        pyautogui.scroll(2)
-                        pyautogui.scroll(2)
+                        pyautogui.scroll(clicks=2)
+                        pyautogui.scroll(clicks=2)
                         look_again = image_utils.find_image(bild_sokvag)
                         if look_again is not None:
                             continue"""
@@ -565,7 +563,7 @@ class ProgressDialog(QtWidgets.QDialog):
                 if hittad_geolog is not None:
                     flagga_funnen = True
                     flagga = True
-                elif hittad_geolog is None and flagga_funnen is False: # En tidigare hittad geolog behöver inte sökas efter utöver när-scrollet i hitta_geolog
+                elif hittad_geolog is None and flagga_funnen is False and noscroll is False: # En tidigare hittad geolog behöver inte sökas efter utöver när-scrollet i hitta_geolog
                     hitta = self.scroll(geolog)
                     if hitta is not None:
                         flagga = True # Upprepa hitta_geolog
