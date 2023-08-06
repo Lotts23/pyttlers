@@ -509,10 +509,8 @@ class ProgressDialog(QtWidgets.QDialog):
         hittad = None
         for _ in range(3): # Loopa 3ggr om den INTE hittar
 
-            bild = Image.open(bild_sokvag)
-            skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
-            bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
-            hittad_position = pyautogui.locateOnScreen(bild_array, confidence=0.77, grayscale=True, region=search_area)
+            hittad_position = image_utils.find_image(bild_sokvag, confidence=0.77, grayscale=True, region=search_area)
+            self.popup_flagga.clear()
             if hittad_position is not None:
                 hittad = pyautogui.center(hittad_position)
                 self.popup_flagga.clear()
