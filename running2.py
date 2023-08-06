@@ -59,7 +59,7 @@ class ProgressDialog(QtWidgets.QDialog):
         global faktor
         faktor = faktor
         for faktor in tillatna_varden:
-            print(faktor * 2 * 100, "%")
+            #print(faktor * 2 * 100, "%")
             skalbild = Image.open(skalbild_sokvag)
             skalad_bild = skalbild.resize((int(skalbild.width * faktor), int(skalbild.height * faktor)))
             skalbild_array = np.array(skalad_bild)
@@ -70,7 +70,6 @@ class ProgressDialog(QtWidgets.QDialog):
                     json.dump(data, json_file)
                 return faktor
             time.sleep(0.01)
-        print("fail")
         ### Skriv en felhantering för när skalan inte hittas
         return
 
@@ -227,7 +226,6 @@ class ProgressDialog(QtWidgets.QDialog):
         explorers_str = ", ".join(explorers_namn)
         self.label.setText(f"Process pågår...\n\nSöker {explorers_str} som ska leta efter {typ_namn} under {tid_namn} tid.\n\nNödstopp genom att flytta musen till skärmens hörn.")
         self.label.setWordWrap(True)
-
         self.label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.label)
 
@@ -249,6 +247,12 @@ class ProgressDialog(QtWidgets.QDialog):
         self.stop_button = QPushButton("Avsluta", self)
         layout.addWidget(self.stop_button)
         self.stop_button.clicked.connect(self.stop_process)
+        self.stop_button.setVisible(False)
+
+        self.handbrake_button = QPushButton("Nödstopp", self)
+        layout.addWidget(self.handbrake_button)
+        self.handbrake_button.clicked.connect(self.handbrake)
+        self.handbrake_button.setVisible(True)
 
     def on_returnToDialog(self):
         self.returnToDialog.emit()
@@ -258,6 +262,10 @@ class ProgressDialog(QtWidgets.QDialog):
         self.close()  # Stäng minifönstret och avbryt processen
         qApp.quit()  # Avsluta programmet
 
+    def handbrake(self):
+        #print("handbrake(self)"),
+        self.close()  # Stäng minifönstret och avbryt processen
+        os._exit(0)
     def start_process(self):
         QApplication.processEvents()
         self.show()
@@ -288,18 +296,23 @@ class ProgressDialog(QtWidgets.QDialog):
         self.label.setWordWrap(True)
         self.restart_button.setVisible(False)
         self.start_button.setVisible(False)
+        self.stop_button.setVisible(False)
+        self.handbrake_button.setVisible(True)
         QApplication.processEvents()  # Uppdatera GUI-tråden
         self.leta_skatt()
         self.process_completed()
 
     def process_completed(self, *args):
+        QApplication.processEvents()
         self.label.setText("Processen är klar.\nAlla möjliga klick är genomförda.")
         self.restart_button.setVisible(True)
         self.start_button.setVisible(True)
+        self.stop_button.setVisible(True)
+        self.handbrake_button.setVisible(False)
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Q:
-            self.stop_process()
+            self.handbrake()
         else:
             super().keyPressEvent(event)
 
@@ -412,22 +425,17 @@ class ProgressDialog(QtWidgets.QDialog):
             return command_area
 
     def hitta_typ(self, bild_sokvag, faktor):
-        for _ in range(3):  # Loopa 3 gånger
-           # command_area = ProgressDialog.berakna_command("./data/img/05_image.bmp", faktor)
-            bild = Image.open(bild_sokvag)
-            skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
-            bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
-            for _ in range(3):  # Loopa 3 gånger för varje försök
-                hittad_position = image_utils.find_image(bild_sokvag, scale_factor=faktor, confidence=0.85, grayscale=True)#, region=command_area)
-                if hittad_position is not None:
-                    x, y, width, height = hittad_position  # Klickar i högra hörnet för att kunna ha med texten brevid knappen
-                    knappens_plats = x + width - (width // 5), y + (height // 2)
-                    pyautogui.moveTo(knappens_plats)
-                    pyautogui.mouseDown(knappens_plats)
-                    pyautogui.mouseUp()
-                    pyautogui.moveTo(resting_place)
-                    return True
-                time.sleep(0.1)
+        for _ in range(3):  # Loopa 3 gånger för varje försök
+            hittad_position = image_utils.find_image(bild_sokvag, scale_factor=faktor, confidence=0.85, grayscale=True)#, region=command_area)
+            if hittad_position is not None:
+                x, y, width, height = hittad_position  # Klickar i högra hörnet för att kunna ha med texten brevid knappen
+                knappens_plats = x + width - (width // 5), y + (height // 2)
+                pyautogui.moveTo(knappens_plats)
+                pyautogui.mouseDown(knappens_plats)
+                pyautogui.mouseUp()
+                pyautogui.moveTo(resting_place)
+                return True
+            time.sleep(0.1)
         return False
 
     def hitta_tid(self, bild_sokvag, faktor):
@@ -481,6 +489,7 @@ class ProgressDialog(QtWidgets.QDialog):
 
     def hantera_popup(self):
         while not self.popup_flagga.is_set():
+            time.sleep(2)
             self.error_bild("./data/img/error.bmp", faktor)
 
     popup_flagga = threading.Event()
@@ -497,8 +506,9 @@ class ProgressDialog(QtWidgets.QDialog):
         pyautogui.moveTo(resting_place)
         hittad_position = None
         window_open = False
+        hittad = None
         for _ in range(3): # Loopa 3ggr om den INTE hittar
-            hittad = None
+
             bild = Image.open(bild_sokvag)
             skalad_bild = bild.resize((int(bild.width * faktor), int(bild.height * faktor)))
             bild_array = np.array(skalad_bild)  # Konvertera PIL-bilden till en array
@@ -514,10 +524,10 @@ class ProgressDialog(QtWidgets.QDialog):
                 pyautogui.moveTo(resting_place) # För att bli av med popup-bubblan
                 time.sleep(0.1)
                 window_open = self.hitta_typ(f"./data/img/typ_{typ}.bmp", faktor)
+                self.popup_flagga.set()
                 if window_open is False:
                     continue
                 self.hitta_tid(f"./data/img/tid_{sort}_{tid}.bmp", faktor)
-                self.popup_flagga.set()
                 self.hitta_check("./data/img/check.bmp", faktor)
                 # Hämtar alla värden för hittad_position och starmenu_area så att vi kan scrolla senare
                 found_x, found_y, found_width, found_height = hittad_position
@@ -557,6 +567,7 @@ class ProgressDialog(QtWidgets.QDialog):
             else:
                 time.sleep(0.1)
                 search_area = starmenu_area
+                self.popup_flagga.clear()
         return hittad, search_area # Om den inte hittats har hittad inget värde
 
     def leta_skatt(self):
@@ -584,5 +595,7 @@ class ProgressDialog(QtWidgets.QDialog):
                         flagga = True # Upprepa hitta_explorer
                     else:
                         flagga = False # Avbryt och börja leta efter nästa explorer.
+                elif hittad_explorer is None and flagga_funnen is False and noscroll is True:
+                    flagga = False
                 elif hittad_explorer is None and flagga_funnen is True:
                     flagga = False # Avbryt direkt och gå vidare i listan.

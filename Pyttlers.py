@@ -85,21 +85,49 @@ class StartDialog(QtWidgets.QDialog):
         expl_button.clicked.connect(self.open_expl_window)
         layout.addWidget(expl_button)
 
+
+    def hitta_skalfaktor(self, skalbild_sokvag):# Här kollar vi skalan och ser till att stjärn-fönstret är öppen och i rätt tab.
+        tillatna_varden = [1, 0.75, 0.625, 0.55, 0.5, 0.45, 0.375, 0.25]
+        global faktor
+        for faktor in tillatna_varden:
+            hittad_skalfaktor = image_utils.find_image(skalbild_sokvag, confidence=0.63, scale_factor=faktor)
+            if hittad_skalfaktor is not None:
+                data = {"faktor": faktor}
+                with open(f"{app_data_path}/scale_data.json", "w", encoding="utf-8") as json_file:
+                    json.dump(data, json_file)
+                return faktor
+            time.sleep(0.01)
+            app.exit(0)
+        ### Skriv en felhantering för när skalan inte hittas
+        return
+
+    def testa_skalfaktor(self, skalbild_sokvag, faktor):
+        hittad_testbild = image_utils.find_image(skalbild_sokvag, confidence=0.8, scale_faktor=faktor)
+
+        if hittad_testbild is not None:
+            return faktor
+        else:
+            self.hitta_skalfaktor("./data/img/01_image.bmp")
+            return faktor
+
+
     def scale_handling(self):
-        test_factor = faktor
         json_fil = f"{app_data_path}/scale_data.json"
         if os.path.isfile(json_fil):  # Om det finns en fil
             with open(json_fil, "r", encoding="utf-8") as json_file:  # öppna den
                 json_data = json.load(json_file)  # och läs datan
-                test_factor = json_data.get("faktor")  # Hämta tidigare faktor
+                faktor = json_data.get("faktor")  # Hämta tidigare faktor
+                test_factor = faktor
             if test_factor is not None: # Om faktor-värdet inte är tomt, testa det
                 testad_faktor = start_dialog.testa_skalfaktor("./data/img/01_image.bmp", faktor) # Testar om gamla faktorn funkar
                 if testad_faktor is None:
                     test_factor = self.hitta_skalfaktor("./data/img/01_image.bmp")
                     return test_factor
                 else:
-                    test_factor = testad_faktor
-                    return test_factor
+                    data = {"faktor": faktor}
+                    with open(f"{app_data_path}/scale_data.json", "w", encoding="utf-8") as json_file:
+                        json.dump(data, json_file)
+                    return test_factor, faktor
         else:
             test_factor = self.hitta_skalfaktor("./data/img/01_image.bmp")
             return test_factor
@@ -137,30 +165,6 @@ class StartDialog(QtWidgets.QDialog):
     def on_returnToDialog(self):
         self.show()
 
-
-    def hitta_skalfaktor(self, skalbild_sokvag):# Här kollar vi skalan och ser till att stjärn-fönstret är öppen och i rätt tab.
-        tillatna_varden = [1, 0.75, 0.625, 0.55, 0.5, 0.45, 0.375, 0.25]
-        global faktor
-        for faktor in tillatna_varden:
-            hittad_skalfaktor = image_utils.find_image(skalbild_sokvag, confidence=0.63, scale_factor=faktor)
-            if hittad_skalfaktor is not None:
-                data = {"faktor": faktor}
-                with open(f"{self.app_data_path}/scale_data.json", "w", encoding="utf-8") as json_file:
-                    json.dump(data, json_file)
-                return faktor
-            time.sleep(0.01)
-            app.exit(0)
-        ### Skriv en felhantering för när skalan inte hittas
-        return
-
-    def testa_skalfaktor(self, skalbild_sokvag, faktor):
-        hittad_testbild = image_utils.find_image(skalbild_sokvag, confidence=0.8, scale_faktor=faktor)
-
-        if hittad_testbild is not None:
-            return faktor
-        else:
-            self.hitta_skalfaktor("./data/img/01_image.bmp")
-            return faktor
 
 
 if __name__ == "__main__":
